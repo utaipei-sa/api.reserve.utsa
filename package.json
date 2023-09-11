@@ -1,0 +1,22 @@
+{
+  "name": "reserve.utsa",
+  "version": "1.0.0",
+  "description": "A platform to reserve the spaces and items managed by UTSA.",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/utaipei-sa/reserve.utsa.git"
+  },
+  "author": "utaipei-sa",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/utaipei-sa/reserve.utsa/issues"
+  },
+  "homepage": "https://github.com/utaipei-sa/reserve.utsa#readme",
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}
