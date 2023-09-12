@@ -18,4 +18,6 @@ Commands to run this app:
 - ~~Windows with PowerShell: `$env:DEBUG='reserve.utsa:*'; npm start`~~
 - `docker compose up --build`
 
+Result:`http://localhost:3000`
+
 Welcome and have a pleasant dev journey!
