@@ -12,8 +12,8 @@ Here are some resources to learn about building the app:
 If you don't know where to start, you can visit the Git commit history.
 
 commands to run this app:
-- MacOS or Linux: `DEBUG=myapp:* npm start`
-- Windows with Command Prompt: `set DEBUG=myapp:* & npm start`
-- Windows with PowerShell: `$env:DEBUG='myapp:*'; npm start`
+- MacOS or Linux: `DEBUG=reserve.utsa:* npm start`
+- Windows with Command Prompt: `set DEBUG=reserve.utsa:* & npm start`
+- Windows with PowerShell: `$env:DEBUG='reserve.utsa:*'; npm start`
 
 Welcome and have a pleasant dev journey!
