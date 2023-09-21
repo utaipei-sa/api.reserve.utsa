@@ -8,8 +8,8 @@ var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var signinRouter = require('./routes/signin');
 var signoutRouter = require('./routes/signout');
-var reserveRouter = require('./routes/reserve');
-var timetableRouter = require('./routes/timatable');
+var reserveFormRouter = require('./routes/reserveForm');
+var timetableRouter = require('./routes/timetable');
 var dashboardRouter = require('./routes/dashboard');
 
 var app = express();
@@ -26,11 +26,11 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
-app.use('/signin', signinRouter);
-app.use('/signout', signoutRouter);
-app.use('/reserve', reserveRouter);
-app.use('/timatable', timetableRouter);
-app.use('/dashboard', dashboardRouter);
+app.use(signinRouter); //'/signin', 
+app.use(signoutRouter); //'/signout', 
+app.use(dashboardRouter); //'/dashboard',
+app.use('/reserve', reserveFormRouter); //'/reserve', 
+app.use('/reserve', timetableRouter); //'/timetable',  
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
