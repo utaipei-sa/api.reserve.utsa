@@ -5,12 +5,14 @@ Welcome join us!
 這項專案是一個面向學生、社團及學校單位的平台，提供預約學生會場地及借用物品的服務。  
 This app is a platform that faces students, clubs, school departments, etc. to reserve the spaces and items managed by UTSA.   
 
-這項專案主要由 JavaScript 撰寫，使用 Node.js(版本20)、Express.js框架、Handlebars樣板引擎和Bootstrap。  
-It is mainly written in Javascript, using Node.js (version 20), Express.js, Handlebars view engine, and Bootstrap.  
+這項專案主要由 JavaScript 撰寫，使用 Node.js(版本20)、Express.js框架、Handlebars樣板引擎
+React.js~~和Bootstrap~~。  
+It is mainly written in Javascript, using Node.js (version 20), Express.js, Handlebars view engine, React.js, and Bootstrap.  
 
 以下是一些學習資源：  
 Here are some resources to learn about building the app:
 - Express.js: [Getting started](https://expressjs.com/en/starter/installing.html)
+- React.js: [Learn](https://react.dev/learn)
 - Handlebars: [Language guide](https://handlebarsjs.com/guide/)
 - Git: [How to write git commit messages](https://wadehuanglearning.blogspot.com/2019/05/commit-commit-commit-why-what-commit.html)
 - PostgreSQL: [PostgreSQL user manual in Traditional Chinese](https://docs.postgresql.tw/tutorial)
