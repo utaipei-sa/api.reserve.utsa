@@ -5,17 +5,15 @@ Welcome join us!
 這項專案是一個面向學生、社團及學校單位的平台，提供預約學生會場地及借用物品的服務。  
 This app is a platform that faces students, clubs, school departments, etc. to reserve the spaces and items managed by UTSA.   
 
-這項專案主要由 JavaScript 撰寫，使用 Node.js(版本20)、Express.js框架、Handlebars樣板引擎
-React.js~~和Bootstrap~~。  
-It is mainly written in Javascript, using Node.js (version 20), Express.js, Handlebars view engine, React.js, and Bootstrap.  
+這項專案主要由 JavaScript 撰寫，使用 MERN (MongoDB, Express.js, React.js, Node.js)。  
+It is mainly written in Javascript, using MERN stack (MongoDB, Express.js, React.js, and Node.js).  
 
 以下是一些學習資源：  
 Here are some resources to learn about building the app:
 - Express.js: [Getting started](https://expressjs.com/en/starter/installing.html)
 - React.js: [Learn](https://react.dev/learn)
-- Handlebars: [Language guide](https://handlebarsjs.com/guide/)
 - Git: [How to write git commit messages](https://wadehuanglearning.blogspot.com/2019/05/commit-commit-commit-why-what-commit.html)
-- PostgreSQL: [PostgreSQL user manual in Traditional Chinese](https://docs.postgresql.tw/tutorial)
+- MongoDB: [Quick Start — Node.js](https://www.mongodb.com/docs/drivers/node/current/quick-start/)
 - Docker: [Get started](https://docs.docker.com/get-started/)
 - JavaScript, HTML, CSS, etc.: There are lots of documents and tutorials on the Internet, please search by yourself.
 
@@ -23,11 +21,7 @@ Here are some resources to learn about building the app:
 If you don't know where to start, you can visit the Git commit history.  
 
 執行這個 App 的指令：  
-Commands to run this app:
-- ~~MacOS or Linux: `DEBUG=reserve.utsa:* npm start`~~
-- ~~Windows with Command Prompt: `set DEBUG=reserve.utsa:* & npm start`~~
-- ~~Windows with PowerShell: `$env:DEBUG='reserve.utsa:*'; npm start`~~
-- `docker compose up --build`
+Commands to run this app: `docker compose up --build`
 
 執行結果：  
 Result: [`http://localhost:3000`](http://localhost:3000)  
@@ -38,9 +32,11 @@ Welcome and have a pleasant dev journey!
 # 關於專案 About the Project
 ## 路徑地圖 Route Map
 ```
+/api         => 後端 API back-end API
+├── /......
+/signin      => 登入或註冊（現只開放工作人員） sign in and sign up (staff only for now)
+/signout     => 登出 sign out
 /reserve
-├── /signin      => 登入或註冊（現只開放工作人員） sign in and sign up (staff only for now)
-├── /signout     => 登出 sign out
 ├── /reserve     => 預約 reserve spaces and items
 ├── /manage/<id> => 編輯或取消預約 edit or cancel the reserve
 ├── /timetable   => 場地及物品清單及連結 spaces and items list
