@@ -4,8 +4,8 @@ var router = express.Router();
 
 /* GET signin page. */
 router.get('/signin', async function(req, res, next) {
-    const result = await users.insertOne({ name: "Tester" });
-    res.json({ title: 'Sign in', result: result });
+    //const result = await users.insertOne({ name: "Tester" });
+    res.json({ title: 'Sign in'});
 });
 
 /* POST signin process */
