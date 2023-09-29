@@ -12,6 +12,7 @@
       <v-col id="space" v-if="choose=='space'">
         <v-combobox label="space" :items="space"></v-combobox>
       </v-col>
+
     </v-row>
     <v-row>
       <v-col id="datepicker">
