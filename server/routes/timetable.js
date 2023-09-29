@@ -3,7 +3,7 @@ var router = express.Router();
 
 /* GET timetable page. */
 router.get('/timetable', function(req, res, next) {
-    res.render('index', { title: 'Timetable' });
+    res.json({ title: 'Timetable' });
 });
 
 module.exports = router;
