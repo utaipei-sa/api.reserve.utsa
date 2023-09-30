@@ -88,6 +88,10 @@
                       <v-col>{{i.date}}</v-col>
                       <v-col>{{i.time}}</v-col>
                       <v-col>{{i.reason }}</v-col>
+                      <v-col>
+                        <v-btn @click="delReserve(index)" a>刪除</v-btn>
+                      </v-col>
+                      
                     </v-row>
                   </v-container>
                 </v-card>
@@ -158,6 +162,9 @@
     methods:{
       api(){
 
+      },
+      delReserve(index){
+        this.submit.splice(index,1)
       },
       addReserve(){
         this.submit.push(
