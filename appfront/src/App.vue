@@ -61,4 +61,9 @@ export default {
   flex-grow: 1;
   max-width: 100%
 }
+.v-spacer{
+  flex-basis: 0;
+  flex-grow: 1;
+  max-width: 100%
+}
 </style>
