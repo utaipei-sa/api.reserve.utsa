@@ -4,13 +4,9 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 
-var indexRouter = require('./routes/index');
-var usersRouter = require('./routes/users');
-var signinRouter = require('./routes/signin');
-var signoutRouter = require('./routes/signout');
-var reserveFormRouter = require('./routes/reserveForm');
-var timetableRouter = require('./routes/timetable');
-var dashboardRouter = require('./routes/dashboard');
+var home_router = require('./routes/home');
+var signin_router = require('./routes/signin');
+var reserve_router = require('./routes/reserve/index');
 
 var app = express();
 
@@ -24,13 +20,9 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.use('/', indexRouter);
-app.use('/users', usersRouter);
-app.use(signinRouter); //'/signin', 
-app.use(signoutRouter); //'/signout', 
-app.use(dashboardRouter); //'/dashboard',
-app.use('/reserve', reserveFormRouter); //'/reserve', 
-app.use('/reserve', timetableRouter); //'/timetable',  
+app.use(home_router);
+app.use(signin_router); //'/signin', 
+app.use('/api/v1', reserve_router);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
