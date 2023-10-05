@@ -8,6 +8,7 @@ router.get('/reservation/:reservation_id', function(req, res, next) {
 });
 
 router.post('/reservation', function(req, res, next) {
+    //req.body.{{param}}
     res.json({ title: 'New Reservation' });
 });
 
