@@ -5,8 +5,10 @@ const client = new MongoClient(uri);
 
 const utsa = client.db('utsa');
 const reservations = utsa.collection('reservations');
+const spaces = utsa.collection('spaces');
+const items = utsa.collection('items');
 const users = utsa.collection('users');
-module.exports = { reservations, users };
+module.exports = { reservations, spaces, items, users };
 
 /*
 async function run() {
@@ -25,3 +27,26 @@ async function run() {
 }
 run().catch(console.dir);
 */
+
+//temporary fixed data
+async function setup_spaces() {
+    const temp_data = [
+        {
+            name: {
+                "zh-tw": "學生活動中心",
+                "en": "Student Activity Center"
+            }
+        }, 
+        {
+            name: {
+                "zh-tw": "勤樸樓B1小舞台",
+                "en": "Cin-Pu Building B1 Stage"
+            }
+        }
+    ]
+    if (await spaces.countDocuments({}) === 0) {
+        await spaces.insertMany(temp_data);
+    }
+};
+
+setup_spaces();

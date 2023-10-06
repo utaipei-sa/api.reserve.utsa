@@ -1,5 +1,5 @@
 var express = require('express');
-//var { items } = require('../models/mongodb');
+var { items } = require('../../models/mongodb');
 var router = express.Router();
 
 router.get('/items', function(req, res, next) {
@@ -11,14 +11,16 @@ router.get('/items', function(req, res, next) {
                 name: {
                     "zh-tw": "塑膠椅",
                     "en": "Plastic Chairs"
-                }
+                },
+                quantity: 30
             }, 
             {
                 id: "8274e98c24f66366f00cb9b2a94f0836a83",
                 name: {
                     "zh-tw": "長桌",
                     "en": "Tables"
-                }
+                },
+                quantity: 2
             }
         ]
     }
