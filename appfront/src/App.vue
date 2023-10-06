@@ -2,7 +2,7 @@
   <v-app>
     <v-app-bar color="rgba(23, 18 ,127 ,1)" density="compact">
       <v-app-bar-nav-icon href="#/">
-        <v-img src="@/assets/cat.png" alt="Ut" />
+        <v-img  src="@/assets/cat.png" alt="Ut" />
       </v-app-bar-nav-icon>
       <!-- <v-btn variant="text" href="#/signin">signin</v-btn>
       <v-btn variant="text" href="#/signout">signout</v-btn> -->
@@ -21,14 +21,14 @@
 import Home from './components/Home.vue'
 import Signin from './components/Signin.vue'
 import Signout from './components/Signout.vue'
-import form from './components/form.vue'
+import Form from './components/Form.vue'
 //import NotFound from './NotFound.vue'
 
 const routes = {
   '/': Home,
   '/signin': Signin,
   '/signout' : Signout,
-  '/form': form
+  '/form': Form
 }
 
 export default {
