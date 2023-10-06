@@ -8,7 +8,7 @@ router.get('/spaces', async function(req, res, next) {
                              .toArray(function(err, results){
                                  console.log(results);
                              });
-    res.json(data);
+    res.json({data: data});
 });
 
 module.exports = router;

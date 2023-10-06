@@ -49,4 +49,27 @@ async function setup_spaces() {
     }
 };
 
+async function setup_items() {
+    const temp_data = [
+        {
+            name: {
+                "zh-tw": "塑膠椅",
+                "en": "Plastic Chairs"
+            },
+            quantity: 30
+        }, 
+        {
+            name: {
+                "zh-tw": "長桌",
+                "en": "Tables"
+            },
+            quantity: 2
+        }
+    ]
+    if (await items.countDocuments({}) === 0) {
+        await items.insertMany(temp_data);
+    }
+};
+
 setup_spaces();
+setup_items();
