@@ -3,6 +3,7 @@ var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
+var cors = require('cors');
 
 var home_router = require('./routes/home');
 var signin_router = require('./routes/signin');
@@ -20,6 +21,19 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
+// cors
+const corsOptions = {
+    origin: [
+        'http://localhost:7414'
+    ],
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+    allowedHeaders: ['Content-Type', 'Authorization']
+};
+
+app.use(cors());
+app.use(cors(corsOptions));
+
+// routes
 app.use(home_router);
 app.use(signin_router); //'/signin', 
 app.use('/api/v1', reserve_router);
