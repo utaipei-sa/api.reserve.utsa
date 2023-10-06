@@ -67,56 +67,150 @@
         <v-card color="grey-lighten-2">
           
           <v-container id="form" >
-            <v-row>
+            <v-row >
               <v-col id="space_title">
-                <v-card title="場地" color="grey-lighten-1" ></v-card>
+                <v-card title="場地"  color="grey-lighten-1" ></v-card>
               </v-col>
             </v-row>
-            <v-row v-for="i in space_num">
+            <v-row align="center">
+              <v-col id="space" >
+                <v-select label="場地"  :items="[space_list.forEach(i=>{i['name']['zh-tw']})]" v-model="space_temp"></v-select>
+              </v-col>
+              <v-col id="datepicker">
+                <v-menu 
+                  :close-on-content-click="false"
+                  transition="scale-transition"
+                  offset-y
+                  max-width="290px"
+                  min-width="290px" >
+                  <template v-slot:activator="{ props,on}">
+                    <v-text-field v-bind="props" v-on="on" label="日期" v-model="space_format_date"></v-text-field>
+                  </template>
+                  <v-date-picker v-model="space_date_temp"></v-date-picker>
+                </v-menu>
+                
+              </v-col>
+              <v-col id="timepicker" >
+                <v-select label="時間" :items="time_list"  v-model="space_time_temp"></v-select> <!-- multiple -->
+              </v-col>
+              <v-col>
+                <v-btn @click="addspace()" >新增</v-btn>
+              </v-col>
+            </v-row>
+            <v-row >
+              
+            </v-row>
+            <v-row v-for="(i,index) in space_data">
               <v-col>
                 <v-card color="grey-lighten-3">
                   <v-container>
-                    <v-row >
-                      <v-col id="space" >
-                        <v-combobox label="場地"  :items="space_list" v-model="space[i]"></v-combobox>
+                    <v-row>
+                      <v-col>
+                        {{ index+1 }}
                       </v-col>
-                      <v-col id="datepicker">
-                        <v-menu
-                          :close-on-content-click="false"
-                          transition="scale-transition"
-                          offset-y
-                          max-width="290px"
-                          min-width="290px" >
-                          <template v-slot:activator="{ props,on}">
-                            <v-text-field v-bind="props" v-on="on" v-model="space_date[i]"></v-text-field>
-                          </template>
-                          <v-date-picker  no-title range scrollable  title="日期" value="yyyy/MM/dd" v-model="space_date[i]"  ></v-date-picker>
-                        </v-menu>
-                        
+                      <v-col>
+                        {{ i[0] }}
                       </v-col>
-                      <v-col id="timepicker" >
-                        <v-combobox label="time" :items="time_list"  v-model="space_time[i]"></v-combobox> <!-- multiple -->
+                      <v-col>
+                        {{ i[1] }}
                       </v-col>
-                      <v-col align-self="center">
+                      <v-col>
+                        {{ i[2] }}
+                      </v-col>
+                      <v-col>
                         <v-btn @click="delspace(index)" a>刪除</v-btn>
                       </v-col>
                     </v-row>
-                  </v-container>
+                  </v-container>  
                 </v-card>
-              </v-col>
-            </v-row>
-            <v-row>
-              <v-col>
-                <v-btn @click="addspace()" >新增</v-btn>
               </v-col>
             </v-row>
           </v-container>
         </v-card>
       </v-col>
     </v-row>
-    <v-row >
+    <v-row>
       <v-col>
-        <v-btn size="large" @click="addReserve()"> 新增</v-btn>
+        <v-card color="grey-lighten-2">
+          
+          <v-container id="form" >
+            <v-row >
+              <v-col id="item_title">
+                <v-card title="物品"  color="grey-lighten-1" ></v-card>
+              </v-col>
+            </v-row>
+            <v-row align="center">
+              <v-col id="item" >
+                <v-select label="物品" :items="item_list" v-model="item_temp"></v-select>
+              </v-col>
+              <v-col id="item_datepicker_1">
+                <v-menu 
+                  :close-on-content-click="false"
+                  transition="scale-transition"
+                  offset-y
+                  max-width="290px"
+                  min-width="290px" >
+                  <template v-slot:activator="{ props,on}">
+                    <v-text-field v-bind="props" v-on="on" label="借用日期" v-model="item_format_date1"></v-text-field>
+                  </template>
+                  <v-date-picker v-model="item_date_temp1"></v-date-picker>
+                </v-menu>
+                
+              </v-col>
+              <v-col id="item_datepicker_2">
+                <v-menu 
+                  :close-on-content-click="false"
+                  transition="scale-transition"
+                  offset-y
+                  max-width="290px"
+                  min-width="290px" >
+                  <template v-slot:activator="{ props,on}">
+                    <v-text-field v-bind="props" v-on="on" label="歸還日期" v-model="item_format_date2"></v-text-field>
+                  </template>
+                  <v-date-picker v-model="item_date_temp2"></v-date-picker>
+                </v-menu>
+                
+              </v-col>
+              <v-col  >
+                <v-select label="數量" :items="quantity_list"  v-model="item_quantity_temp"></v-select><!-- multiple -->
+              </v-col>
+              <v-col>
+                <v-btn @click="additem()" >新增</v-btn>
+              </v-col>
+            </v-row>
+            <v-row >
+              
+            </v-row>
+            <v-row v-for="(i,index) in item_data">
+              <v-col>
+                <v-card color="grey-lighten-3">
+                  <v-container>
+                    <v-row>
+                      <v-col>
+                        {{ index+1 }}
+                      </v-col>
+                      <v-col>
+                        {{ i[0] }}
+                      </v-col>
+                      <v-col>
+                        {{ i[1] }}
+                      </v-col>
+                      <v-col>
+                        {{ i[2] }}
+                      </v-col>
+                      <v-col>
+                        {{ i[3] }}
+                      </v-col>
+                      <v-col>
+                        <v-btn @click="delitem(index)" a>刪除</v-btn>
+                      </v-col>
+                    </v-row>
+                  </v-container>  
+                </v-card>
+              </v-col>
+            </v-row>
+          </v-container>
+        </v-card>
       </v-col>
     </v-row>
     <v-row >
@@ -153,13 +247,22 @@
 </template>
 
 <script>
-
+  import axios from 'axios';
   export default{
+    setup(){
+      axios
+        .get('http://localhost:3000/api/v1/reserve/spaces',
+          ).then((response)=>{
+            this.space_list = response['data']
+          })
+    },  
     data(){
+      
       return{
         item_list:['chair1','chair2','table1','table2'],
         space_list:['place1','place2'],
         time_list:['08:00-12:00', '13:00-17:00', '18:00-22:00'],
+        quantity_list:[1,2,3],
         monthDisk:{
           'Jan':1,
           'Feb':2,
@@ -175,15 +278,17 @@
           'Dec':12
         },
         space_num : 0,
-        space_date:[],
-        space:[],
-        space_time:[],
-
+        space_data :[],
+        space_date_temp:"",
+        space_time_temp:"",
+        space_temp:"",
         item_num:0,
-        item_date:[],
-        item:[],
-        item_time:[],
-        item_quality:[],
+        item_data:[],
+        item_date_temp1:"",
+        item_date_temp2:"",
+        item_quantity_temp:"",
+        item_temp:"",
+        
         submit:[],
         email:"",
         org:"",
@@ -195,22 +300,56 @@
       }
     },
     computed:{
-      spaceDate(){
-        if (this.space_date === "")return "日期"
-        const temp = this.date.toString().split(' ')//if no toString() => error ensure type is String
-        let str = temp[3]+"/"+this.monthDisk[temp[1]]+"/"+temp[2];
-        return str
+      space_format_date(){
+        if(this.space_date_temp === "")return""
+        let temp = this.space_date_temp.toString().split(" ")
+        let formattd_date = temp[3]+"-"+this.monthDisk[temp[1]]+"-"+temp[2]
+        this.space_date_temp = formattd_date
+        return formattd_date
+      },
+      item_format_date1(){
+        if(this.item_date_temp1 === "")return""
+        let temp = this.item_date_temp1.toString().split(" ")
+        let formattd_date = temp[3]+"-"+this.monthDisk[temp[1]]+"-"+temp[2]
+        this.item_date_temp1 = formattd_date
+        console.log(this.space_date)
+        return formattd_date
+      },
+      item_format_date2(){
+        if(this.item_date_temp2 === "")return""
+        let temp = this.item_date_temp2.toString().split(" ")
+        let formattd_date = temp[3]+"-"+this.monthDisk[temp[1]]+"-"+temp[2]
+        this.item_date_temp2 = formattd_date
+        console.log(this.space_date)
+        return formattd_date
       }
     },
     methods:{
       api(){
 
       },
+      
       delspace(index){
-        this.space_date.splice(index,1)
-        this.space_time.splice(index,1)
-        this.space_num--
-        this.space.splice(index,1)
+        this.space_data.splice(index,1)
+      },
+      addspace(){
+        if(this.space_temp!="" && this.space_date_temp!="" &&this.space_time_temp!=""){
+          console.log(this.space_temp) 
+          
+          this.space_data.push([this.space_temp,this.space_date_temp,this.space_time_temp])
+  
+        }
+      },
+      delitem(index){
+        this.item_data.splice(index,1)
+      },
+      additem(){
+        if(this.item_temp!="" && this.item_date_temp1!="" && this.item_date_temp2!="" && this.item_quantity_temp!=""){
+          console.log(this.space_temp) 
+          
+          this.item_data.push([this.item_temp,this.item_date_temp1,this.item_date_temp2,this.item_quantity_temp])
+
+        }
       },
       addReserve(){
         this.submit.push(
@@ -227,16 +366,10 @@
             reason:this.reason
             //備註
             
-          }//brace      dict   
+          }   
         )
       },
-      addspace(){
-        this.space_num++
-        this.space_date.push("")
-        this.space_time.push("")
-        this.space.push("")
-        console.log(this.space_num)
-      }
+      
     }
   }
 </script>
@@ -258,12 +391,16 @@
   max-width: 66%
 }
 #space{
-  flex: 0 0 30%;
-  max-width: 45%
+  flex: 0 0 auto;
+  max-width: 30%
+}
+#item{
+  flex: 0 0 auto;
+  max-width: 30%
 }
 #datepicker{
   flex: 0 0 auto;
-  max-width: 30%
+  max-width: 30%  
 }
 #timepicker{
   flex: 0 0 auto;
@@ -274,6 +411,8 @@
   flex: 0 0 auto;
   max-width: fit-content
 }
-
-
+#item_title{
+  flex: 0 0 auto;
+  max-width: fit-content
+}
 </style>
