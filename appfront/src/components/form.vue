@@ -74,7 +74,7 @@
             </v-row>
             <v-row align="center">
               <v-col id="space" >
-                <v-select label="場地"  :items="[space_list.forEach(i=>{i['name']['zh-tw']})]" v-model="space_temp"></v-select>
+                <v-select label="場地"  :items="space_list[1]" v-model="space_temp"></v-select>
               </v-col>
               <v-col id="datepicker">
                 <v-menu 
@@ -86,7 +86,7 @@
                   <template v-slot:activator="{ props,on}">
                     <v-text-field v-bind="props" v-on="on" label="日期" v-model="space_format_date"></v-text-field>
                   </template>
-                  <v-date-picker v-model="space_date_temp"></v-date-picker>
+                  <v-date-picker v-model="space_date_temp"></v-date-picker> 
                 </v-menu>
                 
               </v-col>
@@ -141,7 +141,7 @@
             </v-row>
             <v-row align="center">
               <v-col id="item" >
-                <v-select label="物品" :items="item_list" v-model="item_temp"></v-select>
+                <v-select label="物品" :items="item_list[1]" v-model="item_temp"></v-select>
               </v-col>
               <v-col id="item_datepicker_1">
                 <v-menu 
@@ -172,7 +172,7 @@
                 
               </v-col>
               <v-col  >
-                <v-select label="數量" :items="quantity_list"  v-model="item_quantity_temp"></v-select><!-- multiple -->
+                <v-text-field label="數量" type="number"  v-model="item_quantity_temp"></v-text-field><!-- multiple -->
               </v-col>
               <v-col>
                 <v-btn @click="additem()" >新增</v-btn>
@@ -249,20 +249,38 @@
 <script>
   import axios from 'axios';
   export default{
-    setup(){
+    mounted(){
       axios
         .get('http://localhost:3000/api/v1/reserve/spaces',
           ).then((response)=>{
-            this.space_list = response['data']
+            let temp = response['data']
+            for(let i=0;i<temp['data'].length;i++){
+              this.space_list[0][response['data']['data'][i]['name']['zh-tw']]=response['data']['data'][i]['id']
+              this.space_list[1].push(response['data']['data'][i]['name']['zh-tw'])
+            }
+            
+          })
+      axios
+        .get('http://localhost:3000/api/v1/reserve/items',
+          ).then((response)=>{
+            let temp = response['data']
+            for(let i=0;i<temp['data'].length;i++){
+              this.item_list[0][response['data']['data'][i]['name']['zh-tw']]= response['data']['data'][i]['_id']
+              this.item_list[1].push(response['data']['data'][i]['name']['zh-tw'])
+              let key = response['data']['data'][i]['name']['zh-tw']
+              let value = response['data']['data'][i]['quantity']
+              this.quantity_limit_list[key]=value 
+            }
+            console.log(this.item_list);
           })
     },  
     data(){
       
       return{
-        item_list:['chair1','chair2','table1','table2'],
-        space_list:['place1','place2'],
+        item_list:[{},[]],
+        space_list:[{},[]],
         time_list:['08:00-12:00', '13:00-17:00', '18:00-22:00'],
-        quantity_list:[1,2,3],
+        quantity_limit_list:{},
         monthDisk:{
           'Jan':1,
           'Feb':2,
@@ -333,7 +351,10 @@
         this.space_data.splice(index,1)
       },
       addspace(){
-        if(this.space_temp!="" && this.space_date_temp!="" &&this.space_time_temp!=""){
+        if(this.quantity_limit_list){
+
+        }
+        else if(this.space_temp!="" && this.space_date_temp!="" &&this.space_time_temp!=""){
           console.log(this.space_temp) 
           
           this.space_data.push([this.space_temp,this.space_date_temp,this.space_time_temp])
@@ -344,7 +365,15 @@
         this.item_data.splice(index,1)
       },
       additem(){
-        if(this.item_temp!="" && this.item_date_temp1!="" && this.item_date_temp2!="" && this.item_quantity_temp!=""){
+        let date1 = new Date(this.item_date_temp1)
+        let date2 = new Date(this.item_date_temp2)
+        if(date1.getTime() > date2.getTime()){
+          alert("date error")
+        }
+        else if (this.quantity_limit_list[this.item_temp]<this.item_quantity_temp ){
+          alert("over quantity(Max :"+this.quantity_limit_list[this.item_temp]+")")
+        }
+        else if(this.item_temp!="" && this.item_date_temp1!="" && this.item_date_temp2!="" && this.item_quantity_temp!=""){
           console.log(this.space_temp) 
           
           this.item_data.push([this.item_temp,this.item_date_temp1,this.item_date_temp2,this.item_quantity_temp])
