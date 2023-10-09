@@ -7,6 +7,7 @@
       <!-- <v-btn variant="text" href="#/signin">signin</v-btn>
       <v-btn variant="text" href="#/signout">signout</v-btn> -->
       <v-btn variant="text" href="#/form">form</v-btn>
+      <v-btn variant="text" href="#/timetable">timetable</v-btn>
     </v-app-bar> 
     <v-main>
       <v-container fluid>
@@ -22,13 +23,15 @@ import Home from './components/Home.vue'
 import Signin from './components/Signin.vue'
 import Signout from './components/Signout.vue'
 import Form from './components/Form.vue'
+import Timetable from './components/Timetable.vue'
 //import NotFound from './NotFound.vue'
 
 const routes = {
   '/': Home,
   '/signin': Signin,
   '/signout' : Signout,
-  '/form': Form
+  '/form': Form,
+  '/timetable' :Timetable
 }
 
 export default {

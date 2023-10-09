@@ -5,6 +5,13 @@
       <v-col>
         <v-card color="grey-lighten-2">
           <v-container id="form" >
+            <v-row>
+              <v-col id="form_title">
+                <v-card title="基本資料" color="grey-lighten-1">
+
+                </v-card>
+              </v-col>
+            </v-row>
             <v-row >
                 <v-col id="name">
                   <v-text-field v-model="name" label="名子"/>
@@ -162,12 +169,13 @@
                   :close-on-content-click="false"
                   transition="scale-transition"
                   offset-y
+                  
                   max-width="290px"
                   min-width="290px" >
                   <template v-slot:activator="{ props,on}">
                     <v-text-field v-bind="props" v-on="on" label="歸還日期" v-model="item_format_date2"></v-text-field>
                   </template>
-                  <v-date-picker v-model="item_date_temp2"></v-date-picker>
+                  <v-date-picker  v-model="item_date_temp2"></v-date-picker>
                 </v-menu>
                 
               </v-col>
@@ -213,7 +221,7 @@
         </v-card>
       </v-col>
     </v-row>
-    <v-row >
+    <!-- <v-row >
       <v-col >
         <v-container>
           <v-row :id="'listcontent'+index"  v-for="(i,index) in submit" no-gutters>
@@ -225,15 +233,37 @@
                     <v-col v-for="(j,key,index) in i">
                       {{i[key]}}
                     </v-col>
-                    <!-- <v-col>
+                    <v-col>
                       <v-btn @click="delReserve(index)" a>刪除</v-btn>
-                    </v-col> -->
+                    </v-col>
                   </v-row>
                 </v-container>
               </v-card>
             </v-col>
           </v-row>
         </v-container>
+      </v-col>
+    </v-row> -->
+    <v-row>
+      <v-col>
+        <v-card color="grey-lighten-2">
+          <v-container >
+            <v-row>
+              <v-col id="note_title">
+                <v-card title="備註" color="grey-lighten-1"></v-card>
+              </v-col>
+            </v-row>
+            <v-row>
+              <v-col>
+                <v-card >
+                  <v-textarea v-model="note" />
+                </v-card>
+                
+              </v-col>
+            </v-row>
+          </v-container>
+        </v-card>
+        
       </v-col>
     </v-row>
     <v-row >
@@ -308,6 +338,7 @@
         item_temp:"",
         
         submit:[],
+        note:"",
         email:"",
         org:"",
         department:"",
@@ -441,6 +472,14 @@
   max-width: fit-content
 }
 #item_title{
+  flex: 0 0 auto;
+  max-width: fit-content
+}
+#note_title{
+  flex: 0 0 auto;
+  max-width: fit-content
+}
+#form_title{
   flex: 0 0 auto;
   max-width: fit-content
 }
