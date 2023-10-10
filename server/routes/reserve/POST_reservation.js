@@ -1,14 +1,8 @@
 var express = require('express');
 var ObjectID = require('mongodb').ObjectId;
 var { reservations, spaces_reserved_time, items_reserved_time } = require('../../models/mongodb');
-const { Timestamp } = require('mongodb');
+//const { Timestamp } = require('mongodb');
 var router = express.Router();
-
-router.get('/reservation/:reservation_id', async function(req, res, next) {
-    const result = await reservations.findOne({"_id": new ObjectID(req.params.reservation_id)});
-    //convert time slots
-    res.json({ data: result });
-});
 
 router.post('/reservation', async function(req, res, next) {
     const EMAIL_REGEXP = new RegExp('^[\\w-\\.\\+]+@([\\w-]+\\.)+[\\w-]{2,4}$');
@@ -103,12 +97,14 @@ router.post('/reservation', async function(req, res, next) {
         }
     });
 
+    /*
     // check reservation data number
     if(data_space_reservations.length + data_item_reservations.length <= 0) {
         res.status(400)
            .json({ error : 'Reservation Data Number Error' });
         //return; ???
     }
+    */
 
     // for reservations
     const doc = {
@@ -140,14 +136,6 @@ router.post('/reservation', async function(req, res, next) {
     //result.insertedId
     //reservation_id
     //send email
-    res.json({ title: 'New Reservation' });
-});
-
-router.put('/reservation/:reservation_id', function(req, res, next) {
-    res.json({ title: 'New Reservation' });
-});
-
-router.delete('/reservation/:reservation_id', function(req, res, next) {
     res.json({ title: 'New Reservation' });
 });
 
