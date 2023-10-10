@@ -7,8 +7,10 @@ const utsa = client.db('utsa');
 const reservations = utsa.collection('reservations');
 const spaces = utsa.collection('spaces');
 const items = utsa.collection('items');
+const spaces_reserved_time = utsa.collection('spaces_reserved_time');
+const items_reserved_time = utsa.collection('items_reserved_time');
 const users = utsa.collection('users');
-module.exports = { reservations, spaces, items, users };
+module.exports = { reservations, spaces, items, spaces_reserved_time, items_reserved_time, users };
 
 /*
 async function run() {
