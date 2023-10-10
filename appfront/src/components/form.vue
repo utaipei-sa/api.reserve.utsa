@@ -111,7 +111,7 @@
               <v-col>
                 <v-card color="grey-lighten-3">
                   <v-container>
-                    <v-row>
+                    <v-row align="center">
                       <v-col>
                         {{ index+1 }}
                       </v-col>
@@ -193,8 +193,8 @@
               <v-col>
                 <v-card color="grey-lighten-3">
                   <v-container>
-                    <v-row>
-                      <v-col>
+                    <v-row align="center">
+                      <v-col >
                         {{ index+1 }}
                       </v-col>
                       <v-col>
@@ -382,10 +382,8 @@
         this.space_data.splice(index,1)
       },
       addspace(){
-        if(this.quantity_limit_list){
-
-        }
-        else if(this.space_temp!="" && this.space_date_temp!="" &&this.space_time_temp!=""){
+      
+        if(this.space_temp!="" && this.space_date_temp!="" &&this.space_time_temp!=""){
           console.log(this.space_temp) 
           
           this.space_data.push([this.space_temp,this.space_date_temp,this.space_time_temp])
