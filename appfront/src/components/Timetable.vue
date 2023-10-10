@@ -27,7 +27,7 @@
                   <template v-slot:activator="{ props,on}">
                     <v-text-field v-bind="props" v-on="on" label="查詢日期" v-model="format_date"></v-text-field>
                   </template>
-                  <v-date-picker v-model="search_date"></v-date-picker>
+                  <v-date-picker range v-model="search_date"></v-date-picker>
                 </v-menu>
                 
               </v-col>

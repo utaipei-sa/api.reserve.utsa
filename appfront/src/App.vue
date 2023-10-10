@@ -71,5 +71,5 @@ export default {
 }
 .v-input__details {
     display: none;
-}
+} 
 </style>
