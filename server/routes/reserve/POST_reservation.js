@@ -17,18 +17,18 @@ router.post('/reservation', async function(req, res, next) {
     // check
     if(received_space_reservations.length + received_item_reservations.length <= 0) {
         res.status(400)
-           .json({ error : 'Item_Reservation Quantity Error' });
-        //return; ???
+           .json({ error : 'Empty Reservation Error' });
+        return;
     }
     if(!EMAIL_REGEXP.test(req.body.email)) {
         res.status(400)
            .json({ error : 'Email Format Error' });
-        //return; ???
+        return;
     }
     if(!ISODATE_REGEXP.test(req.body.submit_time)) {
         res.status(400)
            .json({ error : 'Submit_Time Format Error' });
-        //return; ???
+        return;
     }
     //TODO: check organization (not null)
     //TODO: check contact (not null)
@@ -44,12 +44,12 @@ router.post('/reservation', async function(req, res, next) {
         if(!ISODATE_NO_MS_REGEXP.test(element.start_time)) {
             res.status(400)
                .json({ error : 'Space_Reservation Start_Time Format Error' });
-            //return; ???
+            return;
         }
         if(!HH_00.test(element.duration)) { //check it in the same day or <24h ?
             res.status(400)
                .json({ error : 'Space_Reservation Duration Format Error' });
-            //return; ???
+            return;
         }
         //TODO: check whether space_id is exist
         // process data
@@ -68,15 +68,20 @@ router.post('/reservation', async function(req, res, next) {
     // for items_reserved_time
     received_item_reservations.forEach(element => {
         // check
+        if(element.quantity <= 0) {
+            res.status(400)
+               .json({ error : 'Item_Reservation Quantity Error' });
+            return;
+        }
         if(!ISODATE_DATE_REGEXP.test(element.start_date)) {
             res.status(400)
                .json({ error : 'Item_Reservation Start_Date Format Error' });
-            //return; ???
+            return;
         }
         if(!ISODATE_DATE_REGEXP.test(element.end_date)) {
             res.status(400)
                .json({ error : 'Item_Reservation End_Date Format Error' });
-            //return; ???
+            return;
         }
         //TODO: check whether item_id is exist
         
@@ -102,7 +107,7 @@ router.post('/reservation', async function(req, res, next) {
     if(data_space_reservations.length + data_item_reservations.length <= 0) {
         res.status(400)
            .json({ error : 'Reservation Data Number Error' });
-        //return; ???
+        return;
     }
     */
 
