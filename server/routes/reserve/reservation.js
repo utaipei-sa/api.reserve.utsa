@@ -11,11 +11,11 @@ router.get('/reservation/:reservation_id', async function(req, res, next) {
 });
 
 router.post('/reservation', async function(req, res, next) {
-    const EMAIL_REGEXP = new RegExp('^[\w-\.\+]+@([\w-]+\.)+[\w-]{2,4}$');
-    const ISODATE_REGEXP = new RegExp('^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2}(?:\.\d*)?)\+08:00$');  // time zone: (((-|\+)(\d{2}):(\d{2})|Z)?) --> \+08:00
-    const ISODATE_NO_MS_REGEXP = new RegExp('^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})\+08:00$');  // second (millisecond): (\d{2}(?:\.\d*)?) --> (\d{2})
-    const ISODATE_DATE_REGEXP = new RegExp('^(\d{4})-(\d{2})-(\d{2})');
-    const HH_00 = new RegExp('(\d{2}):00');
+    const EMAIL_REGEXP = new RegExp('^[\\w-\\.\\+]+@([\\w-]+\\.)+[\\w-]{2,4}$');
+    const ISODATE_REGEXP = new RegExp('^(\\d{4})-(\\d{2})-(\\d{2})T(\\d{2}):(\\d{2}):(\\d{2}(?:\\.\\d*)?)\\+08:00$');  // time zone: (((-|\+)(\d{2}):(\d{2})|Z)?) --> \+08:00
+    const ISODATE_NO_MS_REGEXP = new RegExp('^(\\d{4})-(\\d{2})-(\\d{2})T(\\d{2}):(\\d{2}):(\\d{2})\\+08:00$');  // second (millisecond): (\d{2}(?:\.\d*)?) --> (\d{2})
+    const ISODATE_DATE_REGEXP = new RegExp('^(\\d{4})-(\\d{2})-(\\d{2})');
+    const HH_00 = new RegExp('(\\d{2}):00');
 
     const received_space_reservations = req.body.space_reservations;
     const received_item_reservations = req.body.item_reservations;
@@ -40,7 +40,7 @@ router.post('/reservation', async function(req, res, next) {
     //TODO: check contact (not null)
 
     // start process data
-    const reservation_id = ObjectID();
+    const reservation_id = new ObjectID();
     let data_space_reservations = [];
     let data_item_reservations = [];
 
@@ -63,7 +63,7 @@ router.post('/reservation', async function(req, res, next) {
         let unshifted_time = new Date(element.start_time);
         let shifted_time;
         for(let i=0; i<duration; i++) {
-            shifted_time = (new Date(unshifted_time)).setHours(unshifted_time.getHours()+i);  // getHours --> shift --> set back
+            shifted_time = new Date(new Date(unshifted_time).setHours(unshifted_time.getHours()+i));  // getHours --> shift --> set back
             data_space_reservations.push({
                 time_slot: shifted_time, // unit: hour
                 reservations_id: reservation_id
@@ -86,23 +86,29 @@ router.post('/reservation', async function(req, res, next) {
         }
         //TODO: check whether item_id is exist
         
-        // process data
-        //  get duration (days)
+        // get duration (days)
         const start_date = new Date(element.start_date);
         const end_date = new Date(element.end_date);
         let duration = (end_date.getTime() - start_date.getTime()) / (1000*60*60*24);  // from millisecond to days
-        //  define variables
+        // define variables
         let unshifted_date = new Date(element.start_date);
         let shifted_date;
-        //  loop
+        // loop
         for(let i=0; i<duration; i++) {
-            shifted_date = (new Date(unshifted_date)).setDate(unshifted_date.getDate()+i);
+            shifted_date = new Date(new Date(unshifted_date).setDate(unshifted_date.getDate()+i));
             data_item_reservations.push({
-                date: shifted_date, //noon-to-noon, here's the 1st day
+                date: shifted_date.toISOString().substring(0,10), //noon-to-noon, here's the 1st day
                 reservations_id: reservation_id
             });
         }
     });
+
+    // check reservation data number
+    if(data_space_reservations.length + data_item_reservations.length <= 0) {
+        res.status(400)
+           .json({ error : 'Reservation Data Number Error' });
+        //return; ???
+    }
 
     // for reservations
     const doc = {
@@ -110,21 +116,27 @@ router.post('/reservation', async function(req, res, next) {
         status: "new",  // new/canceled
         history: [
             {
-                submit_timestamp: ISODate(req.body.submit_time), //
-                server_timestamp: new Timestamp(),
+                submit_timestamp: new Date(req.body.submit_time),
+                server_timestamp: new Date(),  // now
                 type: "new",  // new/modify/cancel
             }
         ],
-        organization: req.boty.organization,
+        organization: req.body.organization,
         contact: req.body.contact,
         email: req.body.email,  //checked
         space_reservations: received_space_reservations,
         item_reservations: received_item_reservations,
         note: req.body.note
     }
+
     const reservations_result = await reservations.insertOne(doc);
-    const spaces_reserved_time_result = await spaces_reserved_time.insertMany(data_space_reservations);
-    const items_reserved_time_result = await items_reserved_time.insertMany(data_item_reservations);
+    if(data_space_reservations.length > 0) {
+        const spaces_reserved_time_result = await spaces_reserved_time.insertMany(data_space_reservations);
+    }
+    if(data_item_reservations.length > 0) {
+        const items_reserved_time_result = await items_reserved_time.insertMany(data_item_reservations);
+    }
+    
     //result.insertedId
     //reservation_id
     //send email
