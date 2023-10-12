@@ -124,7 +124,9 @@ router.post('/reservation', async function(req, res, next) {
         ],
         organization: req.body.organization,
         contact: req.body.contact,
+        department_grade: req.body.department_grade,
         email: req.body.email,  //checked
+        reason: req.body.reason,
         space_reservations: received_space_reservations,
         item_reservations: received_item_reservations,
         note: req.body.note
