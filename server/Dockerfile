@@ -4,7 +4,7 @@
 # If you need more help, visit the Dockerfile reference guide at
 # https://docs.docker.com/engine/reference/builder/
 
-ARG NODE_VERSION=20.6.1
+ARG NODE_VERSION=20
 
 FROM node:${NODE_VERSION}-alpine
 
@@ -12,7 +12,7 @@ FROM node:${NODE_VERSION}-alpine
 ENV NODE_ENV production
 
 
-WORKDIR /usr/src/app
+WORKDIR /usr/src/server
 
 # Download dependencies as a separate step to take advantage of Docker's caching.
 # Leverage a cache mount to /root/.npm to speed up subsequent builds.

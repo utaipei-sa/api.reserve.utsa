@@ -10,11 +10,24 @@
 services:
   server:
     build:
-      context: .
+      context: ./server
     environment:
-      NODE_ENV: production
+      NODE_ENV: development ##production
     ports:
       - 3000:3000
+  webapp:
+    build:
+      context: ./appfront
+    environment:
+      NODE_ENV: development
+    ports:
+      - 7414:7414
+  db:
+    image: mongo
+    volumes:
+      - db-data:/var/lib/mongodb/data
+    expose:
+      - 27017
 
 # The commented out section below is an example of how to define a PostgreSQL
 # database that your application can use. `depends_on` tells Docker Compose to
