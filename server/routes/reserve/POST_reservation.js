@@ -9,49 +9,63 @@ router.post('/reservation', async function(req, res, next) {
     const ISODATE_REGEXP = new RegExp('^(\\d{4})-(\\d{2})-(\\d{2})T(\\d{2}):(\\d{2}):(\\d{2}(?:\\.\\d*)?)\\+08:?00$');  // time zone: (((-|\+)(\d{2}):(\d{2})|Z)?) --> \+08:00
     const ISODATE_NO_MS_REGEXP = new RegExp('^(\\d{4})-(\\d{2})-(\\d{2})T(\\d{2}):(\\d{2}):(\\d{2})\\+08:?00$');  // second (millisecond): (\d{2}(?:\.\d*)?) --> (\d{2})
     const ISODATE_DATE_REGEXP = new RegExp('^(\\d{4})-(\\d{2})-(\\d{2})');
+    const ISODATE_TIME_REGEXP = new RegExp('^(\\d{2}):(\\d{2})?(:(\\d{2}))$');
     const HH_00 = new RegExp('(\\d{2}):00');
 
     const received_space_reservations = req.body.space_reservations;
     const received_item_reservations = req.body.item_reservations;
+    let error_message = '';
 
     // check
     if(received_space_reservations.length + received_item_reservations.length <= 0) {
-        res.status(400)
-           .json({ error : 'Empty Reservation Error' });
-        return;
+        // res.status(400)
+        //    .json({ error : 'Empty Reservation Error' });
+        // return;
+        error_message += 'Empty Reservation Error\n';
     }
     if(!EMAIL_REGEXP.test(req.body.email)) {
-        res.status(400)
-           .json({ error : 'Email Format Error' });
-        return;
+        // res.status(400)
+        //    .json({ error : 'Email Format Error' });
+        // return;
+        error_message += 'Email Format Error\n';
     }
     if(!ISODATE_REGEXP.test(req.body.submit_time)) {
-        res.status(400)
-           .json({ error : 'Submit_Time Format Error' });
-        return;
+        // res.status(400)
+        //    .json({ error : 'Submit_Time Format Error' });
+        // return;
+        error_message += 'Submit_Time Format Error\n';
     }
     // check organization (not null)
     if(!req.body.organization) {
-        res.status(400)
-           .json({ error : 'Organization Empty Error' });
-        return;
+        // res.status(400)
+        //    .json({ error : 'Organization Empty Error' });
+        // return;
+        error_message += 'Organization Empty Error\n';
     }
     // check contact (not null)
     if(!req.body.contact) {
-        res.status(400)
-           .json({ error : 'Contact Empty Error' });
-        return;
+        // res.status(400)
+        //    .json({ error : 'Contact Empty Error' });
+        // return;
+        error_message += 'Contact Empty Error\n';
     }
     // check department_grade (not null)
     if(!req.body.department_grade) {
-        res.status(400)
-           .json({ error : 'Department_grade Empty Error' });
-        return;
+        // res.status(400)
+        //    .json({ error : 'Department_grade Empty Error' });
+        // return;
+        error_message += 'Department_grade Empty Error\n';
     }
     // check reason (not null)
     if(!req.body.reason) {
+        // res.status(400)
+        //    .json({ error : 'Reason Empty Error' });
+        // return;
+        error_message += 'Reason Empty Error\n';
+    }
+    if(error_message.length) {
         res.status(400)
-           .json({ error : 'Reason Empty Error' });
+           .json({ error : error_message });
         return;
     }
 
@@ -65,14 +79,33 @@ router.post('/reservation', async function(req, res, next) {
     // for spaces_reserved_time
     received_space_reservations.forEach(element => {
         // check
+        /*
         if(!ISODATE_NO_MS_REGEXP.test(element.start_time)) {
             res.status(400)
                .json({ error : 'Space_Reservation Start_Time Format Error' });
             return;
+        }*/
+        if(!ISODATE_DATE_REGEXP.test(element.start_date)) {
+            // res.status(400)
+            //    .json({ error : 'Space_Reservation Start_Date Format Error' });
+            // return;
+            error_message += 'Space_Reservation Start_Date Format Error\n';
+        }
+        if(!ISODATE_TIME_REGEXP.test(element.start_time)) {
+            // res.status(400)
+            //    .json({ error : 'Space_Reservation Start_Time Format Error' });
+            // return;
+            error_message += 'Space_Reservation Start_Time Format Error\n';
         }
         if(!HH_00.test(element.duration)) { //check it in the same day or <24h ?
+            // res.status(400)
+            //    .json({ error : 'Space_Reservation Duration Format Error' });
+            // return;
+            error_message += 'Space_Reservation Duration Format Error\n';
+        }
+        if(error_message.length) {
             res.status(400)
-               .json({ error : 'Space_Reservation Duration Format Error' });
+               .json({ error : error_message });
             return;
         }
         // check whether space_id is exist
@@ -87,12 +120,14 @@ router.post('/reservation', async function(req, res, next) {
         */
         // process data
         let duration = parseInt(element.duration.substring(0, 2), 10);  // decimal integer from the substring
-        let unshifted_time = new Date(element.start_time);
+        // let unshifted_time = new Date(element.start_time);
         let shifted_time;
         for(let i=0; i<duration; i++) {
-            shifted_time = new Date(new Date(unshifted_time).setHours(unshifted_time.getHours()+i));  // getHours --> shift --> set back
+            // shifted_time = new Date(new Date(unshifted_time).setHours(unshifted_time.getHours()+i));  // getHours --> shift --> set back
+            shifted_time = hour_shift(element.start_time, i);
             data_space_reservations.push({
                 space_id: element.space_id,
+                date: element.start_date,
                 time_slot: shifted_time, // unit: hour
                 reservations_id: reservation_id
             });
@@ -105,18 +140,26 @@ router.post('/reservation', async function(req, res, next) {
     received_item_reservations.forEach(element => {
         // check
         if(element.quantity <= 0) {
-            res.status(400)
-               .json({ error : 'Item_Reservation Quantity Error' });
-            return;
+            // res.status(400)
+            //    .json({ error : 'Item_Reservation Quantity Error' });
+            // return;
+            error_message += 'Item_Reservation Quantity Error\n';
         }
         if(!ISODATE_DATE_REGEXP.test(element.start_date)) {
-            res.status(400)
-               .json({ error : 'Item_Reservation Start_Date Format Error' });
-            return;
+            // res.status(400)
+            //    .json({ error : 'Item_Reservation Start_Date Format Error' });
+            // return;
+            error_message += 'Item_Reservation Start_Date Format Error\n';
         }
         if(!ISODATE_DATE_REGEXP.test(element.end_date)) {
+            // res.status(400)
+            //    .json({ error : 'Item_Reservation End_Date Format Error' });
+            // return;
+            error_message += 'Item_Reservation End_Date Format Error\n';
+        }
+        if(error_message.length) {
             res.status(400)
-               .json({ error : 'Item_Reservation End_Date Format Error' });
+               .json({ error : error_message });
             return;
         }
         // check whether item_id is exist
@@ -189,5 +232,15 @@ router.post('/reservation', async function(req, res, next) {
     //send email
     res.json({ message: 'Success!' });
 });
+
+function hour_shift(time_string, shift) {
+    // can only shift hours in a single day
+    let hour = Number(time_string.substring(0, 2));
+    hour += Number(shift);
+    if(hour > 23) {
+        hour -= 24;
+    }
+    return hour + time_string.substring(2);
+}
 
 module.exports = router;
