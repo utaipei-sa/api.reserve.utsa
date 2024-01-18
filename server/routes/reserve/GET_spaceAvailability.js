@@ -18,8 +18,8 @@ router.get('/spaceAvailability/:space_id', async function(req, res, next) {
     const spaces_reservations = await spaces_reserved_time.find({ 
         _id: space_id, 
         start_date: {
-            $gte: ISODate(start_datetime),  // query_start_datetime
-            $lt: ISODate(end_datetime)  // query_end_datetime
+            $gte: new Date(start_datetime),  // query_start_datetime
+            $lt: new Date(end_datetime)  // query_end_datetime
         } 
     });  // 時間範圍內
 
