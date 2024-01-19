@@ -14,7 +14,7 @@
             </v-row>
             <v-row >
                 <v-col id="name">
-                  <v-text-field :rules="[rules.required]" v-model="name" label="名子"/>
+                  <v-text-field :rules="[rules.required]" v-model="name" label="名字"/>
                 </v-col>
                 <v-col id="org">
                   <v-text-field :rules="[rules.required]" v-model="org" label="申請單位"/>
