@@ -195,7 +195,7 @@
                   <v-container>
                     <v-row align="center">
                       <v-col >
-                        {{ index+1 }}
+                        {{ index+1 }} 
                       </v-col>
                       <v-col>
                         {{ i[0] }}
@@ -360,7 +360,7 @@
   
 </template>
 
-<script>
+<script >
   import axios from 'axios';
   export default{
     mounted(){
@@ -389,7 +389,6 @@
           })
     },  
     data(){
-      
       return{
         rules: {
           required: value => !!value || 'Field is required',
