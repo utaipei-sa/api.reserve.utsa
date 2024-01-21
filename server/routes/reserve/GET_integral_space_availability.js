@@ -3,12 +3,36 @@ var { spaces, spaces_reserved_time } = require('../../models/mongodb');
 var router = express.Router();
 
 router.get('/integral_space_availability', async function(req, res, next) {
+    // input:
+    //     space_id: string
+    //     start_datetime: YYYY-MM-DDThh:mm
+    //     end_datetime: YYYY-MM-DDThh:mm
+    // output:
+    //     {
+    //         data:{
+    //             start_date: YYYY-MM-DDThh:mm,
+    //             end_date : YYYY-MM-DDThh:mm,
+    //             availablility: 1(available) / 0(unavailable)
+    //         }
+    //     }
+
+    // 取得參數
     const space_id = req.params.space_id;
     const start_datetime = req.params.start_datetime;
     const end_datetime = req.params.end_datetime;
 
-    // TODO: 檢查輸入是否正確
-    // res.status(404).json({ error: '參數輸入錯誤' });
+    // 檢查輸入是否正確（正規表達式 Regular Expression）
+    const objectId_format = new RegExp('^[a-fA-F0-9]{24}$');  // ObjectId 格式
+    const datetime_format = new RegExp('^(\\d{4})-(\\d{2})-(\\d{2})T(\\d{2}):(\\d{2})');  // 日期時間格式（年-月-日T時:分）
+    if (!space_id || !isValidDateTime(start_datetime) || !isValidDateTime(end_datetime)) {  // 沒給齊參數
+        return res.status(400).json({ error: '請提供有效的場地ID和有效的日期範圍（YYYY-MM-DDThh:mm格式）' });
+    } 
+    else if (!objectId_format.test(space_id)) {  // check space_id format
+        return res.status(400).json({ error: 'space_id format error' });
+    } 
+    else if (!datetime_format.test(start_datetime) || !datetime_format.test(end_datetime)) {  // check datetime fromat
+        return res.status(400).json({ error: 'datetime format error' });
+    }
 
     // 查詢場地資訊
     // const space = await spaces.findOne({ _id: space_id });
