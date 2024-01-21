@@ -2,7 +2,7 @@ var express = require('express');
 var { spaces, spaces_reserved_time } = require('../../models/mongodb');
 var router = express.Router();
 
-router.get('/spaceAvailability/:space_id', async function(req, res, next) {
+router.get('/integral_space_availability', async function(req, res, next) {
     const space_id = req.params.space_id;
     const start_datetime = req.params.start_datetime;
     const end_datetime = req.params.end_datetime;

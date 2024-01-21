@@ -2,7 +2,7 @@ var express = require('express');
 var { items, items_reserved_time } = require('../../models/mongodb');
 var router = express.Router();
 
-router.get('/itemAvailability/:item_id', async function(req, res, next) {
+router.get('/interval_item_availability', async function(req, res, next) {
     const item_id = req.params.item_id;
     const start_datetime = req.params.start_datetime;
     const end_datetime = req.params.end_datetime;

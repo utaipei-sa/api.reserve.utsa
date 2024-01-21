@@ -2,7 +2,7 @@ var express = require('express');
 //var { spaces } = require('../../models/mongodb');
 var router = express.Router();
 
-router.get('/spaceAvailabilities/:space_id', function(req, res, next) {
+router.get('/interval_space_availability', function(req, res, next) {
     req.params;
     res.json({ title: 'space availabilities' });
 });
