@@ -4,10 +4,10 @@ const root = '/reserve';
 
 reserve_router.use(root, require('./GET_items'));
 reserve_router.use(root, require('./GET_spaces'));
-reserve_router.use(root, require('./GET_spaceAvailability'));
-reserve_router.use(root, require('./GET_spaceAvailabilities'));
-reserve_router.use(root, require('./GET_itemAvailability'));
-reserve_router.use(root, require('./GET_itemAvailabilities'));
+reserve_router.use(root, require('./GET_integral_space_availability'));
+reserve_router.use(root, require('./GET_interval_space_availability'));
+reserve_router.use(root, require('./GET_integral_item_availability'));
+reserve_router.use(root, require('./GET_interval_item_availability'));
 reserve_router.use(root, require('./GET_reservation'));
 reserve_router.use(root, require('./POST_reservation'));
 reserve_router.use(root, require('./PUT_reservation'));
