@@ -4,66 +4,30 @@
     <v-row>
       <v-col>
         <v-card color="grey-lighten-2">
-          <v-container id="form" >
+          <v-container  >
             <v-row>
-              <v-col id="form_title">
+              <v-col class="v-col-auto">
                 <v-card title="基本資料" color="grey-lighten-1">
-
                 </v-card>
               </v-col>
             </v-row>
             <v-row >
-                <v-col id="name">
+                <v-col class="v-col-sm-4 v-col-6">
                   <v-text-field :rules="[rules.required]" v-model="name" label="名字"/>
                 </v-col>
-                <v-col id="org">
+                <v-col class="v-col-sm-4 v-col-6">
                   <v-text-field :rules="[rules.required]" v-model="org" label="申請單位"/>
                 </v-col>
-                <v-col id="department">
+                <v-col class="v-col-sm-4 v-col-6">
                   <v-text-field :rules="[rules.required]" v-model="department" label="申請人系級"/>
                 </v-col>
-              </v-row>
-              <v-row >
-                <v-col id="email">
+                <v-col class="v-col-12">
                   <v-text-field :rules="[rules.required]" v-model="email" label="email"/>
                 </v-col>
-              </v-row>
-              <v-row >
-                <v-col>
+                <v-col class="v-col-12">
                   <v-text-field :rules="[rules.required]" v-model="reason" label="借用理由" />
                 </v-col>
               </v-row>
-              <!-- <v-row no-gutters>
-                <v-col id="choose">
-                  <v-combobox label="choose" :items="['item','space']" v-model="choose"></v-combobox>
-                </v-col>
-                <v-col id="item" v-if="choose=='item'" offset="1">
-                  <v-combobox label="item" :items="item" v-model="objchoose" ></v-combobox>
-                </v-col>
-                <v-col id="space" v-if="choose=='space'" offset="1">
-                  <v-combobox label="space" :items="space" v-model="objchoose"></v-combobox>
-                </v-col>
-              </v-row>
-              <v-row no-gutters>
-                <v-col id="datepicker">
-                  <v-menu
-                    :close-on-content-click="false"
-                    transition="scale-transition"
-                    offset-y
-                    max-width="290px"
-                    min-width="290px" >
-                    <template v-slot:activator="{ props,on}">
-                      <v-text-field v-bind="props" v-on="on" v-model="myDate"></v-text-field>
-                    </template>
-                    <v-date-picker  no-title range scrollable   title="日期" value="yyyy/MM/dd" v-model="date"  ></v-date-picker>
-                  </v-menu>
-                  
-                </v-col>
-                <v-col id="timepicker" offset="1">
-                  <v-combobox label="time" :items="time" multiple v-model="timechoose"></v-combobox>
-                </v-col>
-                
-              </v-row> -->
             </v-container>
           </v-card>
         </v-col>
@@ -72,59 +36,101 @@
     <v-row>
       <v-col>
         <v-card color="grey-lighten-2">
-          
-          <v-container id="form" >
-            <v-row >
-              <v-col id="space_title">
+          <v-container  >
+            <v-row>
+              <v-col class="v-col-auto">
                 <v-card title="場地"  color="grey-lighten-1" ></v-card>
               </v-col>
             </v-row>
-            <v-row align="center">
-              <v-col id="space" >
+            <v-row>
+              <v-col class="v-col-sm-4 v-col-12 ">
                 <v-select label="場地"  :items="space_list[1]" v-model="space_temp"></v-select>
               </v-col>
-              <v-col id="datepicker">
-                <v-menu 
+              <v-col class="v-col-sm-4 v-col-12 ">
+               <!-- <v-menu
+                  v-model="menu1"
                   :close-on-content-click="false"
+                  max-width="290"
+                >
+                  <template v-slot:activator="{ on, attrs }">
+                    <v-text-field
+                      :model-value="space_format_date"
+                      clearable
+                      label="Formatted with datefns"
+                      v-bind="attrs"
+                      v-on="on"
+                      @click:clear="space_date_temp = null"
+                    ></v-text-field>
+                  </template>
+                  <v-date-picker
+                    v-model="space_date_temp"
+                    @change="menu1 = false"
+                  ></v-date-picker>
+                </v-menu>
+                -->
+                <v-menu 
+                  :close-on-content-click="false" 
                   transition="scale-transition"
                   offset-y
                   max-width="290px"
                   min-width="290px" >
-                  <template v-slot:activator="{ props}">
-                    <v-text-field v-bind="props" label="日期" v-model="space_format_date"></v-text-field>
+                  <template v-slot:activator="{ props }">
+                    <v-text-field v-bind="props"   label="日期" v-model="space_format_date"></v-text-field>
                   </template>
-                  <v-date-picker v-model="space_date_temp"></v-date-picker> 
+                  <v-date-picker v-model="space_date_temp" locale="zh-TW"  ></v-date-picker> 
                 </v-menu>
-                
+                <!--
+                <v-menu
+                  :close-on-content-click="false"
+                  transition="scale-transition"
+                  offset-y
+                  min-width="auto"
+                >
+                  <template v-slot:activator="{ on, attrs }">
+                    <v-text-field
+                      v-model="space_format_date"
+                      label="Birthday date"
+                      v-bind="attrs"
+                      v-on="on"
+                    ></v-text-field>
+                  </template>
+                  <v-date-picker
+                    v-model="space_date_temp"
+                    :max="(new Date(Date.now() - (new Date()).getTimezoneOffset() * 60000)).toISOString().substr(0, 10)"
+                    min="1950-01-01"
+                  ></v-date-picker>
+                </v-menu>
+              -->
               </v-col>
-              <v-col id="timepicker" >
+              <v-col class="v-col-sm-4 v-col-12" >
                 <v-select label="時間" :items="time_list"  v-model="space_time_temp"></v-select> <!-- multiple -->
               </v-col>
-              <v-col>
+              <v-col class="v-col-sm-4 v-col-12">
                 <v-btn @click="addspace()" >新增</v-btn>
               </v-col>
             </v-row>
             <v-row >
-              
+            <v-divider></v-divider>
             </v-row>
             <v-row v-for="(i,index) in space_data">
-              <v-col>
+              <v-col class="v-col-auto">
                 <v-card color="grey-lighten-3">
                   <v-container>
-                    <v-row align="center">
-                      <v-col>
+                    <v-row >
+                      <!--
+                      <v-col class="v-col-sm-1 v-col-12">
                         {{ index+1 }}
-                      </v-col>
-                      <v-col>
+                      </v-col>-->
+                      <v-col class="v-col-sm-3 v-col-12">
                         {{ i[0] }}
                       </v-col>
-                      <v-col>
+                      <v-col class="v-col-sm-4 v-col-12">
                         {{ i[1] }}
                       </v-col>
-                      <v-col>
+                      <v-col class="v-col-sm-3 v-col-12">
                         {{ i[2] }}
                       </v-col>
-                      <v-col>
+                      <v-col class="v-col-sm-2 v-col-12">
                         <v-btn @click="delspace(index)" a>刪除</v-btn>
                       </v-col>
                     </v-row>
@@ -140,49 +146,47 @@
       <v-col>
         <v-card color="grey-lighten-2">
           
-          <v-container id="form" >
+          <v-container >
             <v-row >
-              <v-col id="item_title">
+              <v-col class="v-col-auto">
                 <v-card title="物品"  color="grey-lighten-1" ></v-card>
               </v-col>
             </v-row>
-            <v-row align="center">
-              <v-col id="item" >
+            <v-row >
+              <v-col class="v-col-sm-3 v-col-12" >
                 <v-select label="物品" :items="item_list[1]" v-model="item_temp"></v-select>
               </v-col>
-              <v-col id="item_datepicker_1">
+              <v-col class="v-col-sm-3 v-col-12">
                 <v-menu 
-                  :close-on-content-click="false"
+                  :close-on-content-click="false" 
                   transition="scale-transition"
                   offset-y
                   max-width="290px"
                   min-width="290px" >
-                  <template v-slot:activator="{ props}">
-                    <v-text-field v-bind="props"  label="借用日期" v-model="item_format_date1"></v-text-field>
+                  <template v-slot:activator="{ props }">
+                    <v-text-field v-bind="props"   label="借用日期" v-model="item_format_date1"></v-text-field>
                   </template>
-                  <v-date-picker v-model="item_date_temp1"></v-date-picker>
+                  <v-date-picker v-model="item_date_temp1" locale="zh-TW"  ></v-date-picker> 
                 </v-menu>
-                
               </v-col>
-              <v-col id="item_datepicker_2">
+              <v-col class="v-col-sm-3 v-col-12">
+                
                 <v-menu 
-                  :close-on-content-click="false"
+                  :close-on-content-click="false" 
                   transition="scale-transition"
                   offset-y
-                  
                   max-width="290px"
                   min-width="290px" >
-                  <template v-slot:activator="{ props}">
-                    <v-text-field v-bind="props"  label="歸還日期" v-model="item_format_date2"></v-text-field>
+                  <template v-slot:activator="{ props }">
+                    <v-text-field v-bind="props"   label="歸還日期" v-model="item_format_date2"></v-text-field>
                   </template>
-                  <v-date-picker  v-model="item_date_temp2"></v-date-picker>
+                  <v-date-picker v-model="item_date_temp2" locale="zh-TW"  ></v-date-picker> 
                 </v-menu>
-                
               </v-col>
-              <v-col  >
+              <v-col  class="v-col-sm-3 v-col-12">
                 <v-text-field label="數量" type="number"  v-model="item_quantity_temp"></v-text-field><!-- multiple -->
               </v-col>
-              <v-col>
+              <v-col class="v-col-sm-2 v-col-12">
                 <v-btn @click="additem()" >新增</v-btn>
               </v-col>
             </v-row>
@@ -193,23 +197,24 @@
               <v-col>
                 <v-card color="grey-lighten-3">
                   <v-container>
-                    <v-row align="center">
-                      <v-col >
+                    <v-row >
+                      <!--
+                      <v-col class="v-col-sm-3 v-col-12">
                         {{ index+1 }} 
-                      </v-col>
-                      <v-col>
+                      </v-col>-->
+                      <v-col class="v-col-sm-2 v-col-12">
                         {{ i[0] }}
-                      </v-col>
-                      <v-col>
+                      </v-col >
+                      <v-col class="v-col-sm-3 v-col-12">
                         {{ i[1] }}
                       </v-col>
-                      <v-col>
+                      <v-col class="v-col-sm-3 v-col-12">
                         {{ i[2] }}
                       </v-col>
-                      <v-col>
+                      <v-col class="v-col-sm-2 v-col-12">
                         {{ i[3] }}
                       </v-col>
-                      <v-col>
+                      <v-col class="v-col-sm-2 v-col-12">
                         <v-btn @click="delitem(index)" a>刪除</v-btn>
                       </v-col>
                     </v-row>
@@ -249,7 +254,7 @@
         <v-card color="grey-lighten-2">
           <v-container >
             <v-row>
-              <v-col id="note_title">
+              <v-col class="v-col-auto">
                 <v-card title="備註" color="grey-lighten-1"></v-card>
               </v-col>
             </v-row>
@@ -258,7 +263,6 @@
                 <v-card >
                   <v-textarea v-model="note" />
                 </v-card>
-                
               </v-col>
             </v-row>
           </v-container>
@@ -295,7 +299,7 @@
                     <v-col>
                       <v-card color="grey-lighten-3">
                         <v-container>
-                          <v-row align="center">
+                          <v-row class="align-center">
                             <v-col>
                               {{ i[0] }}
                             </v-col>
@@ -317,7 +321,7 @@
                     <v-col>
                       <v-card color="grey-lighten-3">
                         <v-container>
-                          <v-row align="center">
+                          <v-row class="align-center">
                             
                             <v-col>
                               {{ i[0] }}
@@ -362,6 +366,8 @@
 
 <script >
   import axios from 'axios';
+  import { useDate } from 'vuetify'
+  
   export default{
     mounted(){
       axios
@@ -390,6 +396,7 @@
     },  
     data(){
       return{
+        formatter:useDate(),
         rules: {
           required: value => !!value || 'Field is required',
         },
@@ -413,13 +420,13 @@
         },
         space_num : 0,
         space_data :[],
-        space_date_temp:"",
+        space_date_temp:null,
         space_time_temp:"",
         space_temp:"",
         item_num:0,
         item_data:[],
-        item_date_temp1:"",
-        item_date_temp2:"",
+        item_date_temp1:null,
+        item_date_temp2:null,
         item_quantity_temp:"",
         item_temp:"",
         
@@ -431,32 +438,24 @@
         name:"",
         reason:"",
         
-        
       }
     },
     computed:{
       space_format_date(){
-        if(this.space_date_temp === "")return""
-        let temp = this.space_date_temp.toString().split(" ")
-        let formattd_date = temp[3]+"-"+this.monthDisk[temp[1]]+"-"+temp[2]
-        this.space_date_temp = formattd_date
-        return formattd_date
+        if(this.space_date_temp == null) return ""
+        console.log(this.space_date_temp)
+        return this.formatter.format(this.space_date_temp,'keyboardDate')
       },
       item_format_date1(){
-        if(this.item_date_temp1 === "")return""
-        let temp = this.item_date_temp1.toString().split(" ")
-        let formattd_date = temp[3]+"-"+this.monthDisk[temp[1]]+"-"+temp[2]
-        this.item_date_temp1 = formattd_date
-
-        return formattd_date
+        if(this.item_date_temp1 == null) return ""
+        console.log(this.item_date_temp1)
+        return this.formatter.format(this.item_date_temp1,'keyboardDate')
       },
       item_format_date2(){
-        if(this.item_date_temp2 === "")return""
-        let temp = this.item_date_temp2.toString().split(" ")
-        let formattd_date = temp[3]+"-"+this.monthDisk[temp[1]]+"-"+temp[2]
-        this.item_date_temp2 = formattd_date
-
-        return formattd_date
+        if(this.item_date_temp2 == null) return ""
+        console.log(this.item_date_temp2)
+        return this.formatter.format(this.item_date_temp2,'keyboardDate')
+        
       }
     },
     methods:{
@@ -551,53 +550,5 @@
   }
 </script>
 <style>
-#choose{
-  flex: 0 0 45%;
-  max-width: 45%
-}
-#name{
-  flex: 0 0 auto;
-  max-width: 33%
-}
-#item{
-  flex: 0 0 45%;
-  max-width: 45%
-}
-#email{
-  flex: 0 0 66%;
-  max-width: 66%
-}
-#space{
-  flex: 0 0 auto;
-  max-width: 30%
-}
-#item{
-  flex: 0 0 auto;
-  max-width: 30%
-}
-#datepicker{
-  flex: 0 0 auto;
-  max-width: 30%  
-}
-#timepicker{
-  flex: 0 0 auto;
-  max-width: 25%
-}
 
-#space_title{
-  flex: 0 0 auto;
-  max-width: fit-content
-}
-#item_title{
-  flex: 0 0 auto;
-  max-width: fit-content
-}
-#note_title{
-  flex: 0 0 auto;
-  max-width: fit-content
-}
-#form_title{
-  flex: 0 0 auto;
-  max-width: fit-content
-}
 </style>

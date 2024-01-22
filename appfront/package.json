@@ -1,23 +1,36 @@
 {
   "name": "appfront",
   "version": "0.0.0",
+  "private": true,
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "lint": "eslint . --fix --ignore-path .gitignore"
   },
   "dependencies": {
-    "@mdi/font": "7.0.96",
-    "@vuepic/vue-datepicker": "^7.0.0",
-    "axios": "^1.5.1",
+    "@date-io/date-fns": "^3.0.0",
+    "@date-io/dayjs": "^3.0.0",
+    "@date-io/luxon": "^3.0.0",
+    "@mdi/font": "^7.0.96",
+    "@vueuse/core": "^10.7.2",
+    "axios": "^1.6.5",
+    "core-js": "^3.29.0",
+    "date-fns": "^3.2.0",
+    "dayjs": "^1.11.10",
+    "luxon": "^3.4.4",
     "roboto-fontface": "*",
     "vue": "^3.2.0",
-    "vuetify": "^3.0.0",
-    "webfontloader": "^1.0.0"
+    "vue-router": "^4.0.0"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^4.0.0",
+    "eslint": "^8.37.0",
+    "eslint-plugin-vue": "^9.3.0",
+    "sass": "^1.60.0",
+    "unplugin-fonts": "^1.0.3",
     "vite": "^4.2.0",
-    "vite-plugin-vuetify": "^1.0.0"
+    "vite-plugin-vuetify": "^1.0.2",
+    "vuetify": "^3.4.11"
   }
 }
