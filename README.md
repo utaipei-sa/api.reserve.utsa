@@ -4,7 +4,8 @@ A platform to reserve the spaces and items managed by UTSA.
 Develop documentation: [Wiki](https://github.com/utaipei-sa/reserve.utsa/wiki)
 
 ### Back-end API Documentation
-http://localhost:3000/docs
+- Swagger UI: http://localhost:3000/docs
+- Redoc: http://localhost:3000/redoc
 
 ### How to run:  
 **back end**  
