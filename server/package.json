@@ -18,6 +18,7 @@
     "yaml": "^2.3.4"
   },
   "devDependencies": {
-    "@types/cors": "^2.8.14"
+    "@types/cors": "^2.8.14",
+    "nodemon": "^3.0.3"
   }
 }
