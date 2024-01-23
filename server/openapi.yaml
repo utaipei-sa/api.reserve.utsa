@@ -1,0 +1,128 @@
+openapi: '3.0.3'
+info:
+  title: UTSA 場地預約系統 API
+  description: 臺北市立大學學生會場地預約系統 API 說明文件
+  contact:
+    email: utsa@go.utaipei.edu.tw
+  version: '1.0'
+servers:
+  - url: http://localhost:3000/api/v1
+tags:
+  - name: 預約相關
+    description: 場地、物品預約管理相關功能
+paths:
+  /reserve/spaces:
+    get:
+      tags:
+        - 預約相關
+      summary: 取得場地清單
+      description: 取得場地清單
+      operationId: GetSpaces
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Space'
+  /reserve/items:
+    get:
+      tags:
+        - 預約相關
+      summary: 取得物品清單
+      description: 取得物品清單
+      operationId: GetItems
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Item'
+  # POST reservation
+  /reserve/reservation/{reservation_id}:
+    get:
+      tags:
+        - 預約相關
+      summary: 取得預約資料
+      description: 取得預約資料
+      operationId: GetReservation
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Reservation'
+    # put
+    # delete
+  # GET integral_space_availability
+  # GET interval_space_availability
+  # GET integral_item_availability
+  # GET interval_item_availability
+components:
+  schemas:
+    Space:
+      type: object
+      properties:
+        _id:
+          type: string
+          description: 場地 ID
+          example: 65253db7053c98f0bd1593db
+        name:
+          $ref: '#/components/schemas/Languages'
+    Item:
+      type: object
+      properties:
+        _id:
+          type: string
+          description: 物品 ID
+          example: 652038af1b2271aa002c0a09
+        name:
+          $ref: '#/components/schemas/Languages'
+    Languages:
+      type: object
+      properties:
+        zh-tw:
+          type: string
+          description: 繁體中文(台灣)
+          example: 中文名稱
+        en:
+          type: string
+          description: 英文
+          example: English name
+    Reservation:
+      type: object
+      properties:
+        _id:
+          type: string
+          format: ObjectID
+          description: 預約紀錄 ID
+          example: 652038af1b2271aa002c0a0a
+        name:
+          type: string
+          description: 借用人姓名
+          example: 王小名
+        department_grade:
+          type: string
+          description: 借用人系級
+          example: 資科二
+        organization:
+          type: string
+          description: 借用單位
+          example: 學生會
+        email:
+          type: string
+          format: email
+          description: 借用人電子信箱
+          example: u123456789@go.utaipei.edu.tw
+        reason:
+          type: string
+          description: 借用原因/用途
+          example: 舉辦迎新大會
+        # 場地借用
+        # 物品借用
+        note:
+          type: string
+          description: 備註
+          example: 無
