@@ -8,58 +8,8 @@ info:
 servers:
   - url: http://localhost:3000/api/v1
 tags:
-  - name: 預約相關
+  - name: reserve
     description: 場地、物品預約管理相關功能
-paths:
-  /reserve/spaces:
-    get:
-      tags:
-        - 預約相關
-      summary: 取得場地清單
-      description: 取得場地清單
-      operationId: GetSpaces
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Space'
-  /reserve/items:
-    get:
-      tags:
-        - 預約相關
-      summary: 取得物品清單
-      description: 取得物品清單
-      operationId: GetItems
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Item'
-  # POST reservation
-  /reserve/reservation/{reservation_id}:
-    get:
-      tags:
-        - 預約相關
-      summary: 取得預約資料
-      description: 取得預約資料
-      operationId: GetReservation
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Reservation'
-    # put
-    # delete
-  # GET integral_space_availability
-  # GET interval_space_availability
-  # GET integral_item_availability
-  # GET interval_item_availability
 components:
   schemas:
     Space:
