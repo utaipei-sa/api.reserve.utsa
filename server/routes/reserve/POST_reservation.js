@@ -4,6 +4,19 @@ var { reservations, spaces_reserved_time, items_reserved_time, spaces, items } =
 //const { Timestamp } = require('mongodb');
 var router = express.Router();
 
+/**
+ * @openapi
+ * /reserve/reservation:
+ *   post:
+ *     tags:
+ *       - reserve
+ *     summary: 新增單筆預約紀錄
+ *     description: 新增單筆預約紀錄
+ *     operationId: PostReservation
+ *     responses:
+ *       '200':
+ *         description: OK
+ */
 router.post('/reservation', async function(req, res, next) {
     const EMAIL_REGEXP = new RegExp('^[\\w-\\.\\+]+@([\\w-]+\\.)+[\\w-]{2,4}$');
     const ISODATE_REGEXP = new RegExp('^(\\d{4})-(\\d{2})-(\\d{2})T(\\d{2}):(\\d{2}):(\\d{2}(?:\\.\\d*)?)\\+08:?00$');  // time zone: (((-|\+)(\d{2}):(\d{2})|Z)?) --> \+08:00

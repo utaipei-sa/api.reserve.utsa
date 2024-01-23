@@ -2,6 +2,44 @@ var express = require('express');
 var { items, items_reserved_time } = require('../../models/mongodb');
 var router = express.Router();
 
+/**
+ * @openapi
+ * /reserve/integral_item_availability:
+ *   get:
+ *     tags:
+ *       - reserve
+ *     summary: 查詢特定時段物品可借數量
+ *     description: 查詢特定時段物品可借數量
+ *     operationId: GetIntegralItemAvailability
+ *     parameters:
+ *       - name: item_id
+ *         in: query
+ *         description: 物品 ID
+ *         required: true
+ *         schema:
+ *           type: string
+ *       - name: start_datetime
+ *         in: query
+ *         description: 查詢起始時間
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: date-time
+ *       - name: end_datetime
+ *         in: query
+ *         description: 查詢終止時間
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: date-time
+ *     responses:
+ *       '200':
+ *         description: OK
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ItemAvailability'
+ */
 router.get('/integral_item_availability', async function(req, res, next) {
     // input:
     //     item_id: string

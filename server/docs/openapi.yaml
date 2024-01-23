@@ -1,0 +1,202 @@
+openapi: '3.0.3'
+info:
+  title: UTSA 場地預約系統 API
+  description: 臺北市立大學學生會場地預約系統 API 說明文件
+  contact:
+    email: utsa@go.utaipei.edu.tw
+  version: '1.0'
+servers:
+  - url: http://localhost:3000/api/v1
+tags:
+  - name: reserve
+    description: 場地、物品預約管理相關功能
+components:
+  schemas:
+    Item:
+      type: object
+      properties:
+        _id:
+          type: string
+          description: 物品 ID
+          example: 652038af1b2271aa002c0a09
+        name:
+          $ref: '#/components/schemas/Languages'
+    ItemAvailability:
+      type: object
+      properties:
+        start_datetime:
+          type: string
+          format: date-time
+          description: 查詢起始時間
+          example: 2024-01-23T12:00
+        end_datetime:
+          type: string
+          format: date-time
+          description: 查詢終止時間
+          example: 2024-01-25T12:00
+        available_quantity:
+          type: integer
+          minimum: -1
+          description: 可借數量 (-1:其他)
+          example: 15
+    ItemReservation:
+      type: object
+      properties:
+        item_id:
+          type: string
+          format: Object ID
+          description: 物品 ID
+          example: 652038af1b2271aa002c0a09
+        start_datetime:
+          type: string
+          format: date-time
+          description: 借用起始時間
+          example: 2024-01-23T18:00
+        end_datetime:
+          type: string
+          format: date-time
+          description: 借用終止時間
+          example: 2024-01-25T22:00
+        quantity:
+          type: integer
+          minimum: 1
+          description: 借用數量
+          example: 15
+    Languages:
+      type: object
+      properties:
+        zh-tw:
+          type: string
+          description: 繁體中文(台灣)
+          example: 中文名稱
+        en:
+          type: string
+          description: 英文
+          example: English name
+    Reservation:
+      type: object
+      properties:
+        _id:
+          type: string
+          format: ObjectID
+          description: 預約紀錄 ID
+          example: 652038af1b2271aa002c0a0a
+        name:
+          type: string
+          description: 借用人姓名
+          example: 王小名
+        department_grade:
+          type: string
+          description: 借用人系級
+          example: 資科二
+        organization:
+          type: string
+          description: 借用單位
+          example: 學生會
+        email:
+          type: string
+          format: email
+          description: 借用人電子信箱
+          example: u123456789@go.utaipei.edu.tw
+        reason:
+          type: string
+          description: 借用原因/用途
+          example: 舉辦迎新大會
+        space_reservations:
+          type: array
+          description: 場地借用時段
+          items:
+            $ref: '#/components/schemas/SpaceReservation'
+        item_reservations:
+          type: array
+          description: 物品借用時段、數量
+          items:
+            $ref: '#/components/schemas/ItemReservation'
+        note:
+          type: string
+          description: 備註
+          example: 無
+    ReservationUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+          description: 借用人姓名
+          example: 王小名
+        department_grade:
+          type: string
+          description: 借用人系級
+          example: 資科二
+        organization:
+          type: string
+          description: 借用單位
+          example: 學生會
+        email:
+          type: string
+          format: email
+          description: 借用人電子信箱
+          example: u123456789@go.utaipei.edu.tw
+        reason:
+          type: string
+          description: 借用原因/用途
+          example: 舉辦迎新大會
+        space_reservations:
+          type: array
+          description: 場地借用時段
+          items:
+            $ref: '#/components/schemas/SpaceReservation'
+        item_reservations:
+          type: array
+          description: 物品借用時段、數量
+          items:
+            $ref: '#/components/schemas/ItemReservation'
+        note:
+          type: string
+          description: 備註
+          example: 無
+    Space:
+      type: object
+      properties:
+        _id:
+          type: string
+          description: 場地 ID
+          example: 65253db7053c98f0bd1593db
+        name:
+          $ref: '#/components/schemas/Languages'
+    SpaceAvailability:
+      type: object
+      properties:
+        start_datetime:
+          type: string
+          format: date-time
+          description: 查詢起始時間
+          example: 2024-01-23T18:00
+        end_datetime:
+          type: string
+          format: date-time
+          description: 查詢終止時間
+          example: 2024-01-25T22:00
+        availability:
+          type: integer
+          minimum: -1
+          maximum: 1
+          description: 是否可借 (1:可借, 0:不可借, -1:其他)
+          example: 1
+    SpaceReservation:
+      type: object
+      properties:
+        space_id:
+          type: string
+          format: Object ID
+          description: 場地 ID
+          example: 65253db7053c98f0bd1593db
+        start_datetime:
+          type: string
+          format: date-time
+          description: 借用起始時間
+          example: 2024-01-23T18:00
+        end_datetime:
+          type: string
+          format: date-time
+          description: 借用終止時間
+          example: 2024-01-25T22:00

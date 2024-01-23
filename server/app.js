@@ -5,15 +5,25 @@ var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 var cors = require('cors');
 
+// const swaggerUi = require('swagger-ui-express');
+// const fs = require("fs")
+// const YAML = require('yaml')
+
 var home_router = require('./routes/home');
 var signin_router = require('./routes/signin');
 var reserve_router = require('./routes/reserve/index');
+var docs_router = require('./docs/docs');
 
 var app = express();
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'hbs');
+
+// const file  = fs.readFileSync('./openapi.yaml', 'utf8')
+// const swaggerDocument = YAML.parse(file)
+// app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+app.use(docs_router);
 
 app.use(logger('dev'));
 app.use(express.json());

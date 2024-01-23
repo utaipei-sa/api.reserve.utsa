@@ -3,8 +3,10 @@ A platform to reserve the spaces and items managed by UTSA.
 
 Develop documentation: [Wiki](https://github.com/utaipei-sa/reserve.utsa/wiki)
 
-How to run:  
+### Back-end API Documentation
+http://localhost:3000/docs
 
+### How to run:  
 **back end**  
 1. `cd server`  
 2. `npm install`  
