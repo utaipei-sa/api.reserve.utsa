@@ -2,6 +2,46 @@ var express = require('express');
 var { spaces, spaces_reserved_time } = require('../../models/mongodb');
 var router = express.Router();
 
+/**
+ * @openapi
+ * /reserve/interval_space_availability:
+ *   get:
+ *     tags:
+ *       - reserve
+ *     summary: 查詢特定範圍內各時段之場地是否可供借用
+ *     description: 查詢特定範圍內各時段之場地是否可供借用
+ *     operationId: GetIntervalSpaceAvailability
+ *     parameters:
+ *       - name: space_id
+ *         in: query
+ *         description: 場地 ID
+ *         required: true
+ *         schema:
+ *           type: string
+ *       - name: start_datetime
+ *         in: query
+ *         description: 查詢起始時間
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: date-time
+ *       - name: end_datetime
+ *         in: query
+ *         description: 查詢終止時間
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: date-time
+ *     responses:
+ *       '200':
+ *         description: OK
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/SpaceAvailability'
+ */
 router.get('/interval_space_availability', async function(req, res, next) {
     // input:
     //     space_id: string
