@@ -94,6 +94,7 @@
                       v-on="on"
                     ></v-text-field>
                   </template>
+                  
                   <v-date-picker
                     v-model="space_date_temp"
                     :max="(new Date(Date.now() - (new Date()).getTimezoneOffset() * 60000)).toISOString().substr(0, 10)"
@@ -494,8 +495,6 @@
           alert("over quantity(Max :"+this.quantity_limit_list[this.item_temp]+")")
         }
         else if(this.item_temp!="" && this.item_date_temp1!="" && this.item_date_temp2!="" && this.item_quantity_temp!=""){
-          
-          
           this.item_data.push([this.item_temp,this.item_date_temp1,this.item_date_temp2,this.item_quantity_temp])
           console.log(this.item_data) 
         }

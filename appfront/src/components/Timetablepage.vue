@@ -6,30 +6,29 @@
         <v-card color="grey-lighten-2">
           <v-container>
             <v-row>
-              <v-col id="type">
+              <v-col >
                 <v-select label="種類" :items="type_list" v-model="type"/>
               </v-col>
             </v-row>
-            <v-row>
-              <v-col id="list">
+            <v-row v-if="type=='物品' || type=='場地'"> 
+              <v-col >
                 <v-select label="清單" v-if="type=='物品'" :items="item_list[1]" v-model="item"></v-select>
                 <v-select label="清單" v-if="type=='場地'" :items="space_list[1]" v-model="space"></v-select>
               </v-col>
             </v-row>
             <v-row>
-              <v-col id="item_datepicker_1">
+              <v-col >
                 <v-menu 
                   :close-on-content-click="false"
                   transition="scale-transition"
                   offset-y
                   max-width="290px"
                   min-width="290px" >
-                  <template v-slot:activator="{ props,on}">
-                    <v-text-field v-bind="props" v-on="on" label="查詢日期" v-model="format_date"></v-text-field>
+                  <template v-slot:activator="{props}">
+                    <v-text-field v-bind="props"  label="查詢日期" v-model="format_date"></v-text-field>
                   </template>
-                  <v-date-picker range v-model="search_date"></v-date-picker>
+                  <v-date-picker  v-model="search_date"></v-date-picker>
                 </v-menu>
-                
               </v-col>
             </v-row>
             <v-row>
@@ -46,15 +45,15 @@
         <v-card color="grey-lighten-2">
           <v-container>
             <v-row>
-              <v-col id="table_title">
-                <v-card title="可用時間" :text="'日期:'+(search_date==''?'無':search_date)" color="grey-lighten-1"/>          
+              <v-col >
+                <v-card title="可用時間" :text="'日期:'+(search_date==null?'無':show_date)" color="grey-lighten-1"/>          
               </v-col>
             </v-row>
             <v-row>
               <v-col>
                 <v-card color="grey-lighten-1">
                   <v-table>
-                    <thead align="center"> 
+                    <thead > 
                       <tr >
                         <th>時段</th>
                         <th>可借用</th>
@@ -79,6 +78,7 @@
 </template>
 <script>
   import axios from 'axios';
+  import { useDate } from 'vuetify'
   export default{
     mounted(){
       axios
@@ -105,6 +105,7 @@
 
     data(){
       return{
+        formatter:useDate(),
         type : "",
         type_list : ["場地","物品"],
         item_list:[{},[]],
@@ -113,7 +114,8 @@
         available :[true,true,true],
         item:"",
         space:"",
-        search_date:"",
+        search_date:null,
+        show_date:"",
         monthDisk:{
           'Jan':1,
           'Feb':2,
@@ -132,11 +134,10 @@
     },
     computed:{
       format_date(){
-        if(this.search_date === "")return""
-        let temp = this.search_date.toString().split(" ")
-        let formattd_date = temp[3]+"-"+this.monthDisk[temp[1]]+"-"+temp[2]
-        this.search_date = formattd_date
-        return formattd_date
+        if(this.search_date == null) return ""
+        console.log(this.search_date)
+        this.show_date = this.formatter.format(this.search_date,'keyboardDate')
+        return this.formatter.format(this.search_date,'keyboardDate')
       }
     },
     methods:{
@@ -153,16 +154,5 @@
   }
 </script>
 <style>
-#type{
-  flex: 0 0 33%;
-  max-width: 33%
-}
-#list{
-  flex: 0 0 50%;
-  max-width: 50%
-}
-#table_title{
-  flex: 0 0 auto;
-  max-width: fit-content
-}
+
 </style>
