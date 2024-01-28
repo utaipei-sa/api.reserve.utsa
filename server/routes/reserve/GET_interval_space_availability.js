@@ -42,7 +42,7 @@ var router = express.Router();
  *               items:
  *                 $ref: '#/components/schemas/SpaceAvailability'
  */
-router.get('/interval_space_availability', async function(req, res, next) {
+    router.get('/interval_space_availability', async function(req, res, next) {
     // input:
     //     space_id: string
     //     start_datetime: YYYY-MM-DDThh:mm
@@ -95,6 +95,7 @@ router.get('/interval_space_availability', async function(req, res, next) {
     var end_time_slot_index = 0;
     var start_date_delta = 0;  // 時段計算要從 start_datetime 日期的幾天後開始
     var end_date_delta = 0;   // 結束日期是開始日期的幾天後
+
     // 判斷開始列的時段
     // if (Number(start_hh) < 12 && Number(start_mm) < 0) {  // 12:00 前，從 08:00 ~ 12:00 時段開始列
     //     time_slot_index = 0;
@@ -106,10 +107,11 @@ router.get('/interval_space_availability', async function(req, res, next) {
     //     time_slot_index = 0;
     //     start_date_delta = 1;
     // }
-    var time_slot_index = (start_hh < 12 && start_mm < 0) ? 0 :  // 12:00 前，從 08:00 ~ 12:00 時段開始列
-                          (start_hh < 17 && start_mm < 0) ? 1 :  // 17:00 前，從 13:00 ~ 17:00 時段開始列
-                          (start_hh < 22 && start_mm < 0) ? 2 : 0;  // 22:00 前，從 18:00 ~ 22:00 時段開始列
-    var start_date_delta = (start_hh >= 22 && start_mm >= 0) ? 1 : 0;  // 22:00 後，從 08:00 ~ 12:00 時段開始列
+
+    var time_slot_index = (start_hh < 12) ? 0 :  // 12:00 前，從 08:00 ~ 12:00 時段開始列
+                          (start_hh < 17) ? 1 :  // 17:00 前，從 13:00 ~ 17:00 時段開始列
+                          (start_hh < 22) ? 2 : 0;  // 22:00 前，從 18:00 ~ 22:00 時段開始列
+    var start_date_delta = (start_hh >= 22) ? 1 : 0;  // 22:00 後，從 08:00 ~ 12:00 時段開始列
     
     // 判斷列到哪個時段
     // if (Number(end_hh) < 12 && Number(end_mm) < 0) {  // 12:00 前，列到 08:00 ~ 12:00 時段
@@ -119,9 +121,9 @@ router.get('/interval_space_availability', async function(req, res, next) {
     // } else if (Number(end_hh) < 22 && Number(end_mm) < 0) {  // 22:00 前，列到 18:00 ~ 22:00 時段
     //     end_time_slot_index = 2;
     // }
-    var end_time_slot_index = (end_hh < 12 && end_mm < 0) ? 0 :
-                              (end_hh < 17 && end_mm < 0) ? 1 :
-                              (end_hh < 22 && end_mm < 0) ? 2 : 0;
+    var end_time_slot_index = (end_hh < 12) ? 0 :
+                              (end_hh < 17) ? 1 :
+                              (end_hh < 22) ? 2 : 0;
     
     // 計算 end_date_delta
     end_date_delta = calculate_date_delta(start_datetime.substring(0, 10), end_datetime.substring(0, 10));  // (YYYY-MM-DD, YYYY-MM-DD) -> number
