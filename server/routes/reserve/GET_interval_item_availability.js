@@ -155,13 +155,7 @@ router.get('/interval_item_availability', async function(req, res, next) {
     // // }
 
     // 輸出
-    res.json({
-        data:{
-            "start_date": start_datetime,
-            "end_date" : end_datetime,
-            "available_quantity": min_available_quantity
-        }
-    });
+    res.json(output);
 });
 
 // 計算日期相差幾天 -> number
