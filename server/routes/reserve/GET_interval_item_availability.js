@@ -57,14 +57,14 @@ router.get('/interval_item_availability', async function(req, res, next) {
     //     }
 
     // 取得參數
-    const item_id = req.params.item_id;
-    const start_datetime = req.params.start_datetime;
-    const end_datetime = req.params.end_datetime;
+    const item_id = req.query.item_id;
+    const start_datetime = req.query.start_datetime;
+    const end_datetime = req.query.end_datetime;
 
     // 檢查輸入是否正確（正規表達式 Regular Expression）
     const objectId_format = new RegExp('^[a-fA-F0-9]{24}$');  // ObjectId 格式
     const datetime_format = new RegExp('^(\\d{4})-(\\d{2})-(\\d{2})T(\\d{2}):(\\d{2})');  // 日期時間格式（年-月-日T時:分）
-    if (!item_id || !isValidDateTime(start_datetime) || !isValidDateTime(end_datetime)) {  // 沒給齊參數
+    if (item_id === undefined || start_datetime === undefined || end_datetime === undefined) {  // 沒給齊參數
         return res.status(400).json({ error: '請提供有效的物品ID和有效的日期範圍（YYYY-MM-DDThh:mm格式）' });
     } 
     else if (!objectId_format.test(item_id)) {  // check item_id format
