@@ -88,9 +88,9 @@ router.get('/interval_item_availability', async function(req, res, next) {
     end_date_delta = calculate_date_delta(start_datetime.substring(0, 10), end_datetime.substring(0, 10));  // (YYYY-MM-DD, YYYY-MM-DD) -> number
     // 開始列時段
     var data_date;
-    for (; start_date_delta <= end_date_delta; start_date_delta++) {  // date
+    for (; start_date_delta < end_date_delta; start_date_delta++) {  // date
         data_date = get_delta_date_datetime(start_datetime.substring(0, 10), start_date_delta);  // (YYYY-MM-DD, 位移幾天) -> YYYY-MM-DD
-        tomorrow_date = get_delta_date_datetime(start_datetime.substring(0, 10), ++start_date_delta); // 取得隔天的日期 
+        tomorrow_date = get_delta_date_datetime(start_datetime.substring(0, 10), start_date_delta +1); // 取得隔天的日期 
         output.data.push({
             start_datetime: `${data_date}T12:00`,   // 第一天的12:00
             end_datetime: `${tomorrow_date}T11:59`, // 第二天的11:59
