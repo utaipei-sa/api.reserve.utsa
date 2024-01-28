@@ -90,13 +90,14 @@ router.get('/interval_item_availability', async function(req, res, next) {
     var data_date;
     for (; start_date_delta <= end_date_delta; start_date_delta++) {  // date
         data_date = get_delta_date_datetime(start_datetime.substring(0, 10), start_date_delta);  // (YYYY-MM-DD, 位移幾天) -> YYYY-MM-DD
+        tomorrow_date = get_delta_date_datetime(start_datetime.substring(0, 10), start_date_delta++); // 取得隔天的日期 
         for (; time_slot_index < 3; time_slot_index++) {  // 時段
             if ((start_date_delta == end_date_delta) && (time_slot_index > end_time_slot_index)) {  // 最後一天，時段超出範圍
                 break;  // 停，不列了
             }
             output.data.push({
-                start_datetime: `${data_date}T${time_slots[time_slot_index].start}`,
-                end_datetime: `${data_date}T${time_slots[time_slot_index].end}`, 
+                start_datetime: `${data_date}T12:00`,   // 第一天的12:00
+                end_datetime: `${tomorrow_date}T11:59`, // 第二天的11:59
                 availablility: 1
             });
         }
