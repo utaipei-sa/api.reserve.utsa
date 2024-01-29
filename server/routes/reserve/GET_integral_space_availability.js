@@ -75,6 +75,7 @@ router.get('/integral_space_availability', async function(req, res, next) {
     // 查詢場地資訊
     // const space = await spaces.findOne({ _id: space_id });
     // var space_availability = space.availability;
+    // 確認 space_id 是否有對應的場地，沒有就報錯
     
     // 取得場地預約時段紀錄
     const spaces_reservations = await spaces_reserved_time.find({ 

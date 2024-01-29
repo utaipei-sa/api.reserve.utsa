@@ -78,6 +78,7 @@ var router = express.Router();
     else if ((new Date(start_datetime)).getTime() > (new Date(end_datetime)).getTime()) {  // start_datetime > end_datetime
         return res.status(400).json({ error: 'end_datetime cannot be earlier than start_datetime'});
     }
+    // 確認 space_id 是否有對應的場地，沒有就報錯
 
     // 統整場地可否借用資訊
     // 列出欲查詢的所有時段

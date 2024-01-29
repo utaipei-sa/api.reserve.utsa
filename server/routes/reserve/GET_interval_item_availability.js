@@ -73,6 +73,7 @@ router.get('/interval_item_availability', async function(req, res, next) {
     else if (!datetime_format.test(start_datetime) || !datetime_format.test(end_datetime)) {  // check datetime fromat
         return res.status(400).json({ error: 'datetime format error' });
     }
+    // 確認 item_id 是否有對應的場地，沒有就報錯
 
     // 統整物品可否借用資訊
     // 列出欲查詢的所有時段
