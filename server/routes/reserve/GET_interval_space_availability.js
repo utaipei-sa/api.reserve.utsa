@@ -122,8 +122,8 @@ var router = express.Router();
     //     end_time_slot_index = 2;
     // }
     var end_time_slot_index = (end_hh < 12) ? 0 :
-                              (end_hh < 17) ? 1 :
-                              (end_hh < 22) ? 2 : 0;
+                              (end_hh < 17) ? 1 : 2;
+                            //(end_hh < 22) ? 2 : 0;
     
     // 計算 end_date_delta
     end_date_delta = calculate_date_delta(start_datetime.substring(0, 10), end_datetime.substring(0, 10));  // (YYYY-MM-DD, YYYY-MM-DD) -> number
