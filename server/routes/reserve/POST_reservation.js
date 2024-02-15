@@ -256,4 +256,33 @@ function hour_shift(time_string, shift) {
     return hour + time_string.substring(2);
 }
 
+//gmail回傳
+const nodemailer = require('nodemailer');
+
+// 創建SMTP傳輸器
+let transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+        user: '你的電子郵件@gmail.com', 
+        pass: '你的密碼' // 你的Gmail密碼或應用程式特定密碼
+    }
+});
+
+// 郵件內容
+let mailOptions = {
+    from: '你的電子郵件@gmail.com', // 你的Gmail地址
+    to: req.body.email, // 使用者填寫的郵箱地址
+    subject: '表單提交成功',
+    text: '您的表單已成功提交。' // 郵件正文內容
+};
+
+// 發送郵件
+transporter.sendMail(mailOptions, function(error, info){
+    if (error) {
+        console.log(error);
+    } else {
+        console.log('郵件已發送: ' + info.response);
+    }
+});
+
 module.exports = router;
