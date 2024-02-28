@@ -14,6 +14,13 @@ var router = express.Router();
  *     summary: 新增單筆預約紀錄
  *     description: 新增單筆預約紀錄
  *     operationId: PostReservation
+ *     requestBody:
+ *       description: 新增的預約紀錄
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/Reservation'
  *     responses:
  *       '200':
  *         description: OK
