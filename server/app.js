@@ -6,7 +6,6 @@ var logger = require('morgan')
 var cors = require('cors')
 
 var home_router = require('./routes/home')
-var signin_router = require('./routes/signin')
 var reserve_router = require('./routes/reserve/index')
 var docs_router = require('./docs/docs')
 
@@ -36,7 +35,6 @@ app.use(cors(corsOptions))
 
 // routes
 app.use(home_router)
-app.use(signin_router) //'/signin', 
 app.use('/api/v1', reserve_router)
 app.use(docs_router)
 
