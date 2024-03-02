@@ -63,13 +63,17 @@ router.get('/integral_space_availability', async function(req, res, next) {
     const objectId_format = new RegExp('^[a-fA-F0-9]{24}$');  // ObjectId 格式
     const datetime_format = new RegExp('^(\\d{4})-(\\d{2})-(\\d{2})T(\\d{2}):(\\d{2})');  // 日期時間格式（年-月-日T時:分）
     if (space_id === undefined || start_datetime === undefined || end_datetime === undefined) {  // 沒給齊參數
-        return res.status(400).json({ error: '請提供有效的場地ID和有效的日期範圍（YYYY-MM-DDThh:mm格式）' });
-    } 
-    else if (!objectId_format.test(space_id)) {  // check space_id format
-        return res.status(400).json({ error: 'space_id format error' });
-    } 
-    else if (!datetime_format.test(start_datetime) || !datetime_format.test(end_datetime)) {  // check datetime fromat
-        return res.status(400).json({ error: 'datetime format error' });
+        return res
+            .status(400)
+            .json({ error: 'space_id, start_datetime, and end_datetime are required' });
+    } else if (!objectId_format.test(space_id)) {  // check space_id format
+        return res
+            .status(400)
+            .json({ error: 'space_id format error' });
+    } else if (!datetime_format.test(start_datetime) || !datetime_format.test(end_datetime)) {  // check datetime fromat
+        return res
+            .status(400)
+            .json({ error: 'datetime format error' });
     }
 
     // 查詢場地資訊

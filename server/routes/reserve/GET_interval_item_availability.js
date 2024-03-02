@@ -65,13 +65,17 @@ router.get('/interval_item_availability', async function(req, res, next) {
     const objectId_format = new RegExp('^[a-fA-F0-9]{24}$');  // ObjectId 格式
     const datetime_format = new RegExp('^(\\d{4})-(\\d{2})-(\\d{2})T(\\d{2}):(\\d{2})');  // 日期時間格式（年-月-日T時:分）
     if (item_id === undefined || start_datetime === undefined || end_datetime === undefined) {  // 沒給齊參數
-        return res.status(400).json({ error: '請提供有效的物品ID和有效的日期範圍（YYYY-MM-DDThh:mm格式）' });
-    } 
-    else if (!objectId_format.test(item_id)) {  // check item_id format
-        return res.status(400).json({ error: 'item_id format error' });
-    } 
-    else if (!datetime_format.test(start_datetime) || !datetime_format.test(end_datetime)) {  // check datetime fromat
-        return res.status(400).json({ error: 'datetime format error' });
+        return res
+            .status(400)
+            .json({ error: 'item_id, start_datetime, and end_datetime are required' });
+    } else if (!objectId_format.test(item_id)) {  // check item_id format
+        return res
+            .status(400)
+            .json({ error: 'item_id format error' });
+    } else if (!datetime_format.test(start_datetime) || !datetime_format.test(end_datetime)) {  // check datetime fromat
+        return res
+            .status(400)
+            .json({ error: 'datetime format error' });
     }
     // 確認 item_id 是否有對應的場地，沒有就報錯
 
@@ -89,7 +93,7 @@ router.get('/interval_item_availability', async function(req, res, next) {
     end_date_delta = calculate_date_delta(start_datetime.substring(0, 10), end_datetime.substring(0, 10));  // (YYYY-MM-DD, YYYY-MM-DD) -> number
     // 開始列時段
     var data_date;
-    for (; start_date_delta < end_date_delta; start_date_delta++) {  // date
+    for (; start_date_delta <= end_date_delta; start_date_delta++) {  // date
         data_date = get_delta_date_datetime(start_datetime.substring(0, 10), start_date_delta);  // (YYYY-MM-DD, 位移幾天) -> YYYY-MM-DD
         tomorrow_date = get_delta_date_datetime(start_datetime.substring(0, 10), start_date_delta +1); // 取得隔天的日期 
         output.data.push({
