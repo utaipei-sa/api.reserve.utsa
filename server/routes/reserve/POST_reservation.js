@@ -20,7 +20,7 @@ var router = express.Router();
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/Reservation'
+ *             $ref: '#/components/schemas/ReservationPost'
  *     responses:
  *       '200':
  *         description: OK

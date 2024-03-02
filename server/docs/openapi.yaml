@@ -116,6 +116,49 @@ components:
           type: string
           description: 備註
           example: 無
+    ReservationPost:
+      type: object
+      properties:
+        submit_datetime:
+          type: string
+          format: date-time
+          description: 用戶端提交時間
+          example: '2024-03-02T21:59:43.000+08:00'
+        name:
+          type: string
+          description: 借用人姓名
+          example: 王小名
+        department_grade:
+          type: string
+          description: 借用人系級
+          example: 資科二
+        organization:
+          type: string
+          description: 借用單位
+          example: 學生會
+        email:
+          type: string
+          format: email
+          description: 借用人電子信箱
+          example: u123456789@go.utaipei.edu.tw
+        reason:
+          type: string
+          description: 借用原因/用途
+          example: 舉辦迎新大會
+        space_reservations:
+          type: array
+          description: 場地借用時段
+          items:
+            $ref: '#/components/schemas/SpaceReservation'
+        item_reservations:
+          type: array
+          description: 物品借用時段、數量
+          items:
+            $ref: '#/components/schemas/ItemReservation'
+        note:
+          type: string
+          description: 備註
+          example: 無
     ReservationUpdate:
       type: object
       properties:
