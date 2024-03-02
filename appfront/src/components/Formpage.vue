@@ -279,7 +279,7 @@
           </template>
           <template v-slot:default="{ isActive }">
             <v-card title="Dialog">
-              <v-card-text style="height: ;">
+              <v-card-text>
                 <v-divider></v-divider>
                 <v-container>
                   <v-row>
@@ -367,8 +367,7 @@
 
 <script >
   import axios from 'axios';
-  import { useDate } from 'vuetify'
-  
+  import { useDateFormat } from '@vueuse/core'
   export default{
     mounted(){
       axios
@@ -392,12 +391,11 @@
               let value = response['data']['data'][i]['quantity']
               this.quantity_limit_list[key]=value 
             }
-            console.log(this.item_list);
+
           })
     },  
     data(){
       return{
-        formatter:useDate(),
         rules: {
           required: value => !!value || 'Field is required',
         },
@@ -444,23 +442,24 @@
     computed:{
       space_format_date(){
         if(this.space_date_temp == null) return ""
-        console.log(this.space_date_temp)
-        return this.formatter.format(this.space_date_temp,'keyboardDate')
+
+        return useDateFormat(this.space_date_temp,'YYYY-MM-DD').value
       },
       item_format_date1(){
         if(this.item_date_temp1 == null) return ""
-        console.log(this.item_date_temp1)
-        return this.formatter.format(this.item_date_temp1,'keyboardDate')
+
+        return useDateFormat(this.item_date_temp1,'YYYY-MM-DD').value
       },
       item_format_date2(){
         if(this.item_date_temp2 == null) return ""
-        console.log(this.item_date_temp2)
-        return this.formatter.format(this.item_date_temp2,'keyboardDate')
+
+        return useDateFormat(this.item_date_temp2,'YYYY-MM-DD').value
         
       }
     },
     methods:{
       async post_api(){
+        console.log(this.submit);
         await axios.post("http://localhost:3000/api/v1/reserve/reservation"
           ,this.submit
         ).then(function(response){
@@ -476,10 +475,8 @@
       addspace(){
       
         if(this.space_temp!="" && this.space_date_temp!="" &&this.space_time_temp!=""){
-          console.log(this.space_data) 
-          
-          this.space_data.push([this.space_temp,this.space_date_temp,this.space_time_temp])
-  
+          this.space_data.push([this.space_temp,this.space_date_temp.toString(),this.space_time_temp])
+
         }
       },
       delitem(index){
@@ -495,18 +492,18 @@
           alert("over quantity(Max :"+this.quantity_limit_list[this.item_temp]+")")
         }
         else if(this.item_temp!="" && this.item_date_temp1!="" && this.item_date_temp2!="" && this.item_quantity_temp!=""){
-          this.item_data.push([this.item_temp,this.item_date_temp1,this.item_date_temp2,this.item_quantity_temp])
+          this.item_data.push([this.item_temp,this.item_date_temp1.toString(),this.item_date_temp2.toString(),this.item_quantity_temp])
           console.log(this.item_data) 
         }
       },
       addReserve(){
         let date = new Date()
-        let temp = date.toString().split(' ')
+        let temp = useDateFormat(date,"YYYY-MM-DDTHH:mm:ss+08:00")
         
         //2023-10-10T14:02:34+0800
         this.submit=
           {
-            "submit_time": temp[3]+"-"+this.monthDisk[temp[1]]+"-"+temp[2]+"T"+temp[4]+temp[5].substring(3,temp[5].length),
+            "submit_time": temp,
             "organization": this.org, 
             "contact": this.name,
             "department_grade":this.department,
@@ -523,28 +520,36 @@
             
           }  
         for(var i=0;i<this.space_data.length;i++){
-          console.log(this.space_list);
+          console.log("space")
+          
+          let date_format_temp1 = useDateFormat(this.space_data[i][1],"YYYY-MM-DDT").value
+          console.log(date_format_temp1)
+          date_format_temp1 += this.space_data[i][2].toString().split('-')[0]
+          let date_format_temp2 = useDateFormat(this.space_data[i][1],"YYYY-MM-DDT").value
+          date_format_temp2 += this.space_data[i][2].toString().split('-')[1]
+          
           this.submit['space_reservations'].push(
             {
-              "space_id":this.space_list[0][this.space_data[i][0]],
-              "start_time":this.space_data[i][1]+"T"+this.space_data[i][2].toString().split('-')[0]+":00+0800",
-              "duration": "04:00"
-            }
-          )
-          this.submit['item_reservations'].push(
-            {
-              "space_id":this.item_list[0][this.item_data[i][0]],
-              "start_time":this.item_data[i][1],
-              "end_date": this.item_data[i][2],
-              "quantity":this.item_data[i][3]
-            
+              "space_id": this.space_list[0][this.space_data[i][0]],
+              "start_datetime": date_format_temp1,
+              "end_datetime": date_format_temp2
             }
           )
         }
-        console.log(this.submit);
-        
+        for(var i=0;i<this.item_data.length;i++){
+          console.log("item")
+          let date_format_temp1 = useDateFormat(this.item_data[i][1],"YYYY-MM-DDTHH:mm").value
+          let date_format_temp2 = useDateFormat(this.item_data[i][2],"YYYY-MM-DDTHH:mm").value
+          this.submit['item_reservations'].push(
+            {
+              "space_id":this.item_list[0][this.item_data[i][0]],
+              "start_time":date_format_temp1,
+              "end_date": date_format_temp2,
+              "quantity":this.item_data[i][3]
+            }
+          )
+        }
       },
-      
     }
   }
 </script>
