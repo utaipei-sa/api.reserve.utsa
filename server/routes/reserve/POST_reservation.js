@@ -109,20 +109,54 @@ router.post('/reservation', function (req, res, next) {
     // =============== ↓底下還沒更新↓ ===============
 
     // process data
-    const duration = parseInt(space_reservation.duration.substring(0, 2), 10) // decimal integer from the substring
-    // let unshifted_time = new Date(element.start_time);
-    let shifted_time
-    for (let i = 0; i < duration; i++) {
-      // check 預約的時段是可供出借的時段（非半夜）
-      // shifted_time = new Date(new Date(unshifted_time).setHours(unshifted_time.getHours()+i));  // getHours --> shift --> set back
-      shifted_time = hour_shift(space_reservation.start_time, i)
-      received_space_reserved_time.push({
-        space_id: space_reservation.space_id,
-        date: space_reservation.start_date,
-        time_slot: shifted_time, // unit: hour
-        reservations_id: reservation_id
-      })
+    let start_datetime = new Date(space_reservation.start_datetime)
+    let end_datetime = new Date(space_reservation.end_datetime)
+    let section_end_datetime = new Date(space_reservation.start_datetime)
+    section_end_datetime = section_end_datetime.setTime(section_end_datetime.getTime() + hours * 60 * 60 * 1000)
+    
+    // if end_datetime is earlier than start_datetime
+    if (end_datetime < start_datetime) {
+      res
+        .status(400)
+        .json({ error : 'space_reservations end_datetime earlier than start_datetime error' })
     }
+
+    // convert to time slots (1 hour)
+
+    // first time slot (for instance: 18:38~18:59 convert to 18:00~18:59)
+      // check whether the time slot has been reserved
+      // if not:
+      //   push to received_space_reserved_time
+          // let temp = {
+          //   space_id: space_id,
+          //   start_datetime: start_datetime,
+          //   end_datetime: section_end_datetime
+          // }
+      // else:
+      //   abort
+
+    // middle time slot (convert to an hour a block)
+
+    // the last time slot (for instance: 19:00~19:38 convert to 19:00~19:59)
+
+
+
+
+
+    // const duration = parseInt(space_reservation.duration.substring(0, 2), 10) // decimal integer from the substring
+    // // let unshifted_time = new Date(element.start_time);
+    // let shifted_time
+    // for (let i = 0; i < duration; i++) {
+    //   // check 預約的時段是可供出借的時段（非半夜）
+    //   // shifted_time = new Date(new Date(unshifted_time).setHours(unshifted_time.getHours()+i));  // getHours --> shift --> set back
+    //   shifted_time = hour_shift(space_reservation.start_time, i)
+    //   received_space_reserved_time.push({
+    //     space_id: space_reservation.space_id,
+    //     date: space_reservation.start_date,
+    //     time_slot: shifted_time, // unit: hour
+    //     reservations_id: reservation_id
+    //   })
+    // }
 
     // =============== ↑以上還沒更新↑ ===============
   })
@@ -159,53 +193,62 @@ router.post('/reservation', function (req, res, next) {
     }
 
     // =============== ↓底下還沒更新↓ ===============
+
+    // process data
+    let start_datetime = new Date(item_reservation.start_datetime)
+    let end_datetime = new Date(item_reservation.end_datetime)
+    let section_end_datetime = new Date(item_reservation.start_datetime)
+    section_end_datetime = section_end_datetime.setTime(section_end_datetime.getTime() + hours * 60 * 60 * 1000)
     
-    // get duration (days)
-    const start_date = new Date(item_reservation.start_date)
-    const end_date = new Date(item_reservation.end_date)
-    const duration = (end_date.getTime() - start_date.getTime()) / (1000 * 60 * 60 * 24) // from millisecond to days
-    // define variables
-    const unshifted_date = new Date(item_reservation.start_date)
-    let shifted_date
-    // loop
-    for (let i = 0; i < duration; i++) {
-      shifted_date = new Date(new Date(unshifted_date).setDate(unshifted_date.getDate() + i))
-      received_item_reserved_time.push({
-        item_id: item_reservation.item_id,
-        date: shifted_date.toISOString().substring(0, 10), // noon-to-noon, here's the 1st day
-        reservations_id: reservation_id
-      })
+    // if end_datetime is earlier than start_datetime
+    if (end_datetime < start_datetime) {
+      res
+        .status(400)
+        .json({ error : 'item_reservations end_datetime earlier than start_datetime error' })
     }
+
+    // convert to time slots (a day, from 12:00 pm to 11:59 am)
+
+
+    
+    // // get duration (days)
+    // const start_date = new Date(item_reservation.start_date)
+    // const end_date = new Date(item_reservation.end_date)
+    // const duration = (end_date.getTime() - start_date.getTime()) / (1000 * 60 * 60 * 24) // from millisecond to days
+    // // define variables
+    // const unshifted_date = new Date(item_reservation.start_date)
+    // let shifted_date
+    // // loop
+    // for (let i = 0; i < duration; i++) {
+    //   shifted_date = new Date(new Date(unshifted_date).setDate(unshifted_date.getDate() + i))
+    //   received_item_reserved_time.push({
+    //     item_id: item_reservation.item_id,
+    //     date: shifted_date.toISOString().substring(0, 10), // noon-to-noon, here's the 1st day
+    //     reservations_id: reservation_id
+    //   })
+    // }
+    // =============== ↑以上還沒更新↑ ===============
   })
 
-  /*
-    // check reservation data number
-    if(received_space_reserved_time.length + received_item_reserved_time.length <= 0) {
-      res.status(400)
-        .json({ error : 'Reservation Data Number Error' });
-      return;
-    }
-    */
-
-  // for reservations
+  // insert reservation into database
   const doc = {
     _id: reservation_id,
-    status: 'new', // new/canceled
+    status: 'new', // new/modified/canceled
     history: [
       {
-        submit_timestamp: new Date(req.body.submit_time),
+        submit_timestamp: new Date(submit_datetime),
         server_timestamp: new Date(), // now
         type: 'new' // new/modify/cancel
       }
     ],
-    organization: req.body.organization,
-    contact: req.body.contact,
-    department_grade: req.body.department_grade,
-    email: req.body.email,
-    reason: req.body.reason,
+    organization: organization,
+    contact: contact,
+    department_grade: department_grade,
+    email: email,
+    reason: reason,
     space_reservations: received_space_reservations,
     item_reservations: received_item_reservations,
-    note: req.body.note
+    note: note
   }
 
   const reservations_result = reservations.insertOne(doc)
@@ -221,15 +264,5 @@ router.post('/reservation', function (req, res, next) {
   // send email
   res.json({ message: 'Success!' })
 })
-
-function hour_shift (time_string, shift) {
-  // can only shift hours in a single day
-  let hour = Number(time_string.substring(0, 2))
-  hour += Number(shift)
-  if (hour > 23) {
-    hour -= 24
-  }
-  return hour + time_string.substring(2)
-}
 
 module.exports = router
