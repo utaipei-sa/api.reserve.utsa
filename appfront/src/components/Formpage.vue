@@ -498,14 +498,15 @@
       },
       addReserve(){
         let date = new Date()
-        let temp = useDateFormat(date,"YYYY-MM-DDTHH:mm:ss+08:00")
-        
+        let temp = useDateFormat(date,"YYYY-MM-DDTHH:mm:ss.SSS+08:00")
+        //"2024-03-05T17:39:25.933+08:00"
+        //"2024-03-02T21:59:43.000+08:00"
         //2023-10-10T14:02:34+0800
         this.submit=
           {
-            "submit_time": temp,
+            "submit_time": temp.value,
             "organization": this.org, 
-            "contact": this.name,
+            "name": this.name,
             "department_grade":this.department,
             "email": this.email,
             "reason" :this.reason,
