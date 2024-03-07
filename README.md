@@ -9,11 +9,11 @@ Develop documentation: [Wiki](https://github.com/utaipei-sa/reserve.utsa/wiki)
 
 ### How to run:  
 **back end**  
-1. `cd server`  
+1. `cd backend`  
 2. `npm install`  
 3. `nodemon` (if you don't need auto reload, you can use `npm start`)  
 
 **fornt end**  
-1. `cd appfront`  
+1. `cd frontend`  
 2. `npm install`  
 3. `npm run dev`  
