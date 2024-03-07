@@ -1,6 +1,6 @@
-var express = require('express');
-var { spaces, spaces_reserved_time } = require('../../models/mongodb');
-var router = express.Router();
+const express = require('express');
+const { spaces, spaces_reserved_time } = require('../../models/mongodb');
+const router = express.Router();
 
 /**
  * @openapi
@@ -42,56 +42,66 @@ var router = express.Router();
  *               items:
  *                 $ref: '#/components/schemas/SpaceAvailability'
  */
-    router.get('/interval_space_availability', async function(req, res, next) {
-    // input:
-    //     space_id: string
-    //     start_datetime: YYYY-MM-DDThh:mm
-    //     end_datetime: YYYY-MM-DDThh:mm
-    // output:
-    //     {
-    //         data:[
-    //             {
-    //                 start_datetime: YYYY-MM-DDThh:mm,
-    //                 end_datetime: YYYY-MM-DDThh:mm,
-    //                 availablility: 1(available) / 0(unavailable)
-    //             }, ......
-    //         ]
-    //     }
+router.get('/interval_space_availability', async function(req, res, next) {
+    // 正規表達式 Regular Expression
+    const OBJECT_ID_REGEXP = /^[0-9a-fA-F]{24}$/  // ObjectId 格式: 652765ed3d21844635674e71
+    const DATETIME_MINUTE_REGEXP = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})$/  // 2024-03-03T22:25
 
-    // 取得參數
-    const space_id = req.query.space_id;
-    const start_datetime = req.query.start_datetime;
-    const end_datetime = req.query.end_datetime;
-
-    // 檢查輸入是否正確（正規表達式 Regular Expression）
-    const objectId_format = new RegExp('^[a-fA-F0-9]{24}$');  // ObjectId 格式
-    const datetime_format = new RegExp('^(\\d{4})-(\\d{2})-(\\d{2})T(\\d{2}):(\\d{2})');  // 日期時間格式（年-月-日T時:分）
-    if (space_id === undefined || start_datetime === undefined || end_datetime === undefined) {  // 沒給齊參數
-        return res
-            .status(400)
-            .json({ error: 'space_id, start_datetime, and end_datetime are required' });
-    } else if (!objectId_format.test(space_id)) {  // check space_id format
-        return res 
-            .status(400)
-            .json({ error: 'space_id format error' });
-    } else if (!datetime_format.test(start_datetime) || !datetime_format.test(end_datetime)) {  // check datetime fromat
-        return res
-            .status(400)
-            .json({ error: 'datetime format error' });
-    } else if ((new Date(start_datetime)).getTime() > (new Date(end_datetime)).getTime()) {  // start_datetime > end_datetime
-        return res
-            .status(400)
-            .json({ error: 'end_datetime cannot be earlier than start_datetime'});
-    }
-    // 確認 space_id 是否有對應的場地，沒有就報錯
-
-    // 統整場地可否借用資訊
-    // 列出欲查詢的所有時段
+    // 時段列表
     const time_slots = [
         { start: '08:00', end: '12:00' },
         { start: '13:00', end: '17:00' },
         { start: '18:00', end: '22:00' }
-    ];
+    ]
+
+    // 取得輸入資料
+    const space_id = req.query.space_id             // 場地 ID
+    const start_datetime = req.query.start_datetime // 欲查詢區間之起始時間
+    const end_datetime = req.query.end_datetime     // 欲查詢時間之終止時間
+
+    let error_message = ''  // 錯誤訊息
+
+    // 檢查輸入是否正確   
+    if (space_id === undefined || start_datetime === undefined || end_datetime === undefined) {  // 沒給齊參數
+        error_message += 'space_id, start_datetime, and end_datetime are required\n'
+    }
+    if (!OBJECT_ID_REGEXP.test(space_id)) {  // check space_id format
+        error_message += 'space_id format error'
+    }
+    if (!DATETIME_MINUTE_REGEXP.test(start_datetime) || !DATETIME_MINUTE_REGEXP.test(end_datetime)) {  // check datetime fromat
+        error_message += 'datetime format error'
+    }
+    if ((new Date(start_datetime)).getTime() > (new Date(end_datetime)).getTime()) {  // start_datetime > end_datetime
+        error_message += 'end_datetime cannot be earlier than start_datetime'
+    }
+    if (error_message.length !== 0) {
+        res
+            .status(400)
+            .json({ error: error_message})
+        return
+    }
+
+    // 確認 space_id 是否有對應的場地，沒有就報錯
+    let space_found = spaces.findOne({ _id: ObjectID(space_id) })
+    console.log(space_found)  // <-- null? undefined? something else?
+    if (!space_found) {
+        res
+            .status(400)
+            .json({ error : 'space_id not found error' })
+        return
+    }
+
+    // 統整場地可否借用資訊
+
+    // 迴圈(日期) (條件: 正在處理的日期 <= end_datetime 的純日期(使用下方定義的 function 計算) )
+    //     迴圈(時段)
+    //         如果時間 <= 第 i 個時段的結束時間（使用 time_slots[i]['end'] 建立 Date 物件） 且 當日該時段的 start 時間 <= end_datetime
+    //             加入時間區段
+    //             進行查詢(還是要之後一次查詢?)
+    //     日期 +1
+
+    // ===============↓以下未整理↓===============
+
     const start_hh = start_datetime.substring(11, 13);
     const start_mm = start_datetime.substring(14, 16);  // 注意會不會 index out of range
     const end_hh = end_datetime.substring(11, 13);
@@ -174,21 +184,57 @@ var router = express.Router();
     res.json(output);
 });
 
-// 計算日期相差幾天 -> number
+/**
+ * 計算日期相差天數
+ * @param {string} start_date_string Date 物件 1
+ * @param {string} end_date_string Date 物件 2
+ * @returns {number} 相差天數(整數)
+ */
 function calculate_date_delta(start_date_string, end_date_string) {
-    var start_date = new Date(start_date_string);
-    var end_date = new Date(end_date_string);
-    var time_delta = end_date.getTime() - start_date.getTime();
-    var day_delta = time_delta / (1000 * 60 * 60 * 24);
-    return day_delta;
+    var start_date = new Date(start_date_string)
+    var end_date = new Date(end_date_string)
+    var time_delta = end_date.getTime() - start_date.getTime()
+    var day_delta = Math.round( time_delta / (1000 * 60 * 60 * 24) )
+    return day_delta
 }
 
-// 計算位移日期 -> string
+/**
+ * 計算位移指定天數的日期
+ * @param {string} date_string 位移前的 Date 物件
+ * @param {number} delta_date 位移天數
+ * @returns {string}
+ */
 function get_delta_date_datetime(date_string, delta_date) {
-    const day_milliseconds = 1000 * 60 * 60 * 24;
-    const date = new Date(date_string);
-    const new_date = new Date(date.getTime() + (day_milliseconds * delta_date));
-    return new_date;
+    const day_milliseconds = 1000 * 60 * 60 * 24
+    const date = new Date(date_string)
+    const new_date = new Date(date.getTime() + (day_milliseconds * delta_date))
+    return new_date
+}
+
+/**
+ * 取得當日 00:00 的 Date 物件
+ * @param {Date} date_with_time 帶有時間資訊的 Date 物件
+ * @returns {Date} 當日 00:00 的 Date 物件
+ */
+function get_pure_date(date_with_time) {
+    const day_milliseconds = 1000 * 60 * 60 * 24
+    const date_ease_time_milliseconds = Math.floor( date_with_time.getTime() / day_milliseconds )
+    const date_ease_time = new Date( date_ease_time_milliseconds )
+    return date_ease_time
+}
+
+/**
+ * 計算日期差異天數（不考慮時間）
+ * @param {Date} start_datetime 較過去的日期
+ * @param {Date} end_datetime 較未來的日期
+ * @returns {number} 相減天數 
+ */
+function dates_substraction(start_datetime, end_datetime) {
+    const day_milliseconds = 1000 * 60 * 60 * 24
+    const start_date = get_pure_date(start_datetime)
+    const end_date = get_pure_date(end_datetime)
+    const days = Math.round( (end_date.getTime() - start_date.getTime()) / day_milliseconds )
+    return days
 }
 
 module.exports = router;
