@@ -1,4 +1,5 @@
 const express = require('express');
+const ObjectId = require('mongodb').ObjectId
 const { spaces, spaces_reserved_time } = require('../../models/mongodb');
 const router = express.Router();
 
@@ -82,7 +83,7 @@ router.get('/interval_space_availability', async function(req, res, next) {
     }
 
     // 確認 space_id 是否有對應的場地，沒有就報錯
-    let space_found = spaces.findOne({ _id: ObjectID(space_id) })
+    let space_found = spaces.findOne({ _id: new ObjectId(space_id) })
     console.log(space_found)  // <-- null? undefined? something else?
     if (!space_found) {
         res
