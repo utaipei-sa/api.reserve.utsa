@@ -29,7 +29,7 @@ dayjs().format()
 router.post('/reservation', function (req, res, next) {
   // define constants and variables
   const EMAIL_REGEXP = /^[\w-.\+]+@([\w-]+\.)+[\w-]{2,4}$/  // user+name@domain.com
-  const SUBMIT_DATETIME_REGEXP = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2}(?:\.\d*)?)\+08:?00$/  // 2024-03-03T22:25:32.000+08:00
+  const SUBMIT_DATETIME_REGEXP = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(\.\d*)?\+08:?00$/  // 2024-03-03T22:25:32.000+08:00
   const DATETIME_MINUTE_REGEXP = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})$/  // 2024-03-03T22:25
   const OBJECT_ID_REGEXP = /^[0-9a-fA-F]{24}$/  // 652765ed3d21844635674e71
 
