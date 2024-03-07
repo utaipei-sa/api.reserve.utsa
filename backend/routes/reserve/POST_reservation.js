@@ -99,14 +99,19 @@ router.post('/reservation', function (req, res, next) {
     }
 
     // check whether space_id is exist
-    let space_found = spaces.findOne({ _id: ObjectID(space_reservation.space_id) })
-    console.log(space_found)  // <-- null? undefined? something else?
-    if (!space_found) {
-      res
-        .status(400)
-        .json({ error: 'space_reservations space_id not found error' })
-      return
-    }
+    let space_found = spaces.findOne({ _id: ObjectID(space_reservation.space_id) })  // return a Promise object
+    space_found.then( function(space_found) {
+      console.log(space_found)  // <-- null | Object
+      if (!space_found) {
+        // 錯誤處理: 'space_reservations space_id not found error'
+      }
+    })
+    // if (!space_found) {
+    //   res
+    //     .status(400)
+    //     .json({ error: 'space_reservations space_id not found error' })
+    //   return
+    // }
 
     // =============== ↓底下還沒更新↓ ===============
 
