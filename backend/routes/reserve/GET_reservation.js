@@ -1,6 +1,7 @@
 var express = require('express');
 var ObjectID = require('mongodb').ObjectId;
 var { reservations, spaces_reserved_time, items_reserved_time } = require('../../models/mongodb');
+const dayjs = require('dayjs');
 //const { Timestamp } = require('mongodb');
 var router = express.Router();
 
@@ -30,6 +31,9 @@ var router = express.Router();
  *               $ref: '#/components/schemas/Reservation'
  */
 router.get('/reservation/:reservation_id', async function(req, res, next) {
+    
+    
+    
     const objectId_format = new RegExp('^[a-fA-F0-9]{24}$');  // ObjectId 
     const reservation_id=req.params.reservation_id
     if(!objectId_format.test(reservation_id)){
@@ -40,6 +44,8 @@ router.get('/reservation/:reservation_id', async function(req, res, next) {
         return res.status(400).json({ error: '請提供有效的預約紀錄ID' });
     }
     res.json(result);
+ 
+
 });
 
 module.exports = router;

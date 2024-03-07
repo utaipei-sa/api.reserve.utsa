@@ -3,6 +3,8 @@ const ObjectID = require('mongodb').ObjectId
 const { reservations, spaces_reserved_time, items_reserved_time, spaces, items } = require('../../models/mongodb')
 // const { Timestamp } = require('mongodb');
 const router = express.Router()
+const dayjs = require('dayjs');
+dayjs().format()
 
 /**
  * @openapi
@@ -81,16 +83,16 @@ router.post('/reservation', function (req, res, next) {
   received_space_reservations.forEach(space_reservation => {
     // check
     if (!OBJECT_ID_REGEXP.test(space_reservation.space_id)) {
-        error_message += 'space_reservations space_id empty error\n'
+      error_message += 'space_reservations space_id empty error\n'
     }
     if (!DATETIME_MINUTE_REGEXP.test(space_reservation.start_datetime)) {
-        error_message += 'space_reservations start_datetime empty error\n'
+      error_message += 'space_reservations start_datetime empty error\n'
     }
     if (!DATETIME_MINUTE_REGEXP.test(space_reservation.end_datetime)) {
-        error_message += 'space_reservations end_datetime empty error\n'
+      error_message += 'space_reservations end_datetime empty error\n'
     }
     if (error_message.length) {
-        res
+      res
         .status(400)
         .json({ error: error_message })
       return
@@ -102,7 +104,7 @@ router.post('/reservation', function (req, res, next) {
     if (!space_found) {
       res
         .status(400)
-        .json({ error : 'space_reservations space_id not found error' })
+        .json({ error: 'space_reservations space_id not found error' })
       return
     }
 
@@ -113,27 +115,49 @@ router.post('/reservation', function (req, res, next) {
     let end_datetime = new Date(space_reservation.end_datetime)
     let section_end_datetime = new Date(space_reservation.start_datetime)
     section_end_datetime = section_end_datetime.setTime(section_end_datetime.getTime() + hours * 60 * 60 * 1000)
-    
+
     // if end_datetime is earlier than start_datetime
     if (end_datetime < start_datetime) {
       res
         .status(400)
-        .json({ error : 'space_reservations end_datetime earlier than start_datetime error' })
+        .json({ error: 'space_reservations end_datetime earlier than start_datetime error' })
     }
 
     // convert to time slots (1 hour)
+    let start_datetime_dayjs = dayjs(start_datetime);
+    let end_datetime_dayjs = dayjs(end_datetime);
+    //判斷不乾淨的分鐘數
+    start_datetime_dayjs=start_datetime_dayjs.minute(0);
+    if(!end_datetime_dayjs.isSame('0','minute')){
+        end_datetime_dayjs=end_datetime_dayjs.minute(0);
+        end_datetime_dayjs=end_datetime_dayjs.add(1,'hour');
+    }
+    //
+    for (i = received_space_reserved_time.length; start_datetime_dayjs.isBefore(end_datetime_dayjs); i++) {
+      received_space_reserved_time[i] = start_datetime_dayjs.format();
+      start_datetime_dayjs = start_datetime_dayjs.add(1, 'hour');
+    }
+
+
+    
+    
+    
+    // let test = new Date('1995-12-17T03:24:00');
+    // console.log(dayjs(test).get(hour));
+
+
 
     // first time slot (for instance: 18:38~18:59 convert to 18:00~18:59)
-      // check whether the time slot has been reserved
-      // if not:
-      //   push to received_space_reserved_time
-          // let temp = {
-          //   space_id: space_id,
-          //   start_datetime: start_datetime,
-          //   end_datetime: section_end_datetime
-          // }
-      // else:
-      //   abort
+    // check whether the time slot has been reserved
+    // if not:
+    //   push to received_space_reserved_time
+    // let temp = {
+    //   space_id: space_id,
+    //   start_datetime: start_datetime,
+    //   end_datetime: section_end_datetime
+    // }
+    // else:
+    //   abort
 
     // middle time slot (convert to an hour a block)
 
@@ -168,13 +192,13 @@ router.post('/reservation', function (req, res, next) {
       error_message += 'item_reservations quantity error\n'
     }
     if (!OBJECT_ID_REGEXP.test(item_reservation.item_id)) {
-        error_message += 'item_reservations item_id empty error\n'
+      error_message += 'item_reservations item_id empty error\n'
     }
     if (!DATETIME_MINUTE_REGEXP.test(item_reservation.start_datetime)) {
-        error_message += 'item_reservations start_datetime empty error\n'
+      error_message += 'item_reservations start_datetime empty error\n'
     }
     if (!DATETIME_MINUTE_REGEXP.test(item_reservation.end_datetime)) {
-        error_message += 'item_reservations end_datetime empty error\n'
+      error_message += 'item_reservations end_datetime empty error\n'
     }
     if (error_message.length) {
       res
@@ -188,7 +212,7 @@ router.post('/reservation', function (req, res, next) {
     if (!item_found) {  // <-- notice what's this when not found (should be same as space)
       res
         .status(400)
-        .json({ error : 'item_reservations item_id not found error' })
+        .json({ error: 'item_reservations item_id not found error' })
       return
     }
 
@@ -199,18 +223,19 @@ router.post('/reservation', function (req, res, next) {
     let end_datetime = new Date(item_reservation.end_datetime)
     let section_end_datetime = new Date(item_reservation.start_datetime)
     section_end_datetime = section_end_datetime.setTime(section_end_datetime.getTime() + hours * 60 * 60 * 1000)
-    
+
     // if end_datetime is earlier than start_datetime
     if (end_datetime < start_datetime) {
       res
         .status(400)
-        .json({ error : 'item_reservations end_datetime earlier than start_datetime error' })
+        .json({ error: 'item_reservations end_datetime earlier than start_datetime error' })
     }
-
     // convert to time slots (a day, from 12:00 pm to 11:59 am)
+    var a = dayjs(new Date());
+    console.log(a);
 
 
-    
+
     // // get duration (days)
     // const start_date = new Date(item_reservation.start_date)
     // const end_date = new Date(item_reservation.end_date)
