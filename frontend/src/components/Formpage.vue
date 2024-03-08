@@ -504,7 +504,7 @@
         //2023-10-10T14:02:34+0800
         this.submit=
           {
-            "submit_time": temp.value,
+            "submit_datetime": temp.value,
             "organization": this.org, 
             "name": this.name,
             "department_grade":this.department,

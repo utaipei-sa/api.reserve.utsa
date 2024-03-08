@@ -317,7 +317,7 @@
               for(let i=0;i<response['data']['data'].length-1;i++){
                 this.available[i%3].push(response['data']['data'][i])
                 this.available[i%3][this.available[i%3].length-1]['start_datetime'] = useDateFormat(this.available[i%3][this.available[i%3].length-1]['start_datetime'].substring(0,this.available[i%3][this.available[i%3].length-1]['start_datetime'].length-6),"MM-DD").value
-                this.available[i%3][this.available[i%3].length-1]['end_datetime'] = useDateFormat(this.available[i%3][this.available[i%3].length-1]['end_datetime'].substring(0,this.available[i%3][this.available[i%3].length-1]['start_datetime'].length-6),"MM-DD").value 
+                this.available[i%3][this.available[i%3].length-1]['end_datetime'] = useDateFormat(this.available[i%3][this.available[i%3].length-1]['end_datetime'].substring(0,this.available[i%3][this.available[i%3].length-1]['end_datetime'].length-6),"MM-DD").value 
               }
               console.log(this.available)
             })
