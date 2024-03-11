@@ -1,7 +1,7 @@
 var express = require('express');
 var { items } = require('../../models/mongodb');
 var router = express.Router();
-var email_obj = require('../../utilities/email')
+
 /**
  * @openapi
  * /reserve/items:
