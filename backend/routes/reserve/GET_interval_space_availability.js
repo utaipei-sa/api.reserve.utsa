@@ -83,19 +83,13 @@ router.get('/interval_space_availability', async function(req, res, next) {
     }
 
     // 確認 space_id 是否有對應的場地，沒有就報錯
-    let space_found = spaces.findOne({ _id: new ObjectId(space_id) })
-    space_found.then( function(space_found) {
-        if (!space_found) {  // null | Object
-            // 錯誤處理: 'space_id not found error'
-        }
-    })
-    // if (!space_found) {
-    //     res
-    //         .status(400)
-    //         .json({ error : 'space_id not found error' })
-    //     return
-    // }
-
+    let space_found = await spaces.findOne({ _id: new ObjectId(space_id) })
+    if (!space_found) {
+        res
+            .status(400)
+            .json({ error : 'space_id not found error' })
+        return
+    }
 
     // 統整場地可否借用資訊
 

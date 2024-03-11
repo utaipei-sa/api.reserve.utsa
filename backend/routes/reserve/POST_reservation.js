@@ -26,7 +26,7 @@ dayjs().format()
  *       '200':
  *         description: OK
  */
-router.post('/reservation', function (req, res, next) {
+router.post('/reservation', async function (req, res, next) {
   // define constants and variables
   const EMAIL_REGEXP = /^[\w-.\+]+@([\w-]+\.)+[\w-]{2,4}$/  // user+name@domain.com
   const SUBMIT_DATETIME_REGEXP = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(\.\d*)?\+08:?00$/  // 2024-03-03T22:25:32.000+08:00
@@ -80,7 +80,7 @@ router.post('/reservation', function (req, res, next) {
   let received_item_reserved_time = []
 
   // space reservation process
-  received_space_reservations.forEach(space_reservation => {
+  received_space_reservations.forEach(async space_reservation => {
     // check
     if (!OBJECT_ID_REGEXP.test(space_reservation.space_id)) {
       error_message += 'space_reservations space_id empty error\n'
@@ -99,19 +99,13 @@ router.post('/reservation', function (req, res, next) {
     }
 
     // check whether space_id is exist
-    let space_found = spaces.findOne({ _id: ObjectID(space_reservation.space_id) })  // return a Promise object
-    space_found.then( function(space_found) {
-      console.log(space_found)  // <-- null | Object
-      if (!space_found) {
-        // 錯誤處理: 'space_reservations space_id not found error'
-      }
-    })
-    // if (!space_found) {
-    //   res
-    //     .status(400)
-    //     .json({ error: 'space_reservations space_id not found error' })
-    //   return
-    // }
+    let space_found = await spaces.findOne({ _id: ObjectID(space_reservation.space_id) })
+    if (!space_found) {
+      res
+        .status(400)
+        .json({ error: 'space_reservations space_id not found error' })
+      return
+    }
 
     // =============== ↓底下還沒更新↓ ===============
 
