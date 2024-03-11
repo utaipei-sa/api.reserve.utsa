@@ -1,7 +1,7 @@
 var express = require('express');
 var { items } = require('../../models/mongodb');
 var router = express.Router();
-
+var email_obj = require('../../utilities/email')
 /**
  * @openapi
  * /reserve/items:
@@ -26,6 +26,8 @@ router.get('/items', async function(req, res, next) {
                                  console.log(results);
                              });
     res.json({data: data});
+    email_obj.sendEmail(process.env.EMAIL,"test mail","space","example.com")
+
 });
 
 module.exports = router;

@@ -110,6 +110,7 @@ dist
 # Serverless directories
 .serverless/
 
+./backend/env
 # FuseBox cache
 .fusebox/
 
