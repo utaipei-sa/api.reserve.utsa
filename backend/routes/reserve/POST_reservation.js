@@ -286,6 +286,7 @@ router.post('/reservation', async function (req, res, next) {
   // result.insertedId
   // reservation_id
   // send email
+  email_obj.sendEmail(process.env.EMAIL,"test mail","space","example.com")
   res.json({ message: 'Success!' })
 })
 

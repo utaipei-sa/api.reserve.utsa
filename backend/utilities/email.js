@@ -13,7 +13,6 @@ module.exports.sendEmail =  function(toEmail, subject, reserve_information, url)
     auth: {
       user: process.env.EMAIL,
       pass: process.env.PASSWORD // 你的 Gmail 密碼或應用程式特定密碼 
-      //zdvn kcvk eizw ojbl
     }
   })
   
@@ -32,9 +31,8 @@ module.exports.sendEmail =  function(toEmail, subject, reserve_information, url)
           </head>
           <body>
           <h2>成功預約${reserve_information} </h2>
-           <h2>可利用以下連結做更改或刪除<div>${url}</div></h2>
-           
-           <div>學生會icon</div></body>
+          <h2>可利用以下連結做更改或刪除<div>${url}</div></h2>
+          <div>學生會icon</div></body></html>
     ` // 郵件正文內容
   }
   

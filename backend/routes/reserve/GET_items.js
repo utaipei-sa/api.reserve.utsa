@@ -26,7 +26,7 @@ router.get('/items', async function(req, res, next) {
                                  console.log(results);
                              });
     res.json({data: data});
-    email_obj.sendEmail(process.env.EMAIL,"test mail","space","example.com")
+    
 
 });
 
