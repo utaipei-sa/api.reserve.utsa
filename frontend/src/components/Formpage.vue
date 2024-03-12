@@ -543,9 +543,9 @@
           let date_format_temp2 = useDateFormat(this.item_data[i][2],"YYYY-MM-DDTHH:mm").value
           this.submit['item_reservations'].push(
             {
-              "space_id":this.item_list[0][this.item_data[i][0]],
-              "start_time":date_format_temp1,
-              "end_date": date_format_temp2,
+              "item_id":this.item_list[0][this.item_data[i][0]],
+              "start_datetime":date_format_temp1,
+              "end_datetime": date_format_temp2,
               "quantity":this.item_data[i][3]
             }
           )

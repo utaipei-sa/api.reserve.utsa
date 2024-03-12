@@ -1,5 +1,5 @@
 const express = require('express')
-const ObjectID = require('mongodb').ObjectId
+const ObjectId = require('mongodb').ObjectId
 const { reservations, spaces_reserved_time, items_reserved_time, spaces, items } = require('../../models/mongodb')
 // const { Timestamp } = require('mongodb');
 const router = express.Router()
@@ -75,7 +75,7 @@ router.post('/reservation', async function (req, res, next) {
 
 
   // process data
-  const reservation_id = new ObjectID()
+  const reservation_id = new ObjectId()
   let received_space_reserved_time = []
   let received_item_reserved_time = []
 
@@ -99,7 +99,7 @@ router.post('/reservation', async function (req, res, next) {
     }
 
     // check whether space_id is exist
-    let space_found = await spaces.findOne({ _id: ObjectID(space_reservation.space_id) })
+    let space_found = await spaces.findOne({ _id: new ObjectId(space_reservation.space_id) })
     if (!space_found) {
       res
         .status(400)
@@ -110,7 +110,7 @@ router.post('/reservation', async function (req, res, next) {
     // =============== ↓底下還沒更新↓ ===============
 
     // process data
-    let start_datetime = new Date(space_reservation.start_datetime)
+/*     let start_datetime = new Date(space_reservation.start_datetime)
     let end_datetime = new Date(space_reservation.end_datetime)
     let section_end_datetime = new Date(space_reservation.start_datetime)
     section_end_datetime = section_end_datetime.setTime(section_end_datetime.getTime() + hours * 60 * 60 * 1000)
@@ -207,7 +207,7 @@ router.post('/reservation', async function (req, res, next) {
     }
 
     // check whether item_id is exist
-    let item_found = items.findOne({ _id: ObjectID(item_reservation.item_id) })
+    let item_found = items.findOne({ _id: new ObjectId(item_reservation.item_id) })
     if (!item_found) {  // <-- notice what's this when not found (should be same as space)
       res
         .status(400)
@@ -232,7 +232,7 @@ router.post('/reservation', async function (req, res, next) {
     // convert to time slots (a day, from 12:00 pm to 11:59 am)
     var a = dayjs(new Date());
     console.log(a);
-
+ */
 
 
     // // get duration (days)
@@ -266,7 +266,7 @@ router.post('/reservation', async function (req, res, next) {
       }
     ],
     organization: organization,
-    contact: contact,
+    name: name,
     department_grade: department_grade,
     email: email,
     reason: reason,
@@ -285,9 +285,132 @@ router.post('/reservation', async function (req, res, next) {
 
   // result.insertedId
   // reservation_id
-  // send email
-  email_obj.sendEmail(process.env.EMAIL,"test mail","space","example.com")
+  
+  
   res.json({ message: 'Success!' })
+  send_email(req.body,"example.com")
 })
 
+function send_email(request_content,url){
+  let reservation_content = ""
+  request_content.space_reservations.forEach(element => {
+    reservation_content += "<div>"
+    let temp_space = spaces.findOne({ _id: new ObjectId(element._id) })
+                          .then(function(response){
+                            console.log(response)
+                          }).catch(function(error){ 
+                            console.log(error)
+                          })
+    reservation_content += temp_space.name['zh-tw']
+    reservation_content += " "
+    reservation_content += element.start_datetime 
+    reservation_content += "~"
+    reservation_content += element.end_datetime
+  });
+  console.log(reservation_content)
+  request_content.item_reservations.forEach(element => {
+    reservation_content += "<div>"
+    let temp_item = items.findOne({ _id: new ObjectId(element._id) })
+                        .then(function(response){
+                          console.log(response)
+                        }).catch(function(error){ 
+                          console.log(error)
+                        })
+    reservation_content += "名稱："
+    reservation_content += temp_item.name['zh-tw']
+    reservation_content += " "
+    reservation_content += "數量："
+    reservation_content += element.quantity
+    reservation_content += " "
+    reservation_content += element.start_datetime 
+    reservation_content += "~"
+    reservation_content += element.end_datetim
+  });
+  let content =`<!DOCTYPE html >
+                <html >
+                  <head>
+                    <meta name="viewport" content="width=device-width" />
+                    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+                  </head>
+                  <body>
+                  <div>
+                    <h2>預約資訊</h2>
+                    <div>姓名：${request_content.name}</div>
+                    <div>系級：${request_content.department_grade}</div>
+                    <div>借用單位：${request_content.organization}</div>
+                    <div>email：${request_content.email}</div>
+                    <div>借用理由：${request_content.reason}</div>
+                    <div>備註 ：${request_content.note}</div>
+                    <div>預約清單</div>
+                    <div>
+                      ${reservation_content}
+                    </div>
+                  </div>
+                  <h2>可利用以下連結做更改或刪除<div>${url}</div></h2>
+                  <div>學生會icon</div></body>
+                </html>
+                `
+  email_obj.sendEmail(request_content.email,"學生會預約系統",content)
+}
+
+/* 
+ReservationPost:
+      type: object
+      properties:
+        submit_datetime:
+          type: string
+          format: date-time
+          description: 用戶端提交時間
+          example: '2024-03-02T21:59:43.000+08:00'
+        name:
+          type: string
+          description: 借用人姓名
+          example: 王小名
+        department_grade:
+          type: string
+          description: 借用人系級
+          example: 資科二
+        organization:
+          type: string
+          description: 借用單位
+          example: 學生會
+        email:
+          type: string
+          format: email
+          description: 借用人電子信箱
+          example: u123456789@go.utaipei.edu.tw
+        reason:
+          type: string
+          description: 借用原因/用途
+          example: 舉辦迎新大會
+        space_reservations:
+          type: array
+          description: 場地借用時段
+          items:
+            $ref: '#/components/schemas/SpaceReservation'
+        item_reservations:
+          type: array
+          description: 物品借用時段、數量
+          items:
+            $ref: '#/components/schemas/ItemReservation'
+        note:
+          type: string
+          description: 備註
+          example: 無
+
+
+const submit_datetime = req.body.submit_datetime
+  const name = req.body.name
+  const department_grade = req.body.department_grade
+  const organization = req.body.organization
+  const email = req.body.email
+  const reason = req.body.reason
+  const note = req.body.note
+  const received_space_reservations = req.body.space_reservations
+  const received_item_reservations = req.body.item_reservations */
+
+
+
+
 module.exports = router
+
