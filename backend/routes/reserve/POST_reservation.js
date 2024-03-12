@@ -110,7 +110,7 @@ router.post('/reservation', async function (req, res, next) {
     // =============== ↓底下還沒更新↓ ===============
 
     // process data
-/*     let start_datetime = new Date(space_reservation.start_datetime)
+    let start_datetime = new Date(space_reservation.start_datetime)
     let end_datetime = new Date(space_reservation.end_datetime)
     let section_end_datetime = new Date(space_reservation.start_datetime)
     section_end_datetime = section_end_datetime.setTime(section_end_datetime.getTime() + hours * 60 * 60 * 1000)
@@ -232,7 +232,7 @@ router.post('/reservation', async function (req, res, next) {
     // convert to time slots (a day, from 12:00 pm to 11:59 am)
     var a = dayjs(new Date());
     console.log(a);
- */
+
 
 
     // // get duration (days)
