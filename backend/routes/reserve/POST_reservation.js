@@ -113,7 +113,7 @@ router.post('/reservation', async function (req, res, next) {
     let start_datetime = new Date(space_reservation.start_datetime)
     let end_datetime = new Date(space_reservation.end_datetime)
     let section_end_datetime = new Date(space_reservation.start_datetime)
-    section_end_datetime = section_end_datetime.setTime(section_end_datetime.getTime() + hours * 60 * 60 * 1000)
+    //section_end_datetime = section_end_datetime.setTime(section_end_datetime.getTime() + hours * 60 * 60 * 1000)
 
     // if end_datetime is earlier than start_datetime
     if (end_datetime < start_datetime) {
@@ -221,7 +221,7 @@ router.post('/reservation', async function (req, res, next) {
     let start_datetime = new Date(item_reservation.start_datetime)
     let end_datetime = new Date(item_reservation.end_datetime)
     let section_end_datetime = new Date(item_reservation.start_datetime)
-    section_end_datetime = section_end_datetime.setTime(section_end_datetime.getTime() + hours * 60 * 60 * 1000)
+    //section_end_datetime = section_end_datetime.setTime(section_end_datetime.getTime() + hours * 60 * 60 * 1000)
 
     // if end_datetime is earlier than start_datetime
     if (end_datetime < start_datetime) {
@@ -230,8 +230,6 @@ router.post('/reservation', async function (req, res, next) {
         .json({ error: 'item_reservations end_datetime earlier than start_datetime error' })
     }
     // convert to time slots (a day, from 12:00 pm to 11:59 am)
-    var a = dayjs(new Date());
-    console.log(a);
 
 
 
@@ -288,44 +286,32 @@ router.post('/reservation', async function (req, res, next) {
   
   
   res.json({ message: 'Success!' })
-  send_email(req.body,"example.com")
+  send_email(doc,"example.com")
 })
 
-function send_email(request_content,url){
+async function send_email(request_content,url){
   let reservation_content = ""
-  request_content.space_reservations.forEach(element => {
+  for(let i=0;i<request_content.space_reservations.length;i++){
     reservation_content += "<div>"
-    let temp_space = spaces.findOne({ _id: new ObjectId(element._id) })
-                          .then(function(response){
-                            console.log(response)
-                          }).catch(function(error){ 
-                            console.log(error)
-                          })
-    reservation_content += temp_space.name['zh-tw']
+    let temp_space = await spaces.findOne({ _id: new ObjectId(request_content.space_reservations[i].space_id) })
+    reservation_content += temp_space['name']['zh-tw']
     reservation_content += " "
-    reservation_content += element.start_datetime 
+    reservation_content += request_content.space_reservations[i].start_datetime 
     reservation_content += "~"
-    reservation_content += element.end_datetime
-  });
-  console.log(reservation_content)
-  request_content.item_reservations.forEach(element => {
+    reservation_content += request_content.space_reservations[i].end_datetime
+  }  
+  for(let i=0;i<request_content.item_reservations.length;i++){
     reservation_content += "<div>"
-    let temp_item = items.findOne({ _id: new ObjectId(element._id) })
-                        .then(function(response){
-                          console.log(response)
-                        }).catch(function(error){ 
-                          console.log(error)
-                        })
-    reservation_content += "名稱："
-    reservation_content += temp_item.name['zh-tw']
+    let temp_item = await items.findOne({ _id: new ObjectId(request_content.item_reservations[i].item_id) })
+    reservation_content += temp_item['name']['zh-tw']
     reservation_content += " "
     reservation_content += "數量："
-    reservation_content += element.quantity
+    reservation_content += request_content.item_reservations[i].quantity
     reservation_content += " "
-    reservation_content += element.start_datetime 
+    reservation_content += request_content.item_reservations[i].start_datetime 
     reservation_content += "~"
-    reservation_content += element.end_datetim
-  });
+    reservation_content += request_content.item_reservations[i].end_datetime
+  };
   let content =`<!DOCTYPE html >
                 <html >
                   <head>
