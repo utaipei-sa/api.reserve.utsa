@@ -110,33 +110,53 @@ router.post('/reservation', async function (req, res, next) {
     // =============== ↓底下還沒更新↓ ===============
 
     // process data
-    let start_datetime = new Date(space_reservation.start_datetime)
-    let end_datetime = new Date(space_reservation.end_datetime)
-    let section_end_datetime = new Date(space_reservation.start_datetime)
-    //section_end_datetime = section_end_datetime.setTime(section_end_datetime.getTime() + hours * 60 * 60 * 1000)
-
+    
     // if end_datetime is earlier than start_datetime
-    if (end_datetime < start_datetime) {
+    
+/*
+1.資料庫查
+2.前面陣列的資料
+
+*/
+    // convert to time slots (1 hour)
+    let start_datetime = dayjs(space_reservation.start_datetime);
+    let end_datetime = dayjs(space_reservation.end_datetime);
+
+    if (start_datetime.isAfter(end_datetime)) {
       res
         .status(400)
         .json({ error: 'space_reservations end_datetime earlier than start_datetime error' })
     }
 
-    // convert to time slots (1 hour)
-    let start_datetime_dayjs = dayjs(start_datetime);
-    let end_datetime_dayjs = dayjs(end_datetime);
     //判斷不乾淨的分鐘數
-    start_datetime_dayjs=start_datetime_dayjs.minute(0);
-    if(!end_datetime_dayjs.isSame('0','minute')){
-        end_datetime_dayjs=end_datetime_dayjs.minute(0);
-        end_datetime_dayjs=end_datetime_dayjs.add(1,'hour');
+    start_datetime=start_datetime.minute(0);
+    if(!end_datetime.isSame('0','minute')){
+        end_datetime=end_datetime.minute(0);
+        end_datetime=end_datetime.add(1,'hour');
     }
     //
-    for (i = received_space_reserved_time.length; start_datetime_dayjs.isBefore(end_datetime_dayjs); i++) {
-      received_space_reserved_time[i] = start_datetime_dayjs.format();
-      start_datetime_dayjs = start_datetime_dayjs.add(1, 'hour');
+    let stop_flag = 0
+    for (;start_datetime.isBefore(end_datetime.subtract("1","hour"));) {
+      for(let i = 0;i<received_space_reserved_time.length;i++){
+        if(dayjs(received_item_reserved_time[i]).isSame(start_datetime)){
+          stop_flag = 1
+          break
+        }
+      }
+      if(stop_flag == 1){
+        break
+      }
+      received_space_reserved_time.push({ "start_datetime" : start_datetime.format(),
+                                          "end_datetime" : start_datetime.add(1, 'hour').format(),
+                                          "space_id" : space_reservation.space_id});
+      start_datetime = start_datetime.add(1, 'hour');
     }
-
+    console.log(received_space_reserved_time)
+    if (stop_flag) {
+      res
+        .status(400)
+        .json({ error: 'space_datetime repeat error' })
+    }
 
     
     
@@ -286,7 +306,7 @@ router.post('/reservation', async function (req, res, next) {
   
   
   res.json({ message: 'Success!' })
-  send_email(doc,"example.com")
+  //send_email(doc,"example.com")
 })
 
 async function send_email(request_content,url){
