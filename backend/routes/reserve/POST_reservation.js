@@ -80,7 +80,7 @@ router.post('/reservation', async function (req, res, next) {
   let received_item_reserved_time = []
 
   // space reservation process
-  received_space_reservations.forEach(async space_reservation => {
+  for(const space_reservation of received_space_reservations){
     // check
     if (!OBJECT_ID_REGEXP.test(space_reservation.space_id)) {
       error_message += 'space_reservations space_id empty error\n'
@@ -126,6 +126,7 @@ router.post('/reservation', async function (req, res, next) {
       res
         .status(400)
         .json({ error: 'space_reservations end_datetime earlier than start_datetime error' })
+      return
     }
 
     //判斷不乾淨的分鐘數
@@ -146,64 +147,38 @@ router.post('/reservation', async function (req, res, next) {
       if(stop_flag == 1){
         break
       }
-      received_space_reserved_time.push({ "start_datetime" : start_datetime.format(),
-                                          "end_datetime" : start_datetime.add(1, 'hour').format(),
-                                          "space_id" : space_reservation.space_id});
+      received_space_reserved_time.push({ "start_datetime" : new Date(start_datetime.format()),
+                                          "end_datetime" : new Date(start_datetime.add(1, 'hour').format()),
+                                          "space_id" : space_reservation.space_id,
+                                          "reserved" : 1});
       start_datetime = start_datetime.add(1, 'hour');
     }
-    console.log(received_space_reserved_time)
     if (stop_flag) {
       res
         .status(400)
         .json({ error: 'space_datetime repeat error' })
+      return
     }
-
+  }
+  let db_space_check;
+  for(let i=0;i<received_space_reserved_time.length;i++){
+    db_space_check = await spaces_reserved_time.findOne({ "start_datetime" : received_space_reserved_time[i].start_datetime,
+                                                          "space_id" : received_space_reserved_time[i].space_id,
+                                                          "reserved" : 1
+                                                        })
+    console.log(db_space_check)
+    if(db_space_check == null){
+      continue
+    }else if(db_space_check.reserved) {
+      res
+        .status(400)
+        .json({ error: 'space_datetime has reserved error' })
+      return
+    }
+  }
+  
     
-    
-    
-    // let test = new Date('1995-12-17T03:24:00');
-    // console.log(dayjs(test).get(hour));
-
-
-
-    // first time slot (for instance: 18:38~18:59 convert to 18:00~18:59)
-    // check whether the time slot has been reserved
-    // if not:
-    //   push to received_space_reserved_time
-    // let temp = {
-    //   space_id: space_id,
-    //   start_datetime: start_datetime,
-    //   end_datetime: section_end_datetime
-    // }
-    // else:
-    //   abort
-
-    // middle time slot (convert to an hour a block)
-
-    // the last time slot (for instance: 19:00~19:38 convert to 19:00~19:59)
-
-
-
-
-
-    // const duration = parseInt(space_reservation.duration.substring(0, 2), 10) // decimal integer from the substring
-    // // let unshifted_time = new Date(element.start_time);
-    // let shifted_time
-    // for (let i = 0; i < duration; i++) {
-    //   // check 預約的時段是可供出借的時段（非半夜）
-    //   // shifted_time = new Date(new Date(unshifted_time).setHours(unshifted_time.getHours()+i));  // getHours --> shift --> set back
-    //   shifted_time = hour_shift(space_reservation.start_time, i)
-    //   received_space_reserved_time.push({
-    //     space_id: space_reservation.space_id,
-    //     date: space_reservation.start_date,
-    //     time_slot: shifted_time, // unit: hour
-    //     reservations_id: reservation_id
-    //   })
-    // }
-
-    // =============== ↑以上還沒更新↑ ===============
-  })
-
+  // lte db query
   // item reservation process
   received_item_reservations.forEach(item_reservation => {
     // check
