@@ -180,7 +180,7 @@ router.post('/reservation', async function (req, res, next) {
     
   // lte db query
   // item reservation process
-  received_item_reservations.forEach(item_reservation => {
+  for(const item_reservation of received_item_reservations){
     // check
     if (item_reservation.quantity <= 0) {
       error_message += 'item_reservations quantity error\n'
@@ -211,9 +211,75 @@ router.post('/reservation', async function (req, res, next) {
     }
 
     // =============== ↓底下還沒更新↓ ===============
+    let start_datetime = dayjs(item_reservation.start_datetime);
+    let end_datetime = dayjs(item_reservation.end_datetime);
 
+    if (start_datetime.isAfter(end_datetime)) {
+      res
+        .status(400)
+        .json({ error: 'item_reservation end_datetime earlier than start_datetime error' })
+      return
+    }
+
+    //判斷不乾淨的分鐘數
+    start_datetime=start_datetime.minute(0);
+    if(!end_datetime.isSame('0','minute')){
+        end_datetime=end_datetime.minute(0);
+        end_datetime=end_datetime.add(1,'hour');
+    }
+    //
+    let stop_flag = 0
+    for (;start_datetime.isBefore(end_datetime.subtract("1","hour"));) {
+      for(let i = 0;i<received_item_reserved_time.length;i++){
+        if(dayjs(received_item_reserved_time[i]).isSame(start_datetime)){
+          stop_flag = 1
+          break
+        }
+      }
+      if(stop_flag == 1){
+        break
+      }
+      received_item_reserved_time.push({ "start_datetime" : new Date(start_datetime.format()),
+                                          "end_datetime" : new Date(start_datetime.add(1, 'hour').format()),
+                                          "item_id" : item_reservation.item_id,
+                                          "reserved_quantity": item_reservation.quantity
+                                          });
+      start_datetime = start_datetime.add(1, 'hour');
+    }
+    //console.log(received_item_reserved_time)
+    if (stop_flag) {
+      res
+        .status(400)
+        .json({ error: 'item_datetime repeat error' })
+      return
+    }
+  }
+  let db_item_check;
+  let max_quantity;
+  for(let i=0;i<received_item_reserved_time.length;i++){
+    max_quantity = await items.findOne({_id : new ObjectId(received_item_reserved_time[i].item_id)})
+    console.log(max_quantity);
+    db_item_check = await items_reserved_time.findOne({ "start_datetime" : received_item_reserved_time[i].start_datetime,
+                                                          "item_id" : received_item_reserved_time[i].item_id,
+                                                        })
+    console.log(db_item_check) 
+
+    if(db_item_check == null){
+      continue
+    }else {
+      if(db_item_check.reserved_quantity <= max_quantity - received_item_reserved_time[i].quantity) {
+        continue
+      }else{
+        res
+          .status(400)
+          .json({ error: 'item_datetime has over reserved error' })
+        return
+      } 
+    }
+      
+}
     // process data
-    let start_datetime = new Date(item_reservation.start_datetime)
+   /*  let start_datetime = new Date(item_reservation.start_datetime)
     let end_datetime = new Date(item_reservation.end_datetime)
     let section_end_datetime = new Date(item_reservation.start_datetime)
     //section_end_datetime = section_end_datetime.setTime(section_end_datetime.getTime() + hours * 60 * 60 * 1000)
@@ -223,7 +289,7 @@ router.post('/reservation', async function (req, res, next) {
       res
         .status(400)
         .json({ error: 'item_reservations end_datetime earlier than start_datetime error' })
-    }
+    } */
     // convert to time slots (a day, from 12:00 pm to 11:59 am)
 
 
@@ -245,7 +311,7 @@ router.post('/reservation', async function (req, res, next) {
     //   })
     // }
     // =============== ↑以上還沒更新↑ ===============
-  })
+
 
   // insert reservation into database
   const doc = {
@@ -269,12 +335,12 @@ router.post('/reservation', async function (req, res, next) {
   }
 
   const reservations_result = reservations.insertOne(doc)
-  if (received_space_reserved_time.length > 0) {
+  /* if (received_space_reserved_time.length > 0) {
     const spaces_reserved_time_result = spaces_reserved_time.insertMany(received_space_reserved_time)
   }
   if (received_item_reserved_time.length > 0) {
     const items_reserved_time_result = items_reserved_time.insertMany(received_item_reserved_time)
-  }
+  } */
 
   // result.insertedId
   // reservation_id
