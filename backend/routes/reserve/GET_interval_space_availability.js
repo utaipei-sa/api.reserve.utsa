@@ -117,9 +117,9 @@ router.get('/interval_space_availability', async function(req, res, next) {
             }
             if(start_datetime_dayjs.hour()>=digical_time_slots[current_timeslot].start&&start_datetime_dayjs.hour()<digical_time_slots[current_timeslot].end){  
                 store_cut_timeslot_array.push(
-                    {   spaceID: 1,
-                        start_time: start_datetime_dayjs.format() ,
-                        end_time : start_datetime_dayjs.add(1,'hour').format(),
+                    {   spaceID: req.params.spaceID,
+                        start_time: new Date(start_datetime_dayjs.format()) ,
+                        end_time : new Date(start_datetime_dayjs.add(1,'hour').format()),
                         aviliblty: false
                     }
                 );
