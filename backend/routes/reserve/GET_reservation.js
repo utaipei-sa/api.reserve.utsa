@@ -1,9 +1,8 @@
-var express = require('express');
-var ObjectID = require('mongodb').ObjectId;
-var { reservations, spaces_reserved_time, items_reserved_time } = require('../../models/mongodb');
-const dayjs = require('dayjs');
-//const { Timestamp } = require('mongodb');
-var router = express.Router();
+const express = require('express')
+const ObjectId = require('mongodb').ObjectId
+const { reservations, spaces_reserved_time, items_reserved_time } = require('../../models/mongodb')
+// const { Timestamp } = require('mongodb')
+const router = express.Router()
 
 /**
  * @openapi
@@ -31,21 +30,31 @@ var router = express.Router();
  *               $ref: '#/components/schemas/Reservation'
  */
 router.get('/reservation/:reservation_id', async function(req, res, next) {
+    // 取得參數
+    const reservation_id = req.params.reservation_id
     
+    // 檢查輸入是否正確
+    const OBJECT_ID_REGEXP = /^[a-fA-F0-9]{24}$/  // ObjectId 格式 (652765ed3d21844635674e71)
     
-    
-    const objectId_format = new RegExp('^[a-fA-F0-9]{24}$');  // ObjectId 
-    const reservation_id=req.params.reservation_id
-    if(!objectId_format.test(reservation_id)){
-        return res.status(400).json({ error: 'object_id format error' });
+    if (!OBJECT_ID_REGEXP.test(reservation_id)) {
+        res
+            .status(400)
+            .json({ error: 'object_id format error' })
+        return
     }
-    const result = await reservations.findOne({"_id": new ObjectID(req.params.reservation_id)});
-    if(result === null){
-        return res.status(400).json({ error: '請提供有效的預約紀錄ID' });
+
+    // 查詢預約紀錄
+    const result = await reservations.findOne({ _id: new ObjectId(reservation_id) })
+    // 如果找不到就報錯
+    if (result === null) {
+        res
+            .status(400)
+            .json({ error: 'reservation_id is required' })
+        return
     }
-    res.json(result);
- 
 
-});
+    // 輸出/回傳結果
+    res.json(result)
+})
 
-module.exports = router;
+module.exports = router
