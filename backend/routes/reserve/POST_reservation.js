@@ -276,8 +276,7 @@ router.post('/reservation', async function (req, res, next) {
         return
       } 
     }
-      
-}
+  }
     // process data
    /*  let start_datetime = new Date(item_reservation.start_datetime)
     let end_datetime = new Date(item_reservation.end_datetime)
@@ -335,12 +334,12 @@ router.post('/reservation', async function (req, res, next) {
   }
 
   const reservations_result = reservations.insertOne(doc)
-  /* if (received_space_reserved_time.length > 0) {
+  if (received_space_reserved_time.length > 0) {
     const spaces_reserved_time_result = spaces_reserved_time.insertMany(received_space_reserved_time)
   }
   if (received_item_reserved_time.length > 0) {
     const items_reserved_time_result = items_reserved_time.insertMany(received_item_reserved_time)
-  } */
+  }
 
   // result.insertedId
   // reservation_id
