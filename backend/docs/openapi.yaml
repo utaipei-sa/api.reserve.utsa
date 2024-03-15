@@ -24,6 +24,11 @@ components:
     ItemAvailability:
       type: object
       properties:
+        item_id:
+          type: string
+          format: Object ID
+          description: 物品 ID
+          example: 652038af1b2271aa002c0a09
         start_datetime:
           type: string
           format: date-time
@@ -209,6 +214,11 @@ components:
     SpaceAvailability:
       type: object
       properties:
+        space_id:
+          type: string
+          format: Object ID
+          description: 場地 ID
+          example: 65253db7053c98f0bd1593db
         start_datetime:
           type: string
           format: date-time
