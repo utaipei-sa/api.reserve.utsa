@@ -1,6 +1,7 @@
-var express = require('express');
-var { items, items_reserved_time } = require('../../models/mongodb');
-var router = express.Router();
+const express = require('express')
+const ObjectId = require('mongodb').ObjectId
+const { items, items_reserved_time } = require('../../models/mongodb')
+const router = express.Router()
 
 /**
  * @openapi
@@ -41,80 +42,67 @@ var router = express.Router();
  *               $ref: '#/components/schemas/ItemAvailability'
  */
 router.get('/integral_item_availability', async function(req, res, next) {
-    // input:
-    //     item_id: string
-    //     start_datetime: YYYY-MM-DDThh:mm
-    //     end_datetime: YYYY-MM-DDThh:mm
-    // output:
-    //     {
-    //         data:{
-    //             start_date: YYYY-MM-DDThh:mm,
-    //             end_date : YYYY-MM-DDThh:mm,
-    //             available_quantity: integer
-    //         }
-    //     }
-
     // 取得參數
     const item_id = req.query.item_id;
     const start_datetime = req.query.start_datetime;
     const end_datetime = req.query.end_datetime;
 
     // 檢查輸入是否正確（正規表達式 Regular Expression）
-    const objectId_format = new RegExp('^[a-fA-F0-9]{24}$');  // ObjectId 格式
-    const datetime_format = new RegExp('^(\\d{4})-(\\d{2})-(\\d{2})T(\\d{2}):(\\d{2})');  // 日期時間格式（年-月-日T時:分）
+    const OBJECT_ID_REGEXP = /^[a-fA-F0-9]{24}$/  // ObjectId 格式
+    const DATETIME_MINUTE_REGEXP = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})$/  // 日期時間格式（年-月-日T時:分）
     if (item_id === undefined || start_datetime === undefined || end_datetime === undefined) {  // 沒給齊參數
-        return res
+        res
             .status(400)
-            .json({ error: 'item_id, start_datetime, and end_datetime are required' });
-    } else if (!objectId_format.test(item_id)) {  // check item_id format
-        return res
+            .json({ error: 'item_id, start_datetime, and end_datetime are required' })
+        return
+    } else if (!OBJECT_ID_REGEXP.test(item_id)) {  // check item_id format
+        res
             .status(400)
-            .json({ error: 'item_id format error' });
-    } else if (!datetime_format.test(start_datetime) || !datetime_format.test(end_datetime)) {  // check datetime fromat
-        return res
+            .json({ error: 'item_id format error' })
+        return
+    } else if (!DATETIME_MINUTE_REGEXP.test(start_datetime) || !DATETIME_MINUTE_REGEXP.test(end_datetime)) {  // check datetime fromat
+        res
             .status(400)
-            .json({ error: 'datetime format error' });
+            .json({ error: 'datetime format error' })
+        return
     }
-    // 確認 item_id 是否有對應的場地，沒有就報錯
 
     // 查詢物品資訊
-    const item = await items.findOne({ _id: item_id });//, function (error, impacts) {
-    //     // 如果 item_id 查不到物品
-    //     if (error) {
-    //         res.status(404).json({ error: 'Item not found' });
-    //     }
-    // });
-    //
-    // if (!items) {
-    //    return res.status(404).json({ error: '找不到指定的物品' });
-    //  }
-    const total_quantity = item.quantity;
+    const item_found = await items.findOne({ _id: new ObjectId(item_id) })
+    if (!item_found) {
+        res
+            .status(400)
+            .json({ error: 'item_id not found error' })
+        return
+    }
+    const max_quantity = item_found.quantity
+    
+    // 取得物品預約時段紀錄
+    const items_reservations = await items_reserved_time.find({ 
+        item_id: item_id, 
+        start_datetime: {
+            $gte: new Date(start_datetime+':00+0800'),  // query start_datetime
+            $lt: new Date(end_datetime+':00+0800')  // query end_datetime
+        }
+    }).toArray()  // 搜尋時間範圍內已被預約的時段
 
-    // 取得物品借用時段紀錄
-    const item_reservations = await items_reserved_time.find({ 
-        _id: item_id, 
-        start_date: {
-            $gte: new Date(start_datetime),  // query_start_datetime
-            $lt: new Date(end_datetime)  // query_end_datetime
-        } 
-    });  // 時間範圍內
-
-    // 統整物品可借數量資訊
-    var min_available_quantity = total_quantity;
-    for (i = 0; i < item_reservations.length; i++) {  
-        if (total_quantity - item_reservations[i].quantity < min_available_quantity) {
-            min_available_quantity = total_quantity - item_reservations[i].quantity;
-        }  // 可出借數量取最小值
+    // 取得單一時段已被預約的最大數量
+    let max_reserved_quantity = 0
+    for (const item_reservation of items_reservations) {
+        max_reserved_quantity = item_reservation.reserved_quantity > max_reserved_quantity
+            ? item_reservation.reserved_quantity
+            : max_reserved_quantity
     }
 
-    // 輸出
+    // 輸出/回傳結果
     res.json({
-        data:{
-            "start_date": start_datetime,
-            "end_date" : end_datetime,
-            "available_quantity": min_available_quantity
+        data: {
+            "item_id": item_id,
+            "start_datetime": start_datetime,
+            "end_datetime" : end_datetime,
+            "available_quantity": max_quantity - max_reserved_quantity
         }
-    });
-});
+    })
+})
 
-module.exports = router;
+module.exports = router
