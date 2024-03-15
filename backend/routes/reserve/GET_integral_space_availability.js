@@ -1,7 +1,7 @@
-var express = require('express')
+const express = require('express')
 const ObjectId = require('mongodb').ObjectId
-var { spaces, spaces_reserved_time } = require('../../models/mongodb')
-var router = express.Router()
+const { spaces, spaces_reserved_time } = require('../../models/mongodb')
+const router = express.Router()
 
 /**
  * @openapi
@@ -43,9 +43,9 @@ var router = express.Router()
  */
 router.get('/integral_space_availability', async function(req, res, next) {
     // 取得參數
-    const space_id = req.query.space_id;
-    const start_datetime = req.query.start_datetime;
-    const end_datetime = req.query.end_datetime;
+    const space_id = req.query.space_id
+    const start_datetime = req.query.start_datetime
+    const end_datetime = req.query.end_datetime
 
     // 檢查輸入是否正確（正規表達式 Regular Expression）
     const OBJECT_ID_REGEXP = /^[a-fA-F0-9]{24}$/  // ObjectId 格式
@@ -91,6 +91,7 @@ router.get('/integral_space_availability', async function(req, res, next) {
         // 已被借用(不可借)
         res.json({
             data: {
+                "space_id": space_id,
                 "start_datetime": start_datetime,
                 "end_datetime" : end_datetime,
                 "availability": 0
@@ -100,6 +101,7 @@ router.get('/integral_space_availability', async function(req, res, next) {
         // 未被借用(可借)
         res.json({
             data: {
+                "space_id": space_id,
                 "start_datetime": start_datetime,
                 "end_datetime" : end_datetime,
                 "availability": 1
