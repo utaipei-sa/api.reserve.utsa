@@ -21,6 +21,15 @@ components:
           example: 652038af1b2271aa002c0a09
         name:
           $ref: '#/components/schemas/Languages'
+        quantity:
+          type: number
+          description: 可預約數量
+          example: 30
+        exception_time:
+          type: array
+          description: 例外時段
+          items:
+            $ref: '#/components/schemas/ItemExceptionTime'
     ItemAvailability:
       type: object
       properties:
@@ -44,6 +53,23 @@ components:
           minimum: -1
           description: 可借數量 (-1:其他)
           example: 15
+    ItemExceptionTime:
+      type: object
+      properties:
+        start_datetime:
+          type: string
+          format: date-time
+          description: 起始時間
+          example: 2024-03-16T08:00
+        end_datetime:
+          type: string
+          format: date-time
+          description: 結束時間
+          example: 2024-03-16T22:00
+        quantity: 
+          type: number
+          description: 此時段可供預約數量
+          example: 0
     ItemReservation:
       type: object
       properties:
@@ -211,6 +237,15 @@ components:
           example: 65253db7053c98f0bd1593db
         name:
           $ref: '#/components/schemas/Languages'
+        open:
+          type: number
+          description: 是否開放預約 (1:可預約, 0:不可預約, -1:其他)
+          example: 1
+        exception_time:
+          type: array
+          description: 例外時段
+          items:
+            $ref: '#/components/schemas/SpaceExceptionTime'
     SpaceAvailability:
       type: object
       properties:
@@ -235,6 +270,23 @@ components:
           maximum: 1
           description: 是否可借 (1:可借, 0:不可借, -1:其他)
           example: 1
+    SpaceExceptionTime:
+      type: object
+      properties:
+        start_datetime:
+          type: string
+          format: date-time
+          description: 起始時間
+          example: 2024-03-16T08:00
+        end_datetime:
+          type: string
+          format: date-time
+          description: 結束時間
+          example: 2024-03-16T22:00
+        open: 
+          type: number
+          description: 此時段是否開放借用 (1:可借, 0:不可借)
+          example: 0
     SpaceReservation:
       type: object
       properties:
