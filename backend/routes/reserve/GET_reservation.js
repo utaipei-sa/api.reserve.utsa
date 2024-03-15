@@ -31,9 +31,6 @@ var router = express.Router();
  *               $ref: '#/components/schemas/Reservation'
  */
 router.get('/reservation/:reservation_id', async function(req, res, next) {
-    
-    
-    
     const objectId_format = new RegExp('^[a-fA-F0-9]{24}$');  // ObjectId 
     const reservation_id=req.params.reservation_id
     if(!objectId_format.test(reservation_id)){

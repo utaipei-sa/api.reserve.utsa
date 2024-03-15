@@ -2,6 +2,8 @@ const express = require('express');
 const ObjectId = require('mongodb').ObjectId
 const { spaces, spaces_reserved_time } = require('../../models/mongodb');
 const router = express.Router();
+const dayjs = require('dayjs');
+
 
 /**
  * @openapi
@@ -99,6 +101,33 @@ router.get('/interval_space_availability', async function(req, res, next) {
     //             加入時間區段
     //             進行查詢(還是要之後一次查詢?)
     //     日期 +1
+
+    let store_cut_timeslot_array=[];
+    let end_datetime_dayjs=dayjs(end_datetime);
+    let start_datetime_dayjs=dayjs(start_datetime);
+   
+    while(start_datetime_dayjs.isBefore(end_datetime_dayjs)){
+        for(let current_timeslot = 0;start_datetime_dayjs.isBefore(end_datetime_dayjs)&&current_timeslot<3;start_datetime_dayjs=start_datetime_dayjs.add(1,'hour')){
+
+            //檢查start_datetime是在哪一個時段的
+            if(start_datetime_dayjs.hour()>=digical_time_slots[current_timeslot].end){
+                current_timeslot++;
+                start_datetime_dayjs=start_datetime_dayjs.subtract(1,'hour');
+                continue;
+            }
+            if(start_datetime_dayjs.hour()>=digical_time_slots[current_timeslot].start&&start_datetime_dayjs.hour()<digical_time_slots[current_timeslot].end){  
+                store_cut_timeslot_array.push(
+                    {   spaceID: 1,
+                        start_time: start_datetime_dayjs.format() ,
+                        end_time : start_datetime_dayjs.add(1,'hour').format(),
+                        aviliblty: false
+                    }
+                );
+            }   
+        }
+        start_datetime_dayjs=start_datetime_dayjs.add(1,'day');
+        start_datetime_dayjs=start_datetime_dayjs.set('hour',0).set('minute',0).set('second',0);
+    }
 
     // ===============↓以下未整理↓===============
 
