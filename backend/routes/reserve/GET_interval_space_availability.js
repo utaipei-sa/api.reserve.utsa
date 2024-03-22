@@ -101,6 +101,11 @@ router.get('/interval_space_availability', async function(req, res, next) {
     //             加入時間區段
     //             進行查詢(還是要之後一次查詢?)
     //     日期 +1
+    const digical_time_slots = [
+        { start: 8, end: 12 },
+        { start: 13, end: 17 },
+        { start: 18, end: 22 }
+    ]
 
     let store_cut_timeslot_array=[];
     let end_datetime_dayjs=dayjs(end_datetime);
@@ -115,12 +120,23 @@ router.get('/interval_space_availability', async function(req, res, next) {
                 start_datetime_dayjs=start_datetime_dayjs.subtract(1,'hour');
                 continue;
             }
+            let reserved_value = 0;
+            //在資料庫中是否有找到此時段的資料,如果否reserved_value=0
+            if (await spaces_reserved_time.findOne({ start_datetime: new Date(start_datetime_dayjs.format()) }) == null) {
+                reserved_value = 0;
+            }
+            else {
+                reserved_value = 1;
+            }
+
             if(start_datetime_dayjs.hour()>=digical_time_slots[current_timeslot].start&&start_datetime_dayjs.hour()<digical_time_slots[current_timeslot].end){  
                 store_cut_timeslot_array.push(
-                    {   spaceID: req.params.spaceID,
-                        start_time: new Date(start_datetime_dayjs.format()) ,
-                        end_time : new Date(start_datetime_dayjs.add(1,'hour').format()),
-                        aviliblty: false
+                    {   
+                        _id: req.params._id,
+                        space_id: req.params.space_id,
+                        start_datetime: new Date(start_datetime_dayjs.format()) ,
+                        end_datetime : new Date(start_datetime_dayjs.add(1,'hour').format()),
+                        reserved: reserved_value
                     }
                 );
             }   

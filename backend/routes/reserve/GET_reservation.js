@@ -2,6 +2,7 @@ var express = require('express');
 var ObjectID = require('mongodb').ObjectId;
 var { reservations, spaces_reserved_time, items_reserved_time } = require('../../models/mongodb');
 const dayjs = require('dayjs');
+const { Db } = require('mongodb');
 //const { Timestamp } = require('mongodb');
 var router = express.Router();
 
@@ -30,21 +31,19 @@ var router = express.Router();
  *             schema:
  *               $ref: '#/components/schemas/Reservation'
  */
-router.get('/reservation/:reservation_id', async function(req, res, next) {
-    
-    
+router.get('/reservation/:reservation_id', async function (req, res, next) {
     
     const objectId_format = new RegExp('^[a-fA-F0-9]{24}$');  // ObjectId 
-    const reservation_id=req.params.reservation_id
-    if(!objectId_format.test(reservation_id)){
+    const reservation_id = req.params.reservation_id
+    if (!objectId_format.test(reservation_id)) {
         return res.status(400).json({ error: 'object_id format error' });
     }
-    const result = await reservations.findOne({"_id": new ObjectID(req.params.reservation_id)});
-    if(result === null){
+    const result = await reservations.findOne({ "_id": new ObjectID(req.params.reservation_id) });
+    if (result === null) {
         return res.status(400).json({ error: '請提供有效的預約紀錄ID' });
     }
     res.json(result);
- 
+
 
 });
 
