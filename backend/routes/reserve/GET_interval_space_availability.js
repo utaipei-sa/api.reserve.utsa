@@ -122,18 +122,17 @@ router.get('/interval_space_availability', async function(req, res, next) {
             }
             let reserved_value = 0;
             //在資料庫中是否有找到此時段的資料,如果否reserved_value=0
-            if (await spaces_reserved_time.findOne({ start_datetime: new Date(start_datetime_dayjs.format()) }) == null) {
+            const space_database_info = await spaces_reserved_time.findOne({ start_datetime: new Date(start_datetime_dayjs.format()), space_id: req.params.space_id });
+            if ( space_database_info== null) {
                 reserved_value = 0;
             }
             else {
-                reserved_value = 1;
+                reserved_value = space_database_info.reserved;
             }
 
             if(start_datetime_dayjs.hour()>=digical_time_slots[current_timeslot].start&&start_datetime_dayjs.hour()<digical_time_slots[current_timeslot].end){  
                 store_cut_timeslot_array.push(
                     {   
-                        _id: req.params._id,
-                        space_id: req.params.space_id,
                         start_datetime: new Date(start_datetime_dayjs.format()) ,
                         end_datetime : new Date(start_datetime_dayjs.add(1,'hour').format()),
                         reserved: reserved_value

@@ -80,6 +80,51 @@ router.get('/interval_item_availability', async function(req, res, next) {
     // 確認 item_id 是否有對應的場地，沒有就報錯
 
     // 統整物品可否借用資訊
+    const digical_time_slots = [
+        { start: 8, end: 12 },
+        { start: 13, end: 17 },
+        { start: 18, end: 22 }
+    ]
+
+    let store_cut_timeslot_array=[];
+    let end_datetime_dayjs=dayjs(end_datetime);
+    let start_datetime_dayjs=dayjs(start_datetime);
+   
+    while(start_datetime_dayjs.isBefore(end_datetime_dayjs)){
+        for(let current_timeslot = 0;start_datetime_dayjs.isBefore(end_datetime_dayjs)&&current_timeslot<3;start_datetime_dayjs=start_datetime_dayjs.add(1,'hour')){
+
+            //檢查start_datetime是在哪一個時段的
+            if(start_datetime_dayjs.hour()>=digical_time_slots[current_timeslot].end){
+                current_timeslot++;
+                start_datetime_dayjs=start_datetime_dayjs.subtract(1,'hour');
+                continue;
+            }
+            let reserved_quantity = 0;
+            //在資料庫中是否有找到此時段的資料,如果否reserved_quantity=0
+            const item_database_info = await items_reserved_time.findOne({ start_datetime: new Date(start_datetime_dayjs.format()), item_id: item_id });
+            if ( item_database_info== null) {
+                reserved_quantity = 0;
+            }
+            else {
+                reserved_quantity = item_database_info.reserved;
+            }
+
+            if(start_datetime_dayjs.hour()>=digical_time_slots[current_timeslot].start&&start_datetime_dayjs.hour()<digical_time_slots[current_timeslot].end){  
+                store_cut_timeslot_array.push(
+                    {   
+                        start_datetime: new Date(start_datetime_dayjs.format()) ,
+                        end_datetime : new Date(start_datetime_dayjs.add(1,'hour').format()),
+                        reserved: reserved_quantity
+                    }
+                );
+            }   
+        }
+        start_datetime_dayjs=start_datetime_dayjs.add(1,'day');
+        start_datetime_dayjs=start_datetime_dayjs.set('hour',0).set('minute',0).set('second',0);
+    }
+
+
+
     // 列出欲查詢的所有時段
 
     // 時段的部分我不知道該怎麼用，就選擇性的複製貼上，煩請學長檢查一下有無問題
