@@ -4,7 +4,9 @@ const { reservations, spaces_reserved_time, items_reserved_time, spaces, items }
 // const { Timestamp } = require('mongodb');
 const router = express.Router()
 const dayjs = require('dayjs');
-var email_obj = require('../../utilities/email')
+var utc = require('dayjs/plugin/utc')
+dayjs.extend(utc)
+var email_obj = require('../../utilities/email/email')
 
 /**
  * @openapi
@@ -106,22 +108,10 @@ router.post('/reservation', async function (req, res, next) {
         .json({ error: 'space_reservations space_id not found error' })
       return
     }
-
-    // =============== ↓底下還沒更新↓ ===============
-
-    // process data
-    
-    // if end_datetime is earlier than start_datetime
-    
-/*
-1.資料庫查
-2.前面陣列的資料
-
-*/
-    // convert to time slots (1 hour)
+    //space時間確認
     let start_datetime = dayjs(space_reservation.start_datetime);
     let end_datetime = dayjs(space_reservation.end_datetime);
-
+    //起始時間必定早於結束時間
     if (start_datetime.isAfter(end_datetime)) {
       res
         .status(400)
@@ -129,17 +119,20 @@ router.post('/reservation', async function (req, res, next) {
       return
     }
 
-    //判斷不乾淨的分鐘數
+    //判斷不乾淨的分鐘數 補整
     start_datetime=start_datetime.minute(0);
-    if(!end_datetime.isSame('0','minute')){
+    if(end_datetime.minute() != '0' || end_datetime.second()!='0' || end_datetime.millisecond()!='0' ){
         end_datetime=end_datetime.minute(0);
         end_datetime=end_datetime.add(1,'hour');
     }
-    //
+    //將時間段切個成一小時為單位
     let stop_flag = 0
-    for (;start_datetime.isBefore(end_datetime.subtract("1","hour"));) {
+    for (;start_datetime.isBefore(end_datetime);) {
       for(let i = 0;i<received_space_reserved_time.length;i++){
-        if(dayjs(received_item_reserved_time[i]).isSame(start_datetime)){
+        //判斷收到的reservation時間段是否有重複的，
+        //有的話就直接ret space_datetime repeat error
+        //沒有就push進received_space_reserved_time
+        if(dayjs(received_space_reserved_time[i].start_datetime).isSame(start_datetime)){
           stop_flag = 1
           break
         }
@@ -160,13 +153,15 @@ router.post('/reservation', async function (req, res, next) {
       return
     }
   }
-  let db_space_check;
+  //確認db裡有沒有被借過
+  let db_space_check;//db資料暫存器
   for(let i=0;i<received_space_reserved_time.length;i++){
+    //挖db
     db_space_check = await spaces_reserved_time.findOne({ "start_datetime" : received_space_reserved_time[i].start_datetime,
                                                           "space_id" : received_space_reserved_time[i].space_id,
                                                           "reserved" : 1
                                                         })
-    console.log(db_space_check)
+                                                        console.log("not err")
     if(db_space_check == null){
       continue
     }else if(db_space_check.reserved) {
@@ -176,9 +171,7 @@ router.post('/reservation', async function (req, res, next) {
       return
     }
   }
-  
-    
-  // lte db query
+  //重複的註解就不打了，參考樓上space(絕對不是我懶
   // item reservation process
   for(const item_reservation of received_item_reservations){
     // check
@@ -223,7 +216,7 @@ router.post('/reservation', async function (req, res, next) {
 
     //判斷不乾淨的分鐘數
     start_datetime=start_datetime.minute(0);
-    if(!end_datetime.isSame('0','minute')){
+    if(end_datetime.minute() != '0' || end_datetime.second()!='0' || end_datetime.millisecond()!='0'){
         end_datetime=end_datetime.minute(0);
         end_datetime=end_datetime.add(1,'hour');
     }
@@ -231,7 +224,7 @@ router.post('/reservation', async function (req, res, next) {
     let stop_flag = 0
     for (;start_datetime.isBefore(end_datetime.subtract("1","hour"));) {
       for(let i = 0;i<received_item_reserved_time.length;i++){
-        if(dayjs(received_item_reserved_time[i]).isSame(start_datetime)){
+        if(dayjs(received_item_reserved_time[i].start_datetime).isSame(start_datetime)){
           stop_flag = 1
           break
         }
@@ -258,11 +251,11 @@ router.post('/reservation', async function (req, res, next) {
   let max_quantity;
   for(let i=0;i<received_item_reserved_time.length;i++){
     max_quantity = await items.findOne({_id : new ObjectId(received_item_reserved_time[i].item_id)})
-    console.log(max_quantity);
+    //console.log(max_quantity);
     db_item_check = await items_reserved_time.findOne({ "start_datetime" : received_item_reserved_time[i].start_datetime,
                                                           "item_id" : received_item_reserved_time[i].item_id,
                                                         })
-    console.log(db_item_check) 
+    //console.log(db_item_check) 
 
     if(db_item_check == null){
       continue
@@ -332,7 +325,7 @@ router.post('/reservation', async function (req, res, next) {
     item_reservations: received_item_reservations,
     note: note
   }
-
+  //console.log(received_space_reserved_time)
   const reservations_result = reservations.insertOne(doc)
   if (received_space_reserved_time.length > 0) {
     const spaces_reserved_time_result = spaces_reserved_time.insertMany(received_space_reserved_time)
@@ -343,7 +336,7 @@ router.post('/reservation', async function (req, res, next) {
 
   // result.insertedId
   // reservation_id
-  
+
   
   res.json({ message: 'Success!' })
   //send_email(doc,"example.com")

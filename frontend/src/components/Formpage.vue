@@ -472,8 +472,8 @@
       delspace(index){
         this.space_data.splice(index,1)
       },
-      addspace(){
-      
+      async addspace(){
+        await axios.get("") 
         if(this.space_temp!="" && this.space_date_temp!="" &&this.space_time_temp!=""){
           this.space_data.push([this.space_temp,this.space_date_temp.toString(),this.space_time_temp])
 
