@@ -122,8 +122,8 @@ router.get('/interval_space_availability', async function(req, res, next) {
             }
             let reserved_value = 0;
             //在資料庫中是否有找到此時段的資料,如果否reserved_value=0
-            const space_database_info = await spaces_reserved_time.findOne({ start_datetime: new Date(start_datetime_dayjs.format()), space_id: req.params.space_id });
-            if ( space_database_info== null) {
+            const space_database_info = await spaces_reserved_time.findOne({ start_datetime: new Date(start_datetime_dayjs.format()), space_id: new ObjectId(space_id) });
+            if ( space_database_info == null) {
                 reserved_value = 0;
             }
             else {
@@ -143,142 +143,9 @@ router.get('/interval_space_availability', async function(req, res, next) {
         start_datetime_dayjs=start_datetime_dayjs.add(1,'day');
         start_datetime_dayjs=start_datetime_dayjs.set('hour',0).set('minute',0).set('second',0);
     }
-
-    // ===============↓以下未整理↓===============
-
-    const start_hh = start_datetime.substring(11, 13);
-    const start_mm = start_datetime.substring(14, 16);  // 注意會不會 index out of range
-    const end_hh = end_datetime.substring(11, 13);
-    const end_mm = end_datetime.substring(14, 16);  // 注意會不會 index out of range
-    var output = {data: []};
-    var time_slot_index = 0;   // 從 reservable_time 的第幾個 index 開始列
-    var end_time_slot_index = 0;
-    var start_date_delta = 0;  // 時段計算要從 start_datetime 日期的幾天後開始
-    var end_date_delta = 0;   // 結束日期是開始日期的幾天後
-
-    // 判斷開始列的時段
-    // if (Number(start_hh) < 12 && Number(start_mm) < 0) {  // 12:00 前，從 08:00 ~ 12:00 時段開始列
-    //     time_slot_index = 0;
-    // } else if (Number(start_hh) < 17 && Number(start_mm) < 0) {  // 17:00 前，從 13:00 ~ 17:00 時段開始列
-    //     time_slot_index = 1;
-    // } else if (Number(start_hh) < 22 && Number(start_mm) < 0) {  // 22:00 前，從 18:00 ~ 22:00 時段開始列
-    //     time_slot_index = 2;
-    // } else {  // 22:00 後，從 08:00 ~ 12:00 時段開始列
-    //     time_slot_index = 0;
-    //     start_date_delta = 1;
-    // }
-
-    var time_slot_index = (start_hh < 12) ? 0 :  // 12:00 前，從 08:00 ~ 12:00 時段開始列
-                          (start_hh < 17) ? 1 :  // 17:00 前，從 13:00 ~ 17:00 時段開始列
-                          (start_hh < 22) ? 2 : 0;  // 22:00 前，從 18:00 ~ 22:00 時段開始列
-    var start_date_delta = (start_hh >= 22) ? 1 : 0;  // 22:00 後，從 08:00 ~ 12:00 時段開始列
     
-    // 判斷列到哪個時段
-    // if (Number(end_hh) < 12 && Number(end_mm) < 0) {  // 12:00 前，列到 08:00 ~ 12:00 時段
-    //     end_time_slot_index = 0;
-    // } else if (Number(end_hh) < 17 && Number(end_mm) < 0) {  // 17:00 前，列到 13:00 ~ 17:00 時段
-    //     end_time_slot_index = 1;
-    // } else if (Number(end_hh) < 22 && Number(end_mm) < 0) {  // 22:00 前，列到 18:00 ~ 22:00 時段
-    //     end_time_slot_index = 2;
-    // }
-    var end_time_slot_index = (end_hh < 12) ? 0 :
-                              (end_hh < 17) ? 1 : 2;
-                            //(end_hh < 22) ? 2 : 0;
-    
-    // 計算 end_date_delta
-    end_date_delta = calculate_date_delta(start_datetime.substring(0, 10), end_datetime.substring(0, 10));  // (YYYY-MM-DD, YYYY-MM-DD) -> number
-    // 開始列時段
-    var data_date;
-    for (; start_date_delta <= end_date_delta; start_date_delta++) {  // date
-        data_date = get_delta_date_datetime(start_datetime.substring(0, 10), start_date_delta);  // (YYYY-MM-DD, 位移幾天) -> YYYY-MM-DD
-        for (; time_slot_index < 3; time_slot_index++) {  // 時段
-            if ((start_date_delta == end_date_delta) && (time_slot_index > end_time_slot_index)) {  // 最後一天，時段超出範圍
-                break;  // 停，不列了
-            }
-            output.data.push({
-                start_datetime: `${data_date}T${time_slots[time_slot_index].start}`,
-                end_datetime: `${data_date}T${time_slots[time_slot_index].end}`, 
-                availablility: 1
-            });
-        }
-        time_slot_index = 0;
-    }
-    
-    // 查詢位於此查詢區間的資料庫資料
-    const spaces_reservations = await spaces_reserved_time.find({ 
-        _id: space_id, 
-        start_date: {  // 時間範圍內
-            $gte: new Date(start_datetime),  // query_start_datetime
-            $lt: new Date(end_datetime)  // query_end_datetime
-        }
-    });
-    // 依序將資料填入時段空格內
-    spaces_reservations.forEach((reservation) => {
-        var i = 0;
-        for (i = 0; i < outputlength; i++) {  // 找到預約資料所在的時段
-            if ((new Date(reservation.start_datetime)).getTime() > (new Date(output[i].start_datetime)).getTime()) {  // 資料開始時間 > 時段開始時間 TODO: and 資料結束時間(要用到 delta) < 時段結束時間
-                if (reservation.reserved == 1) {  // 如果預約資料.reserved == 1 (被借用)
-                    output[i].availability = 0;  // 輸出時段資料.availability = 0 (不可借用)
-                }
-            }
-        }  
-    });
+    res.json({store_cut_timeslot_array});
 
-    // 輸出
-    res.json(output);
 });
-
-/**
- * 計算日期相差天數
- * @param {string} start_date_string Date 物件 1
- * @param {string} end_date_string Date 物件 2
- * @returns {number} 相差天數(整數)
- */
-function calculate_date_delta(start_date_string, end_date_string) {
-    var start_date = new Date(start_date_string)
-    var end_date = new Date(end_date_string)
-    var time_delta = end_date.getTime() - start_date.getTime()
-    var day_delta = Math.round( time_delta / (1000 * 60 * 60 * 24) )
-    return day_delta
-}
-
-/**
- * 計算位移指定天數的日期
- * @param {string} date_string 位移前的 Date 物件
- * @param {number} delta_date 位移天數
- * @returns {string}
- */
-function get_delta_date_datetime(date_string, delta_date) {
-    const day_milliseconds = 1000 * 60 * 60 * 24
-    const date = new Date(date_string)
-    const new_date = new Date(date.getTime() + (day_milliseconds * delta_date))
-    return new_date
-}
-
-/**
- * 取得當日 00:00 的 Date 物件
- * @param {Date} date_with_time 帶有時間資訊的 Date 物件
- * @returns {Date} 當日 00:00 的 Date 物件
- */
-function get_pure_date(date_with_time) {
-    const day_milliseconds = 1000 * 60 * 60 * 24
-    const date_ease_time_milliseconds = Math.floor( date_with_time.getTime() / day_milliseconds )
-    const date_ease_time = new Date( date_ease_time_milliseconds )
-    return date_ease_time
-}
-
-/**
- * 計算日期差異天數（不考慮時間）
- * @param {Date} start_datetime 較過去的日期
- * @param {Date} end_datetime 較未來的日期
- * @returns {number} 相減天數 
- */
-function dates_substraction(start_datetime, end_datetime) {
-    const day_milliseconds = 1000 * 60 * 60 * 24
-    const start_date = get_pure_date(start_datetime)
-    const end_date = get_pure_date(end_datetime)
-    const days = Math.round( (end_date.getTime() - start_date.getTime()) / day_milliseconds )
-    return days
-}
 
 module.exports = router;
