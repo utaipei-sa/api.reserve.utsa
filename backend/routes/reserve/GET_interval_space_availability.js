@@ -135,7 +135,7 @@ router.get('/interval_space_availability', async function (req, res, next) {
                     {
                         space_id: space_id,
                         start_datetime: start_datetime_dayjs.format("YYYY-MM-DDTHH:mm"),
-                        end_datetime: start_datetime_dayjs.add(1, 'hour').format(),
+                        end_datetime: start_datetime_dayjs.add(1, 'hour').format("YYYY-MM-DDTHH:mm"),
                         reserved: reserved_value
                     }
                 );

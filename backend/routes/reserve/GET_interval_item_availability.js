@@ -78,7 +78,13 @@ router.get('/interval_item_availability', async function(req, res, next) {
             .json({ error: 'datetime format error' });
     }
     // 確認 item_id 是否有對應的場地，沒有就報錯
-
+    let item_found = await items.findOne({ _id: new ObjectId(item_id) })
+    if (!item_found) {
+        res
+            .status(400)
+            .json({ error: 'item_id not found error' })
+        return
+    }
     // 統整物品可否借用資訊
     const digical_time_slots = [
         { start: 8, end: 12 },
@@ -86,7 +92,7 @@ router.get('/interval_item_availability', async function(req, res, next) {
         { start: 18, end: 22 }
     ]
 
-    let store_cut_timeslot_array=[];
+    let output_array=[];
     let end_datetime_dayjs=dayjs(end_datetime);
     let start_datetime_dayjs=dayjs(start_datetime);
    
@@ -110,10 +116,11 @@ router.get('/interval_item_availability', async function(req, res, next) {
             }
 
             if(start_datetime_dayjs.hour()>=digical_time_slots[current_timeslot].start&&start_datetime_dayjs.hour()<digical_time_slots[current_timeslot].end){  
-                store_cut_timeslot_array.push(
+                output_array.push(
                     {   
-                        start_datetime: new Date(start_datetime_dayjs.format()) ,
-                        end_datetime : new Date(start_datetime_dayjs.add(1,'hour').format()),
+                        item_id: item_id,
+                        start_datetime: start_datetime_dayjs.format("YYYY-MM-DDTHH:mm"),
+                        end_datetime: start_datetime_dayjs.add(1, 'hour').format("YYYY-MM-DDTHH:mm"),
                         reserved: reserved_quantity
                     }
                 );
@@ -122,102 +129,7 @@ router.get('/interval_item_availability', async function(req, res, next) {
         start_datetime_dayjs=start_datetime_dayjs.add(1,'day');
         start_datetime_dayjs=start_datetime_dayjs.set('hour',0).set('minute',0).set('second',0);
     }
-
-
-
-    // 列出欲查詢的所有時段
-
-    // 時段的部分我不知道該怎麼用，就選擇性的複製貼上，煩請學長檢查一下有無問題
-    var output = {data: []};
-    var time_slot_index = 0;   // 從 reservable_time 的第幾個 index 開始列
-    var end_time_slot_index = 0;
-    var start_date_delta = 0;  // 時段計算要從 start_datetime 日期的幾天後開始
-    var end_date_delta = 0;   // 結束日期是開始日期的幾天後
-
-    // 計算 end_date_delta
-    end_date_delta = calculate_date_delta(start_datetime.substring(0, 10), end_datetime.substring(0, 10));  // (YYYY-MM-DD, YYYY-MM-DD) -> number
-    // 開始列時段
-    var data_date;
-    for (; start_date_delta <= end_date_delta; start_date_delta++) {  // date
-        data_date = get_delta_date_datetime(start_datetime.substring(0, 10), start_date_delta);  // (YYYY-MM-DD, 位移幾天) -> YYYY-MM-DD
-        tomorrow_date = get_delta_date_datetime(start_datetime.substring(0, 10), start_date_delta +1); // 取得隔天的日期 
-        output.data.push({
-            start_datetime: `${data_date}T12:00`,   // 第一天的12:00
-            end_datetime: `${tomorrow_date}T11:59`, // 第二天的11:59
-            availablility: 1
-        });
-        time_slot_index = 0;
-    }
-
-    // 查詢位於此查詢區間的資料庫資料
-    const items_reservations = await items_reserved_time.find({ 
-        _id: item_id, 
-        start_date: {  // 時間範圍內
-            $gte: new Date(start_datetime),  // query_start_datetime
-            $lt: new Date(end_datetime)  // query_end_datetime
-        }
-    });
-    // 依序將資料填入時段空格內
-    items_reservations.forEach((reservation) => {
-        var i = 0;
-        for (i = 0; i < outputlength; i++) {  // 找到預約資料所在的時段
-            if ((new Date(reservation.start_datetime)).getTime() > (new Date(output[i].start_datetime)).getTime()) {  // 資料開始時間 > 時段開始時間 TODO: and 資料結束時間(要用到 delta) < 時段結束時間
-                if (reservation.reserved == 1) {  // 如果預約資料.reserved == 1 (被借用)
-                    output[i].availability = 0;  // 輸出時段資料.availability = 0 (不可借用)
-                }
-            }
-        }  
-    });
-
-    // // 查詢物品資訊
-    // const item = await items.findOne({ _id: item_id });//, function (error, impacts) {
-    // //     // 如果 item_id 查不到物品
-    // //     if (error) {
-    // //         res.status(404).json({ error: 'Item not found' });
-    // //     }
-    // // });
-    // //
-    // // if (!items) {
-    // //    return res.status(404).json({ error: '找不到指定的物品' });
-    // //  }
-    // const total_quantity = item.quantity;
-
-    // // 取得物品借用時段紀錄
-    // const item_reservations = await items_reserved_time.find({ 
-    //     _id: item_id, 
-    //     start_date: {
-    //         $gte: new Date(start_datetime),  // query_start_datetime
-    //         $lt: new Date(end_datetime)  // query_end_datetime
-    //     } 
-    // });  // 時間範圍內
-
-    // // TODO: 統整物品可借數量資訊
-    // // var min_available_quantity = total_quantity;
-    // // for (i = 0; i < item_reservations.length; i++) {  
-    // //     if (total_quantity - item_reservations[i].quantity < min_available_quantity) {
-    // //         min_available_quantity = total_quantity - item_reservations[i].quantity;
-    // //     }  // 可出借數量取最小值
-    // // }
-
-    // 輸出
-    res.json(output);
+    res.json({output_array});
 });
-
-// 計算日期相差幾天 -> number
-function calculate_date_delta(start_date_string, end_date_string) {
-    var start_date = new Date(start_date_string);
-    var end_date = new Date(end_date_string);
-    var time_delta = end_date.getTime() - start_date.getTime();
-    var day_delta = time_delta / (1000 * 60 * 60 * 24);
-    return day_delta;
-}
-
-// 計算位移日期 -> string
-function get_delta_date_datetime(date_string, delta_date) {
-    const day_milliseconds = 1000 * 60 * 60 * 24;
-    const date = new Date(date_string);
-    const new_date = new Date(date.getTime() + (day_milliseconds * delta_date));
-    return new_date;
-}
 
 module.exports = router;
