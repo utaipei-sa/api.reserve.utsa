@@ -308,6 +308,7 @@ router.post('/reservation', async function (req, res, next) {
   // insert reservation into database
   const doc = {
     _id: reservation_id,
+    verify: 0,
     status: 'new', // new/modified/canceled
     history: [
       {
@@ -340,6 +341,7 @@ router.post('/reservation', async function (req, res, next) {
   
   res.json({ message: 'Success!' })
   //send_email(doc,"example.com")
+  // send verify email
 })
 
 async function send_email(request_content,url){
