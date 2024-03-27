@@ -1,5 +1,6 @@
 const express = require('express')
 const { reservations } = require('../../models/mongodb')
+const { ObjectId } = require('mongodb')
 const router = express.Router()
 
 /**
@@ -11,22 +12,49 @@ const router = express.Router()
  *     summary: 驗證預約紀錄
  *     description: 驗證預約紀錄
  *     operationId: GetVerify
+ *     parameters:
+ *       - name: id
+ *         in: query
+ *         description: 預約紀錄 ID
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: Object ID
  *     responses:
  *       '200':
  *         description: OK
  */
 router.get('/verify', async function(req, res, next) {
-    // const data = await spaces
-    //     .find({})
-    //     .project({ _id: 1, name: 1, open: 1, exception_time: 1 })
-    //     .toArray( function(err, results) {
-    //         console.log(results)
-    //     })
+    // get input and check
+    const OBJECT_ID_REGEXP = /^[a-fA-F0-9]{24}$/  // ObjectId 格式 (652765ed3d21844635674e71)
+    const id = req.query.id
 
+    if (!OBJECT_ID_REGEXP.test(id)) {
+        res
+            .status(400)
+            .json({ error: 'id format error' })
+        return
+    }
 
-    // find reservation from reservations (db collection) by id
+    // update reservation.verify from 0 to 1
+    const result = await reservations.updateOne(
+        { _id: new ObjectId(id) },
+        { $set: { verify: 1 } },
+    )
 
-    // update verify from 0 to 1
+    // check result
+    if (result.matchedCount === 0) {
+        res
+            .status(400)
+            .json({ error: 'reservation not found' })
+        return
+    }
+    if (result.modifiedCount === 0) {
+        res
+            .status(400)
+            .json({ error: 'the reservation has been verified' })
+        return
+    }
 
     res.json({ message: 'success!' })
 })
