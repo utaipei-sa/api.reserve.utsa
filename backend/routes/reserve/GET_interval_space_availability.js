@@ -94,20 +94,13 @@ router.get('/interval_space_availability', async function (req, res, next) {
     }
 
     // 統整場地可否借用資訊
-
-    // 迴圈(日期) (條件: 正在處理的日期 <= end_datetime 的純日期(使用下方定義的 function 計算) )
-    //     迴圈(時段)
-    //         如果時間 <= 第 i 個時段的結束時間（使用 time_slots[i]['end'] 建立 Date 物件） 且 當日該時段的 start 時間 <= end_datetime
-    //             加入時間區段
-    //             進行查詢(還是要之後一次查詢?)
-    //     日期 +1
     const digical_time_slots = [
         { start: 8, end: 12 },
         { start: 13, end: 17 },
         { start: 18, end: 22 }
     ]
 
-    let store_cut_timeslot_array = [];
+    let output_array = [];
     let end_datetime_dayjs = dayjs(end_datetime);
     let start_datetime_dayjs = dayjs(start_datetime);
 
@@ -131,12 +124,12 @@ router.get('/interval_space_availability', async function (req, res, next) {
             }
 
             if (start_datetime_dayjs.hour() >= digical_time_slots[current_timeslot].start && start_datetime_dayjs.hour() < digical_time_slots[current_timeslot].end) {
-                store_cut_timeslot_array.push(
+                output_array.push(
                     {
                         space_id: space_id,
                         start_datetime: start_datetime_dayjs.format("YYYY-MM-DDTHH:mm"),
                         end_datetime: start_datetime_dayjs.add(1, 'hour').format("YYYY-MM-DDTHH:mm"),
-                        reserved: reserved_value
+                        availability: reserved_value
                     }
                 );
 
@@ -146,7 +139,7 @@ router.get('/interval_space_availability', async function (req, res, next) {
         start_datetime_dayjs = start_datetime_dayjs.set('hour', 0).set('minute', 0).set('second', 0);
     }
 
-    res.json({ store_cut_timeslot_array });
+    res.json(output_array);
 
 });
 
