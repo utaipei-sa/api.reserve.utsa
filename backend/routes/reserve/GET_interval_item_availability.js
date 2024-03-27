@@ -1,6 +1,9 @@
 var express = require('express');
 var { items, items_reserved_time } = require('../../models/mongodb');
+const { ObjectId } = require('mongodb');
 var router = express.Router();
+const dayjs = require('dayjs');
+
 
 /**
  * @openapi
@@ -107,12 +110,14 @@ router.get('/interval_item_availability', async function(req, res, next) {
             }
             let reserved_quantity = 0;
             //在資料庫中是否有找到此時段的資料,如果否reserved_quantity=0
-            const item_database_info = await items_reserved_time.findOne({ start_datetime: new Date(start_datetime_dayjs.format()), item_id: item_id });
-            if ( item_database_info== null) {
+            const item_database_info = await items_reserved_time.findOne({ start_datetime: new Date(start_datetime_dayjs.format()), item_id: new ObjectId(item_id) });
+            if ( item_database_info == null) {
                 reserved_quantity = 0;
+                console.log(item_id);
             }
             else {
                 reserved_quantity = item_database_info.reserved;
+                console.log(item_database_info.reserved);
             }
 
             if(start_datetime_dayjs.hour()>=digical_time_slots[current_timeslot].start&&start_datetime_dayjs.hour()<digical_time_slots[current_timeslot].end){  
@@ -121,7 +126,7 @@ router.get('/interval_item_availability', async function(req, res, next) {
                         item_id: item_id,
                         start_datetime: start_datetime_dayjs.format("YYYY-MM-DDTHH:mm"),
                         end_datetime: start_datetime_dayjs.add(1, 'hour').format("YYYY-MM-DDTHH:mm"),
-                        reserved: reserved_quantity
+                        available_quantity: reserved_quantity
                     }
                 );
             }   
@@ -129,7 +134,7 @@ router.get('/interval_item_availability', async function(req, res, next) {
         start_datetime_dayjs=start_datetime_dayjs.add(1,'day');
         start_datetime_dayjs=start_datetime_dayjs.set('hour',0).set('minute',0).set('second',0);
     }
-    res.json({output_array});
+    res.json(output_array);
 });
 
 module.exports = router;
