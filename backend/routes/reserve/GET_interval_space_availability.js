@@ -45,7 +45,7 @@ const dayjs = require('dayjs');
  *               items:
  *                 $ref: '#/components/schemas/SpaceAvailability'
  */
-router.get('/interval_space_availability', async function(req, res, next) {
+router.get('/interval_space_availability', async function (req, res, next) {
     // 正規表達式 Regular Expression
     const OBJECT_ID_REGEXP = /^[0-9a-fA-F]{24}$/  // ObjectId 格式: 652765ed3d21844635674e71
     const DATETIME_MINUTE_REGEXP = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})$/  // 2024-03-03T22:25
@@ -80,7 +80,7 @@ router.get('/interval_space_availability', async function(req, res, next) {
     if (error_message.length !== 0) {
         res
             .status(400)
-            .json({ error: error_message})
+            .json({ error: error_message })
         return
     }
 
@@ -89,62 +89,57 @@ router.get('/interval_space_availability', async function(req, res, next) {
     if (!space_found) {
         res
             .status(400)
-            .json({ error : 'space_id not found error' })
+            .json({ error: 'space_id not found error' })
         return
     }
 
     // 統整場地可否借用資訊
-
-    // 迴圈(日期) (條件: 正在處理的日期 <= end_datetime 的純日期(使用下方定義的 function 計算) )
-    //     迴圈(時段)
-    //         如果時間 <= 第 i 個時段的結束時間（使用 time_slots[i]['end'] 建立 Date 物件） 且 當日該時段的 start 時間 <= end_datetime
-    //             加入時間區段
-    //             進行查詢(還是要之後一次查詢?)
-    //     日期 +1
     const digical_time_slots = [
         { start: 8, end: 12 },
         { start: 13, end: 17 },
         { start: 18, end: 22 }
     ]
 
-    let store_cut_timeslot_array=[];
-    let end_datetime_dayjs=dayjs(end_datetime);
-    let start_datetime_dayjs=dayjs(start_datetime);
-   
-    while(start_datetime_dayjs.isBefore(end_datetime_dayjs)){
-        for(let current_timeslot = 0;start_datetime_dayjs.isBefore(end_datetime_dayjs)&&current_timeslot<3;start_datetime_dayjs=start_datetime_dayjs.add(1,'hour')){
+    let output_array = [];
+    let end_datetime_dayjs = dayjs(end_datetime);
+    let start_datetime_dayjs = dayjs(start_datetime);
+
+    while (start_datetime_dayjs.isBefore(end_datetime_dayjs)) {
+        for (let current_timeslot = 0; start_datetime_dayjs.isBefore(end_datetime_dayjs) && current_timeslot < 3; start_datetime_dayjs = start_datetime_dayjs.add(1, 'hour')) {
 
             //檢查start_datetime是在哪一個時段的
-            if(start_datetime_dayjs.hour()>=digical_time_slots[current_timeslot].end){
+            if (start_datetime_dayjs.hour() >= digical_time_slots[current_timeslot].end) {
                 current_timeslot++;
-                start_datetime_dayjs=start_datetime_dayjs.subtract(1,'hour');
+                start_datetime_dayjs = start_datetime_dayjs.subtract(1, 'hour');
                 continue;
             }
             let reserved_value = 0;
             //在資料庫中是否有找到此時段的資料,如果否reserved_value=0
             const space_database_info = await spaces_reserved_time.findOne({ start_datetime: new Date(start_datetime_dayjs.format()), space_id: new ObjectId(space_id) });
-            if ( space_database_info == null) {
+            if (space_database_info == null) {
                 reserved_value = 0;
             }
             else {
                 reserved_value = space_database_info.reserved;
             }
 
-            if(start_datetime_dayjs.hour()>=digical_time_slots[current_timeslot].start&&start_datetime_dayjs.hour()<digical_time_slots[current_timeslot].end){  
-                store_cut_timeslot_array.push(
-                    {   
-                        start_datetime: new Date(start_datetime_dayjs.format()) ,
-                        end_datetime : new Date(start_datetime_dayjs.add(1,'hour').format()),
-                        reserved: reserved_value
+            if (start_datetime_dayjs.hour() >= digical_time_slots[current_timeslot].start && start_datetime_dayjs.hour() < digical_time_slots[current_timeslot].end) {
+                output_array.push(
+                    {
+                        space_id: space_id,
+                        start_datetime: start_datetime_dayjs.format("YYYY-MM-DDTHH:mm"),
+                        end_datetime: start_datetime_dayjs.add(1, 'hour').format("YYYY-MM-DDTHH:mm"),
+                        availability: reserved_value
                     }
                 );
-            }   
+
+            }
         }
-        start_datetime_dayjs=start_datetime_dayjs.add(1,'day');
-        start_datetime_dayjs=start_datetime_dayjs.set('hour',0).set('minute',0).set('second',0);
+        start_datetime_dayjs = start_datetime_dayjs.add(1, 'day');
+        start_datetime_dayjs = start_datetime_dayjs.set('hour', 0).set('minute', 0).set('second', 0);
     }
-    
-    res.json({store_cut_timeslot_array});
+
+    res.json(output_array);
 
 });
 

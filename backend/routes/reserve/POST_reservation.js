@@ -85,13 +85,13 @@ router.post('/reservation', async function (req, res, next) {
   for(const space_reservation of received_space_reservations){
     // check
     if (!OBJECT_ID_REGEXP.test(space_reservation.space_id)) {
-      error_message += 'space_reservations space_id empty error\n'
+      error_message += 'space_reservations space_id format error\n'
     }
     if (!DATETIME_MINUTE_REGEXP.test(space_reservation.start_datetime)) {
-      error_message += 'space_reservations start_datetime empty error\n'
+      error_message += 'space_reservations start_datetime format error\n'
     }
     if (!DATETIME_MINUTE_REGEXP.test(space_reservation.end_datetime)) {
-      error_message += 'space_reservations end_datetime empty error\n'
+      error_message += 'space_reservations end_datetime format error\n'
     }
     if (error_message.length) {
       res
@@ -179,13 +179,13 @@ router.post('/reservation', async function (req, res, next) {
       error_message += 'item_reservations quantity error\n'
     }
     if (!OBJECT_ID_REGEXP.test(item_reservation.item_id)) {
-      error_message += 'item_reservations item_id empty error\n'
+      error_message += 'item_reservations item_id format error\n'
     }
     if (!DATETIME_MINUTE_REGEXP.test(item_reservation.start_datetime)) {
-      error_message += 'item_reservations start_datetime empty error\n'
+      error_message += 'item_reservations start_datetime format error\n'
     }
     if (!DATETIME_MINUTE_REGEXP.test(item_reservation.end_datetime)) {
-      error_message += 'item_reservations end_datetime empty error\n'
+      error_message += 'item_reservations end_datetime format error\n'
     }
     if (error_message.length) {
       res
@@ -309,6 +309,7 @@ router.post('/reservation', async function (req, res, next) {
   // insert reservation into database
   const doc = {
     _id: reservation_id,
+    verify: 0,
     status: 'new', // new/modified/canceled
     history: [
       {
@@ -341,6 +342,7 @@ router.post('/reservation', async function (req, res, next) {
   
   res.json({ message: 'Success!' })
   //send_email(doc,"example.com")
+  // send verify email
 })
 
 async function send_email(request_content,url){
