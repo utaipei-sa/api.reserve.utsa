@@ -113,6 +113,13 @@
             <v-row >
             <v-divider></v-divider>
             </v-row>
+            <v-row>
+              <v-col >
+                <v-alert v-if="alert_space" color="error" icon="$error" :title="alert_space_title" :text="alert_space_text" elevation="4">
+                  
+                </v-alert>
+              </v-col>
+            </v-row>
             <v-row v-for="(i,index) in space_data">
               <v-col class="v-col-auto">
                 <v-card color="grey-lighten-3">
@@ -139,6 +146,7 @@
                 </v-card>
               </v-col>
             </v-row>
+            
           </v-container>
         </v-card>
       </v-col>
@@ -191,8 +199,12 @@
                 <v-btn @click="additem()" >新增</v-btn>
               </v-col>
             </v-row>
-            <v-row >
-              
+            <v-row>
+              <v-col >
+                <v-alert v-if="alert_item" color="error" icon="$error" :title="alert_item_title" :text="alert_item_text" elevation="4">
+                  
+                </v-alert>
+              </v-col>
             </v-row>
             <v-row v-for="(i,index) in item_data">
               <v-col>
@@ -399,6 +411,12 @@
         rules: {
           required: value => !!value || 'Field is required',
         },
+        alert_space:false,
+        alert_space_title:"時段無法借用",
+        alert_space_text:"可以查詢時間表，確認次時段的借用情況",
+        alert_item:false,
+        alert_item_title:"時段無法借用",
+        alert_item_text:"可以查詢時間表，確認次時段的借用情況",
         item_list:[{},[]],
         space_list:[{},[]],
         time_list:['08:00-12:00', '13:00-17:00', '18:00-22:00'],
@@ -473,23 +491,89 @@
         this.space_data.splice(index,1)
       },
       async addspace(){
-        await axios.get("") 
+        let date_format_temp1 = useDateFormat(this.space_date_temp.toString(),"YYYY-MM-DDT").value
+        
+        date_format_temp1 += this.space_time_temp.toString().split('-')[0]
+        let date_format_temp2 = useDateFormat(this.space_date_temp.toString(),"YYYY-MM-DDT").value
+        date_format_temp2 += this.space_time_temp.toString().split('-')[1]
+        /* console.log(date_format_temp1)
+        console.log(this.space_temp,this.space_date_temp.toString(),this.space_time_temp) */
+        let check_flag
+        await axios.get("http://localhost:3000/api/v1/reserve/integral_space_availability",
+            {params:{
+              space_id:this.space_list[0][this.space_temp],
+              start_datetime:date_format_temp1,
+              end_datetime:date_format_temp2
+            }},).then((response)=>{
+              let temp = response['data']['data']
+              check_flag = temp['availability']  
+              console.log(response);
+            })
+        console.log(check_flag);
+        if(check_flag == 0) {
+          this.alert_space = true
+          setTimeout(()=>{
+            this.alert_space = false
+          },5000)
+          return
+        }
         if(this.space_temp!="" && this.space_date_temp!="" &&this.space_time_temp!=""){
           this.space_data.push([this.space_temp,this.space_date_temp.toString(),this.space_time_temp])
-
         }
       },
       delitem(index){
         this.item_data.splice(index,1)
       },
-      additem(){
+      async additem(){
+        let date_format_temp1 = useDateFormat(this.item_date_temp1,"YYYY-MM-DDTHH:mm").value
+        let date_format_temp2 = useDateFormat(this.item_date_temp2,"YYYY-MM-DDTHH:mm").value
+        /* console.log(date_format_temp1)
+        console.log(this.space_temp,this.space_date_temp.toString(),this.space_time_temp) */
+        let check
+        await axios.get("http://localhost:3000/api/v1/reserve/integral_item_availability",
+            {params:{
+              item_id:this.item_list[0][this.item_temp],
+              start_datetime:date_format_temp1,
+              end_datetime:date_format_temp2
+            }},).then((response)=>{
+              let temp = response['data']['data']
+              check = temp['available_quantity']  
+              console.log(response);
+            })
+        console.log(check);
+        let alert_item_timer
+        if(this.item_quantity_temp <= 0) {
+          clearTimeout(alert_item_timer)
+          this.alert_item = true
+          this.alert_item_title = "物品數量不可為負數或零"
+          this.alert_item_text = "請確認需要的物品數量是否正確"
+          alert_item_timer = setTimeout(()=>{
+            this.alert_item = false
+          },5000)
+          return
+        }
+        if(check < this.item_quantity_temp) {
+          clearTimeout(alert_item_timer)
+          this.alert_item = true
+          this.alert_item_title = "時段無法借用"
+          this.alert_item_text = "可以查詢時間表，確認次時段的借用情況"
+          alert_item_timer = setTimeout(()=>{
+            this.alert_item = false
+          },5000)
+          
+          return
+        }
         let date1 = new Date(this.item_date_temp1)
         let date2 = new Date(this.item_date_temp2)
         if(date1.getTime() > date2.getTime()){
-          alert("date error")
-        }
-        else if (this.quantity_limit_list[this.item_temp]<this.item_quantity_temp || this.item_quantity_temp<=0){
-          alert("over quantity(Max :"+this.quantity_limit_list[this.item_temp]+")")
+          clearTimeout(alert_item_timer)
+          this.alert_item = true
+          this.alert_item_title = "起始時間晚於結束時間"
+          this.alert_item_text = "請將起始時間與結束時間對調"
+          alert_item_timer = setTimeout(()=>{
+            this.alert_item = false
+          },5000)
+          return
         }
         else if(this.item_temp!="" && this.item_date_temp1!="" && this.item_date_temp2!="" && this.item_quantity_temp!=""){
           this.item_data.push([this.item_temp,this.item_date_temp1.toString(),this.item_date_temp2.toString(),this.item_quantity_temp])

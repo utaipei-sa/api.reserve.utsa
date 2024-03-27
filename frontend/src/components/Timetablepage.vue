@@ -306,7 +306,7 @@
           this.available[1] = []
           this.available[2] = []
           await axios
-          .get('http://localhost:3000/api/v1/reserve/interval_space_availability'
+          .get('http://localhost:3000/api/v1/reserve/integral_space_availability'
             ,{params:{
               space_id:this.space_list[0][this.space],
               start_datetime:this.start_datetime,

@@ -161,7 +161,7 @@ router.post('/reservation', async function (req, res, next) {
                                                           "space_id" : received_space_reserved_time[i].space_id,
                                                           "reserved" : 1
                                                         })
-                                                        console.log("not err")
+
     if(db_space_check == null){
       continue
     }else if(db_space_check.reserved) {
@@ -195,7 +195,8 @@ router.post('/reservation', async function (req, res, next) {
     }
 
     // check whether item_id is exist
-    let item_found = items.findOne({ _id: new ObjectId(item_reservation.item_id) })
+    let item_found = await items.findOne({ _id: new ObjectId(item_reservation.item_id) })
+    console.log(item_found)
     if (!item_found) {  // <-- notice what's this when not found (should be same as space)
       res
         .status(400)
