@@ -75,12 +75,12 @@ router.post('/reservation', async function (req, res, next) {
     return
   }
 
-
+  //TODO: add reservation_id
   // process data
   const reservation_id = new ObjectId()
   let received_space_reserved_time = []
   let received_item_reserved_time = []
-
+  
   // space reservation process
   for(const space_reservation of received_space_reservations){
     // check
@@ -271,40 +271,9 @@ router.post('/reservation', async function (req, res, next) {
       } 
     }
   }
-    // process data
-   /*  let start_datetime = new Date(item_reservation.start_datetime)
-    let end_datetime = new Date(item_reservation.end_datetime)
-    let section_end_datetime = new Date(item_reservation.start_datetime)
-    //section_end_datetime = section_end_datetime.setTime(section_end_datetime.getTime() + hours * 60 * 60 * 1000)
 
-    // if end_datetime is earlier than start_datetime
-    if (end_datetime < start_datetime) {
-      res
-        .status(400)
-        .json({ error: 'item_reservations end_datetime earlier than start_datetime error' })
-    } */
-    // convert to time slots (a day, from 12:00 pm to 11:59 am)
-
-
-
-    // // get duration (days)
-    // const start_date = new Date(item_reservation.start_date)
-    // const end_date = new Date(item_reservation.end_date)
-    // const duration = (end_date.getTime() - start_date.getTime()) / (1000 * 60 * 60 * 24) // from millisecond to days
-    // // define variables
-    // const unshifted_date = new Date(item_reservation.start_date)
-    // let shifted_date
-    // // loop
-    // for (let i = 0; i < duration; i++) {
-    //   shifted_date = new Date(new Date(unshifted_date).setDate(unshifted_date.getDate() + i))
-    //   received_item_reserved_time.push({
-    //     item_id: item_reservation.item_id,
-    //     date: shifted_date.toISOString().substring(0, 10), // noon-to-noon, here's the 1st day
-    //     reservations_id: reservation_id
-    //   })
-    // }
-    // =============== ↑以上還沒更新↑ ===============
-
+  // TODO :: update items reserved_quantity
+ 
 
   // insert reservation into database
   const doc = {

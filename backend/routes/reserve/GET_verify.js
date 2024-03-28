@@ -28,7 +28,7 @@ router.get('/verify', async function(req, res, next) {
     // get input and check
     const OBJECT_ID_REGEXP = /^[a-fA-F0-9]{24}$/  // ObjectId 格式 (652765ed3d21844635674e71)
     const id = req.query.id
-
+    console.log(id)
     if (!OBJECT_ID_REGEXP.test(id)) {
         res
             .status(400)
@@ -49,14 +49,14 @@ router.get('/verify', async function(req, res, next) {
             .json({ error: 'reservation not found' })
         return
     }
-    if (result.modifiedCount === 0) {
+    /* if (result.modifiedCount === 0) {
         res
             .status(400)
             .json({ error: 'the reservation has been verified' })
         return
-    }
+    } */
 
-    res.json({ message: 'success!' })
+    res.json({ code:87 ,message: 'success!' })
 })
 
 module.exports = router

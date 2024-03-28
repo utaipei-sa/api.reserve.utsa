@@ -30,6 +30,12 @@ const routes = [
         // which is lazy-loaded when the route is visited.
         component: () => import('@/views/Timetable.vue'),
       },
+      {
+        path: '/verify/:verifyid',
+        name: 'Verify',
+        props:true,
+        component: () => import('@/views/Verify.vue'),
+      },
     ],
   }
 ]
