@@ -1,10 +1,10 @@
 <template>
-  <v-sheet  >
-		<v-container>
-			<v-row class="justify-center">
-				<v-col class="px-16"  >
-					<v-card  >
-						<v-card-title class="bg-red-darken-2 ">
+  <v-sheet class="h-100 bg-grey-lighten-5" >
+		<v-container class=" h-100">
+			<v-row class="justify-center align-center h-100	">
+				<v-col class="px-sm-16">
+					<v-card  class="mx-16">
+						<v-card-title :class="title_class">
 							{{ title }}
 						</v-card-title>
 						<v-card-text :class="text_class">
@@ -24,7 +24,8 @@
 	const props = defineProps(['verifyid'])
 	const text = ref("default")
 	const title = ref("default")
-	const text_class = ref("bg-red-lighten-4 pt-4")
+	const text_class = ref("bg-green pt-4")
+	const title_class = ref("bg-green")
 	check_verify_id(props.verifyid)
 	async function check_verify_id(verifyid) {
 		console.log(verifyid)
@@ -32,12 +33,23 @@
 			id : verifyid
 		}
 		}).then((response) => {
-			console.log(response)
 			if(response['data']['code'] == 87){
 				text.value = "ㄚㄚㄚㄚ"
 				title.value = "成功預約"
-				color.value = "#4CAF50"
-				console.log(text,title);
+				text_class.value = "bg-green-accent-1 pt-4"
+				title_class.value = "bg-green-accent-3"
+			}	
+		}).catch((error)=>{
+			if(error['response']['data']['code'] == 88){
+				text.value = "ㄚㄚㄚㄚ"
+				title.value = "查無此筆預約資料"
+				text_class.value = "bg-red-lighten-4 pt-4"
+				title_class.value = "bg-red-darken-2"
+			}else if(error['response']['data']['code'] == 89){
+				text.value = "ㄚㄚㄚㄚ"
+				title.value = "此筆預約已驗證"
+				text_class.value = "bg-red-lighten-4 pt-4"
+				title_class.value = "bg-red-darken-2"
 			}
 		})
 
