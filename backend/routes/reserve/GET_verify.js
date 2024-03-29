@@ -49,12 +49,12 @@ router.get('/verify', async function(req, res, next) {
             .json({ code : 88,error: 'reservation not found' })
         return
     }
-    if (result.modifiedCount === 0) {
+    /* if (result.modifiedCount === 0) {
         res
             .status(400)
             .json({ code : 89,error: 'the reservation has been verified' })
         return
-    }
+    } */
 
     res.json({ code:87 ,message: 'success!' })
 })

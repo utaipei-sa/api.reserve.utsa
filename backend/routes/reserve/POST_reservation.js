@@ -196,7 +196,7 @@ router.post('/reservation', async function (req, res, next) {
 
     // check whether item_id is exist
     let item_found = await items.findOne({ _id: new ObjectId(item_reservation.item_id) })
-    console.log(item_found)
+    //console.log(item_found)
     if (!item_found) {  // <-- notice what's this when not found (should be same as space)
       res
         .status(400)
@@ -257,11 +257,12 @@ router.post('/reservation', async function (req, res, next) {
                                                           "item_id" : received_item_reserved_time[i].item_id,
                                                         })
     //console.log(db_item_check) 
-
+    //console.log(db_item_check.reserved_quantity,max_quantity,received_item_reserved_time[i].reserved_quantity)
     if(db_item_check == null){
       continue
     }else {
-      if(db_item_check.reserved_quantity <= max_quantity - received_item_reserved_time[i].quantity) {
+      if(db_item_check.reserved_quantity <= max_quantity.quantity - received_item_reserved_time[i].reserved_quantity) {
+        
         continue
       }else{
         res
@@ -271,9 +272,7 @@ router.post('/reservation', async function (req, res, next) {
       } 
     }
   }
-
-  // TODO :: update items reserved_quantity
- 
+  
 
   // insert reservation into database
   const doc = {
@@ -296,11 +295,50 @@ router.post('/reservation', async function (req, res, next) {
     item_reservations: received_item_reservations,
     note: note
   }
+  const reservations_result = await reservations.insertOne(doc)
+  console.log(received_item_reserved_time)
+  let db_item_update
+  // TODO :: update items reserved_quantity
+  for(let i=0;i<received_item_reserved_time.length;i++){
+    console.log(i);
+    max_quantity = await items.findOne({_id : new ObjectId(received_item_reserved_time[i].item_id)})
+    //console.log(max_quantity);
+    db_item_check = await items_reserved_time.findOne({ "start_datetime" : received_item_reserved_time[i].start_datetime,
+                                                          "item_id" : received_item_reserved_time[i].item_id,
+                                                        })
+    
+    if(db_item_check != null){
+      console.log("suc");
+      console.log(db_item_check)
+      await items_reserved_time.updateOne({ 
+                                            _id : db_item_check._id
+                                          },
+                                          {
+                                            $inc : { "reserved_quantity" : received_item_reserved_time[i].reserved_quantity},
+                                            $push : { "reservation_id" : reservations_result.insertedId }
+                                          })
+      received_item_reserved_time.splice(i,1)
+      i--;
+      console.log(received_item_reserved_time)
+    }else{
+      console.log("fail");
+      console.log(db_item_check)
+    }
+    //console.log(db_item_check) 
+  }
+
   //console.log(received_space_reserved_time)
-  const reservations_result = reservations.insertOne(doc)
+  
+  for(const spaces_reserved_time_each of received_space_reserved_time ){
+    spaces_reserved_time_each['reservation_id'] = reservations_result.insertedId
+  }
   if (received_space_reserved_time.length > 0) {
     const spaces_reserved_time_result = spaces_reserved_time.insertMany(received_space_reserved_time)
   }
+  for(const items_reserved_time_each of received_item_reserved_time ){
+    items_reserved_time_each['reservation_id'] = [reservations_result.insertedId]
+  }
+  console.log(received_item_reserved_time)
   if (received_item_reserved_time.length > 0) {
     const items_reserved_time_result = items_reserved_time.insertMany(received_item_reserved_time)
   }
