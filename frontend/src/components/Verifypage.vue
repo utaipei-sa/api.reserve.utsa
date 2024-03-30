@@ -89,7 +89,7 @@
             for(let i=0;i<response['data']['data'].length;i++){
               /* space_list.value[0][response['data']['data'][i]['name']['zh-tw']]=response['data']['data'][i]['_id']
               space_list.value[1].push(response['data']['data'][i]['name']['zh-tw']) */
-							space_list[i] = {response['data']['data'][i]['_id'] : response['data']['data'][i]['name']['zh-tw']}
+							space_list.value[response['data']['data'][i]['_id']] = response['data']['data'][i]['name']['zh-tw']
             }
 
 				})
