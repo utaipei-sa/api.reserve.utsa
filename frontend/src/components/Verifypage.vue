@@ -29,7 +29,7 @@
                             <v-col class="v-col-sm-1 v-col-12">
 															{{ index+1 }}
 														</v-col>
-														<v-col class="v-col-sm-4 v-col-12">
+														<v-col class="v-col-sm-2 v-col-12">
                               {{ item_list[i['item_id']] }}
                             </v-col>
                             <v-col class="v-col-sm-3 v-col-12">
@@ -37,6 +37,9 @@
                             </v-col>
                             <v-col class="v-col-sm-3 v-col-12">
                               {{ i['end_datetime'] }}
+                            </v-col>
+														<v-col class="v-col-sm-3 v-col-12">
+                              {{ i['quantity'] }}
                             </v-col>
                           </v-row>
                         </v-container>  
