@@ -12,13 +12,13 @@
               </v-col>
             </v-row>
             <v-row >
-                <v-col class="v-col-sm-4 v-col-6">
+                <v-col class="v-col-md-4 v-col-sm-6 v-col-12">
                   <v-text-field :rules="[rules.required]" v-model="name" label="名字"/>
                 </v-col>
-                <v-col class="v-col-sm-4 v-col-6">
+                <v-col class="v-col-md-4 v-col-sm-6 v-col-12">
                   <v-text-field :rules="[rules.required]" v-model="org" label="申請單位"/>
                 </v-col>
-                <v-col class="v-col-sm-4 v-col-6">
+                <v-col class="v-col-md-4 v-col-sm-6 v-col-12">
                   <v-text-field :rules="[rules.required]" v-model="department" label="申請人系級"/>
                 </v-col>
                 <v-col class="v-col-12">
@@ -111,7 +111,6 @@
               </v-col>
             </v-row>
             <v-row >
-            <v-divider></v-divider>
             </v-row>
             <v-row>
               <v-col >
@@ -120,8 +119,39 @@
                 </v-alert>
               </v-col>
             </v-row>
+            <v-row v-if="wh.width>=600 && space_data.length != 0">
+              <v-col class="v-col-12 pa-0 pl-1">
+                <v-container>
+                  <v-row >
+                    <v-col class="v-col-3 pa-1">
+                      <v-card class="bg-grey-lighten-1 ">
+                        <v-card-title class="justify-center text-subtitle-1 text-center">
+                          場地名稱
+                        </v-card-title>
+                      </v-card>
+                    </v-col>
+                    <v-col class="v-col-3 pa-1">
+                      <v-card class="bg-grey-lighten-1 ">
+                        <v-card-title class="justify-center text-subtitle-1 text-center">
+                          借用日期
+                        </v-card-title>
+                      </v-card>
+                      
+                    </v-col>
+                    <v-col class="v-col-3 pa-1">
+                      <v-card class="bg-grey-lighten-1 ">
+                        <v-card-title class="justify-center text-subtitle-1 text-center">
+                          借用時間
+                        </v-card-title>
+                      </v-card>
+                    </v-col>
+                  </v-row>
+                </v-container>  
+              </v-col>
+            </v-row>
+            
             <v-row v-for="(i,index) in space_data">
-              <v-col class="v-col-auto">
+              <v-col class="v-col-12">
                 <v-card color="grey-lighten-3">
                   <v-container>
                     <v-row >
@@ -130,15 +160,18 @@
                         {{ index+1 }}
                       </v-col>-->
                       <v-col class="v-col-sm-3 v-col-12">
+                        <span v-if="wh.width<600">場地名稱：</span>
                         {{ i[0] }}
                       </v-col>
-                      <v-col class="v-col-sm-4 v-col-12">
+                      <v-col class="v-col-sm-3 v-col-12">
+                        <span v-if="wh.width<600">借用日期：</span>
                         {{ i[1] }}
                       </v-col>
                       <v-col class="v-col-sm-3 v-col-12">
+                        <span v-if="wh.width<600">借用時間：</span>
                         {{ i[2] }}
                       </v-col>
-                      <v-col class="v-col-sm-2 v-col-12">
+                      <v-col class="v-col-sm-3 v-col-12">
                         <v-btn @click="delspace(index)" a>刪除</v-btn>
                       </v-col>
                     </v-row>
@@ -206,6 +239,43 @@
                 </v-alert>
               </v-col>
             </v-row>
+            <v-row v-if="wh.width>=600 && item_data.length != 0">
+              <v-col class="v-col-12 pa-0 pl-1">
+                <v-container>
+                  <v-row >
+                    <v-col class="v-col-2 pa-1">
+                      <v-card class="bg-grey-lighten-1 ">
+                        <v-card-title class="justify-center text-subtitle-1 text-center px-1">
+                          物品名稱
+                        </v-card-title>
+                      </v-card>
+                    </v-col>
+                    <v-col class="v-col-3 pa-1">
+                      <v-card class="bg-grey-lighten-1 ">
+                        <v-card-title class="justify-center text-subtitle-1 text-center">
+                          歸還日期
+                        </v-card-title>
+                      </v-card>
+                      
+                    </v-col>
+                    <v-col class="v-col-3 pa-1">
+                      <v-card class="bg-grey-lighten-1  ">
+                        <v-card-title class="justify-center text-subtitle-1 text-center">
+                          借用時間
+                        </v-card-title>
+                      </v-card>
+                    </v-col>
+                    <v-col class="v-col-2 pa-1 ">
+                      <v-card class="bg-grey-lighten-1 ">
+                        <v-card-title class="justify-center text-subtitle-1 text-center">
+                          數量
+                        </v-card-title>
+                      </v-card>
+                    </v-col>
+                  </v-row>
+                </v-container>  
+              </v-col>
+            </v-row>
             <v-row v-for="(i,index) in item_data">
               <v-col>
                 <v-card color="grey-lighten-3">
@@ -216,15 +286,19 @@
                         {{ index+1 }} 
                       </v-col>-->
                       <v-col class="v-col-sm-2 v-col-12">
+                        <span v-if="wh.width<600">物品名稱：</span>
                         {{ i[0] }}
                       </v-col >
                       <v-col class="v-col-sm-3 v-col-12">
+                        <span v-if="wh.width<600">借用日期：</span>
                         {{ i[1] }}
                       </v-col>
-                      <v-col class="v-col-sm-3 v-col-12">
+                      <v-col class="v-col-sm-3 v-col-12  ">
+                        <span v-if="wh.width<600">歸還日期：</span>
                         {{ i[2] }}
                       </v-col>
-                      <v-col class="v-col-sm-2 v-col-12">
+                      <v-col class="v-col-sm-2  v-col-12">
+                        <span v-if="wh.width<600">數　　量：</span>
                         {{ i[3] }}
                       </v-col>
                       <v-col class="v-col-sm-2 v-col-12">
@@ -285,7 +359,7 @@
     </v-row>
     <v-row >
       <v-col>
-        <v-dialog width="60%" scrollable>
+        <v-dialog width="75%" scrollable>
           <template v-slot:activator="{ props }">
             <v-btn v-bind="props" @click="addReserve()" text="繼續"> </v-btn>
           </template>
@@ -295,9 +369,9 @@
                 <v-divider></v-divider>
                 <v-container>
                   <v-row>
-                    <v-col>名字:{{ name }}</v-col>
-                    <v-col>單位:{{ org }}</v-col>
-                    <v-col>系級:{{ department }}</v-col>
+                    <v-col class="v-col-md-4 v-col-12">名字:{{ name }}</v-col>
+                    <v-col class="v-col-md-4 v-col-12">單位:{{ org }}</v-col>
+                    <v-col class="v-col-md-4 v-col-12">系級:{{ department }}</v-col>
                   </v-row>
                   <v-row>
                     <v-col>email:{{ email }}</v-col>
@@ -308,26 +382,108 @@
                   <v-row>
                     <v-col>備註:{{ note }}</v-col>
                   </v-row>
+                  <v-row v-if="wh.width>=960 && item_data.length != 0">
+                    <v-col>
+                      <v-divider/>
+                    </v-col>
+                  </v-row>
+                  <v-row v-if="wh.width>=960 && item_data.length != 0">
+                    <v-col class="v-col-12 pa-0 pl-1">
+                      <v-container>
+                        <v-row >
+                          <v-col class="v-col-3 pa-1">
+                            <v-card class="bg-grey-lighten-1 ">
+                              <v-card-title class="justify-center text-subtitle-1 text-center px-1">
+                                物品名稱
+                              </v-card-title>
+                            </v-card>
+                          </v-col>
+                          <v-col class="v-col-3 pa-1">
+                            <v-card class="bg-grey-lighten-1 ">
+                              <v-card-title class="justify-center text-subtitle-1 text-center">
+                                歸還日期
+                              </v-card-title>
+                            </v-card>
+                            
+                          </v-col>
+                          <v-col class="v-col-3 pa-1">
+                            <v-card class="bg-grey-lighten-1  ">
+                              <v-card-title class="justify-center text-subtitle-1 text-center">
+                                借用時間
+                              </v-card-title>
+                            </v-card>
+                          </v-col>
+                          <v-col class="v-col-2 pa-1 ">
+                            <v-card class="bg-grey-lighten-1 ">
+                              <v-card-title class="justify-center text-subtitle-1 text-center">
+                                數量
+                              </v-card-title>
+                            </v-card>
+                          </v-col>
+                        </v-row>
+                      </v-container>  
+                    </v-col>
+                  </v-row>
+
                   <v-row v-for="(i,index) in item_data">
                     <v-col>
                       <v-card color="grey-lighten-3">
                         <v-container>
                           <v-row class="align-center">
-                            <v-col>
+                            <v-col class="v-col-md-3 v-col-12">
+                              <span v-if="wh.width<960">物品名稱：</span>
                               {{ i[0] }}
                             </v-col>
-                            <v-col>
+                            <v-col class="v-col-md-3 v-col-12">
+                              <span v-if="wh.width<960">借用日期：</span>
                               {{ i[1] }}
                             </v-col>
-                            <v-col>
+                            <v-col class="v-col-md-3 v-col-12"> 
+                              <span v-if="wh.width<960">歸還日期：</span>
                               {{ i[2] }}
                             </v-col>
-                            <v-col>
+                            <v-col class="v-col-md-2 v-col-12">
+                              <span v-if="wh.width<960">數　　量：</span>
                               {{ i[3] }}
                             </v-col>
                           </v-row>
                         </v-container>  
                       </v-card>
+                    </v-col>
+                  </v-row>
+                  <v-row v-if="wh.width>=600 && space_data.length != 0">
+                    <v-col>
+                      <v-divider/>
+                    </v-col>
+                  </v-row>
+                  <v-row v-if="wh.width>=600 && space_data.length != 0">
+                    <v-col class="v-col-12 pa-0 pl-1">
+                      <v-container>
+                        <v-row >
+                          <v-col class="v-col-3 pa-1">
+                            <v-card class="bg-grey-lighten-1 ">
+                              <v-card-title class="justify-center text-subtitle-1 text-center">
+                                場地名稱
+                              </v-card-title>
+                            </v-card>
+                          </v-col>
+                          <v-col class="v-col-4 pa-1">
+                            <v-card class="bg-grey-lighten-1 ">
+                              <v-card-title class="justify-center text-subtitle-1 text-center">
+                                借用日期
+                              </v-card-title>
+                            </v-card>
+                            
+                          </v-col>
+                          <v-col class="v-col-4 pa-1">
+                            <v-card class="bg-grey-lighten-1 ">
+                              <v-card-title class="justify-center text-subtitle-1 text-center">
+                                借用時間
+                              </v-card-title>
+                            </v-card>
+                          </v-col>
+                        </v-row>
+                      </v-container>  
                     </v-col>
                   </v-row>
                   <v-row v-for="i in space_data">
@@ -336,13 +492,16 @@
                         <v-container>
                           <v-row class="align-center">
                             
-                            <v-col>
+                            <v-col class="v-col-md-3 v-col-12">
+                              <span v-if="wh.width<960">場地名稱：</span>
                               {{ i[0] }}
                             </v-col>
-                            <v-col>
+                            <v-col class="v-col-md-4 v-col-12">
+                              <span v-if="wh.width<960">借用日期：</span>
                               {{ i[1] }}
                             </v-col>
-                            <v-col>
+                            <v-col class="v-col-md-4 v-col-12">
+                              <span v-if="wh.width<960">借用時間：</span>
                               {{ i[2] }}
                             </v-col>
                           </v-row>
@@ -380,6 +539,7 @@
 <script >
   import axios from 'axios';
   import { useDateFormat } from '@vueuse/core'
+  import { useWindowSize } from '@vueuse/core'
   export default{
     mounted(){
       axios
@@ -408,33 +568,20 @@
     },  
     data(){
       return{
+        wh : useWindowSize(),
         rules: {
           required: value => !!value || 'Field is required',
         },
         alert_space:false,
         alert_space_title:"時段無法借用",
-        alert_space_text:"可以查詢時間表，確認次時段的借用情況",
+        alert_space_text:"可以查詢時間表，確認此時段的借用情況",
         alert_item:false,
         alert_item_title:"時段無法借用",
-        alert_item_text:"可以查詢時間表，確認次時段的借用情況",
+        alert_item_text:"可以查詢時間表，確認此時段的借用情況",
         item_list:[{},[]],
         space_list:[{},[]],
         time_list:['08:00-12:00', '13:00-17:00', '18:00-22:00'],
         quantity_limit_list:{},
-        monthDisk:{
-          'Jan':1,
-          'Feb':2,
-          'Mar':3,
-          'Apr':4,
-          'May':5,
-          'Jun':6,
-          'Jul':7,
-          'Aug':8,
-          'Sep':9,
-          'Oct':10,
-          'Nov':11,
-          'Dec':12
-        },
         space_num : 0,
         space_data :[],
         space_date_temp:null,
@@ -446,7 +593,6 @@
         item_date_temp2:null,
         item_quantity_temp:"",
         item_temp:"",
-        
         submit:null,
         note:"",
         email:"",
@@ -517,8 +663,9 @@
           },5000)
           return
         }
+        useDateFormat(this.space_date_temp.toString(),"YYYY-MM-DD").value
         if(this.space_temp!="" && this.space_date_temp!="" &&this.space_time_temp!=""){
-          this.space_data.push([this.space_temp,this.space_date_temp.toString(),this.space_time_temp])
+          this.space_data.push([this.space_temp,useDateFormat(this.space_date_temp.toString(),"YYYY-MM-DD").value,this.space_time_temp])
         }
       },
       delitem(index){
@@ -576,7 +723,7 @@
           return
         }
         else if(this.item_temp!="" && this.item_date_temp1!="" && this.item_date_temp2!="" && this.item_quantity_temp!=""){
-          this.item_data.push([this.item_temp,this.item_date_temp1.toString(),this.item_date_temp2.toString(),this.item_quantity_temp])
+          this.item_data.push([this.item_temp,useDateFormat(date_format_temp1,"YYYY-MM-DD").value,useDateFormat(date_format_temp2,"YYYY-MM-DD").value,this.item_quantity_temp])
           console.log(this.item_data) 
         }
       },
