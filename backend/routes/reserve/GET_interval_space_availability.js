@@ -103,6 +103,7 @@ router.get('/interval_space_availability', async function (req, res, next) {
     let output_array = [];
     let end_datetime_dayjs = dayjs(end_datetime);
     let start_datetime_dayjs = dayjs(start_datetime);
+    let reserved_stop_judge_flag=1;
 
     while (start_datetime_dayjs.isBefore(end_datetime_dayjs)) {
         for (let current_timeslot = 0; start_datetime_dayjs.isBefore(end_datetime_dayjs) && current_timeslot < 3; start_datetime_dayjs = start_datetime_dayjs.add(1, 'hour')) {
@@ -115,24 +116,36 @@ router.get('/interval_space_availability', async function (req, res, next) {
             }
             let reserved_value = 0;
             //在資料庫中是否有找到此時段的資料,如果否reserved_value=0
-            const space_database_info = await spaces_reserved_time.findOne({ start_datetime: new Date(start_datetime_dayjs.format()), space_id: new ObjectId(space_id) });
-            if (space_database_info == null) {
-                reserved_value = 0;
-            }
-            else {
-                reserved_value = space_database_info.reserved;
+            // const space_database_info = await spaces_reserved_time.findOne({ start_datetime: new Date(start_datetime_dayjs.format()), space_id: space_id });
+            // if (space_database_info == null) {
+            //     reserved_value = 0;
+            // }
+            // else {
+            //     reserved_value = space_database_info.reserved;
+            // }
+            let space_database_info ;
+
+            for(var i = 0;i<=3;i++){
+                space_database_info= await spaces_reserved_time.findOne({ start_datetime: new Date(start_datetime_dayjs.add(i,"hour").format()), space_id: space_id });
+                if (space_database_info == null) {
+                    continue;
+                    }
+                reserved_value=space_database_info.reserved;
+                if(reserved_value==1){
+                    break;
+                }
             }
 
             if (start_datetime_dayjs.hour() >= digical_time_slots[current_timeslot].start && start_datetime_dayjs.hour() < digical_time_slots[current_timeslot].end) {
                 output_array.push(
                     {
                         space_id: space_id,
-                        start_datetime: start_datetime_dayjs.format("YYYY-MM-DDTHH:mm"),
-                        end_datetime: start_datetime_dayjs.add(1, 'hour').format("YYYY-MM-DDTHH:mm"),
+                        start_datetime: start_datetime_dayjs.set('hour',digical_time_slots[current_timeslot].start).format("YYYY-MM-DDTHH:mm"),
+                        end_datetime: start_datetime_dayjs.set('hour',digical_time_slots[current_timeslot].end).format("YYYY-MM-DDTHH:mm"),
                         availability: reserved_value
                     }
                 );
-
+                start_datetime_dayjs=start_datetime_dayjs.set('hour',digical_time_slots[current_timeslot].end);
             }
         }
         start_datetime_dayjs = start_datetime_dayjs.add(1, 'day');
