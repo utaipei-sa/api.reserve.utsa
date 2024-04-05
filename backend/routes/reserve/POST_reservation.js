@@ -75,23 +75,23 @@ router.post('/reservation', async function (req, res, next) {
     return
   }
 
-
+  //TODO: add reservation_id
   // process data
   const reservation_id = new ObjectId()
   let received_space_reserved_time = []
   let received_item_reserved_time = []
-
+  
   // space reservation process
   for(const space_reservation of received_space_reservations){
     // check
     if (!OBJECT_ID_REGEXP.test(space_reservation.space_id)) {
-      error_message += 'space_reservations space_id empty error\n'
+      error_message += 'space_reservations space_id format error\n'
     }
     if (!DATETIME_MINUTE_REGEXP.test(space_reservation.start_datetime)) {
-      error_message += 'space_reservations start_datetime empty error\n'
+      error_message += 'space_reservations start_datetime format error\n'
     }
     if (!DATETIME_MINUTE_REGEXP.test(space_reservation.end_datetime)) {
-      error_message += 'space_reservations end_datetime empty error\n'
+      error_message += 'space_reservations end_datetime format error\n'
     }
     if (error_message.length) {
       res
@@ -161,7 +161,7 @@ router.post('/reservation', async function (req, res, next) {
                                                           "space_id" : received_space_reserved_time[i].space_id,
                                                           "reserved" : 1
                                                         })
-                                                        console.log("not err")
+
     if(db_space_check == null){
       continue
     }else if(db_space_check.reserved) {
@@ -179,13 +179,13 @@ router.post('/reservation', async function (req, res, next) {
       error_message += 'item_reservations quantity error\n'
     }
     if (!OBJECT_ID_REGEXP.test(item_reservation.item_id)) {
-      error_message += 'item_reservations item_id empty error\n'
+      error_message += 'item_reservations item_id format error\n'
     }
     if (!DATETIME_MINUTE_REGEXP.test(item_reservation.start_datetime)) {
-      error_message += 'item_reservations start_datetime empty error\n'
+      error_message += 'item_reservations start_datetime format error\n'
     }
     if (!DATETIME_MINUTE_REGEXP.test(item_reservation.end_datetime)) {
-      error_message += 'item_reservations end_datetime empty error\n'
+      error_message += 'item_reservations end_datetime format error\n'
     }
     if (error_message.length) {
       res
@@ -195,7 +195,8 @@ router.post('/reservation', async function (req, res, next) {
     }
 
     // check whether item_id is exist
-    let item_found = items.findOne({ _id: new ObjectId(item_reservation.item_id) })
+    let item_found = await items.findOne({ _id: new ObjectId(item_reservation.item_id) })
+    //console.log(item_found)
     if (!item_found) {  // <-- notice what's this when not found (should be same as space)
       res
         .status(400)
@@ -256,11 +257,12 @@ router.post('/reservation', async function (req, res, next) {
                                                           "item_id" : received_item_reserved_time[i].item_id,
                                                         })
     //console.log(db_item_check) 
-
+    //console.log(db_item_check.reserved_quantity,max_quantity,received_item_reserved_time[i].reserved_quantity)
     if(db_item_check == null){
       continue
     }else {
-      if(db_item_check.reserved_quantity <= max_quantity - received_item_reserved_time[i].quantity) {
+      if(db_item_check.reserved_quantity <= max_quantity.quantity - received_item_reserved_time[i].reserved_quantity) {
+        
         continue
       }else{
         res
@@ -270,40 +272,7 @@ router.post('/reservation', async function (req, res, next) {
       } 
     }
   }
-    // process data
-   /*  let start_datetime = new Date(item_reservation.start_datetime)
-    let end_datetime = new Date(item_reservation.end_datetime)
-    let section_end_datetime = new Date(item_reservation.start_datetime)
-    //section_end_datetime = section_end_datetime.setTime(section_end_datetime.getTime() + hours * 60 * 60 * 1000)
-
-    // if end_datetime is earlier than start_datetime
-    if (end_datetime < start_datetime) {
-      res
-        .status(400)
-        .json({ error: 'item_reservations end_datetime earlier than start_datetime error' })
-    } */
-    // convert to time slots (a day, from 12:00 pm to 11:59 am)
-
-
-
-    // // get duration (days)
-    // const start_date = new Date(item_reservation.start_date)
-    // const end_date = new Date(item_reservation.end_date)
-    // const duration = (end_date.getTime() - start_date.getTime()) / (1000 * 60 * 60 * 24) // from millisecond to days
-    // // define variables
-    // const unshifted_date = new Date(item_reservation.start_date)
-    // let shifted_date
-    // // loop
-    // for (let i = 0; i < duration; i++) {
-    //   shifted_date = new Date(new Date(unshifted_date).setDate(unshifted_date.getDate() + i))
-    //   received_item_reserved_time.push({
-    //     item_id: item_reservation.item_id,
-    //     date: shifted_date.toISOString().substring(0, 10), // noon-to-noon, here's the 1st day
-    //     reservations_id: reservation_id
-    //   })
-    // }
-    // =============== ↑以上還沒更新↑ ===============
-
+  
 
   // insert reservation into database
   const doc = {
@@ -326,11 +295,50 @@ router.post('/reservation', async function (req, res, next) {
     item_reservations: received_item_reservations,
     note: note
   }
+  const reservations_result = await reservations.insertOne(doc)
+  console.log(received_item_reserved_time)
+  let db_item_update
+  // TODO :: update items reserved_quantity
+  for(let i=0;i<received_item_reserved_time.length;i++){
+    console.log(i);
+    max_quantity = await items.findOne({_id : new ObjectId(received_item_reserved_time[i].item_id)})
+    //console.log(max_quantity);
+    db_item_check = await items_reserved_time.findOne({ "start_datetime" : received_item_reserved_time[i].start_datetime,
+                                                          "item_id" : received_item_reserved_time[i].item_id,
+                                                        })
+    
+    if(db_item_check != null){
+      console.log("suc");
+      console.log(db_item_check)
+      await items_reserved_time.updateOne({ 
+                                            _id : db_item_check._id
+                                          },
+                                          {
+                                            $inc : { "reserved_quantity" : received_item_reserved_time[i].reserved_quantity},
+                                            $push : { "reservation_id" : reservations_result.insertedId }
+                                          })
+      received_item_reserved_time.splice(i,1)
+      i--;
+      console.log(received_item_reserved_time)
+    }else{
+      console.log("fail");
+      console.log(db_item_check)
+    }
+    //console.log(db_item_check) 
+  }
+
   //console.log(received_space_reserved_time)
-  const reservations_result = reservations.insertOne(doc)
+  
+  for(const spaces_reserved_time_each of received_space_reserved_time ){
+    spaces_reserved_time_each['reservation_id'] = reservations_result.insertedId
+  }
   if (received_space_reserved_time.length > 0) {
     const spaces_reserved_time_result = spaces_reserved_time.insertMany(received_space_reserved_time)
   }
+  for(const items_reserved_time_each of received_item_reserved_time ){
+    items_reserved_time_each['reservation_id'] = [reservations_result.insertedId]
+  }
+  console.log(received_item_reserved_time)
   if (received_item_reserved_time.length > 0) {
     const items_reserved_time_result = items_reserved_time.insertMany(received_item_reserved_time)
   }

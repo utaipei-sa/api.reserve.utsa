@@ -249,20 +249,6 @@
         end_datetime:"",
         end_datetime_temp:"",
         hasGetData:false,
-        monthDisk:{
-          'Jan':1,
-          'Feb':2,
-          'Mar':3,
-          'Apr':4,
-          'May':5,
-          'Jun':6,
-          'Jul':7,
-          'Aug':8,
-          'Sep':9,
-          'Oct':10,
-          'Nov':11,
-          'Dec':12
-        },
       }
     },
     computed:{
@@ -314,8 +300,8 @@
             }},
           ).then((response)=>{
               console.log(response)
-              for(let i=0;i<response['data']['data'].length-1;i++){
-                this.available[i%3].push(response['data']['data'][i])
+              for(let i=0;i<response['data'].length;i++){
+                this.available[i%3].push(response['data'][i])
                 this.available[i%3][this.available[i%3].length-1]['start_datetime'] = useDateFormat(this.available[i%3][this.available[i%3].length-1]['start_datetime'].substring(0,this.available[i%3][this.available[i%3].length-1]['start_datetime'].length-6),"MM-DD").value
                 this.available[i%3][this.available[i%3].length-1]['end_datetime'] = useDateFormat(this.available[i%3][this.available[i%3].length-1]['end_datetime'].substring(0,this.available[i%3][this.available[i%3].length-1]['end_datetime'].length-6),"MM-DD").value 
               }
@@ -332,7 +318,7 @@
             }},
           ).then((response)=>{
               console.log(response)
-              this.available = response['data']['data']
+              this.available = response['data']
               for(let i=0;i<this.available.length;i++){
                 this.available[i]['start_datetime'] = useDateFormat(this.available[i]['start_datetime'].substring(0,this.available[i]['start_datetime'].length-6),"MM-DD").value
                 this.available[i]['end_datetime'] = useDateFormat(this.available[i]['end_datetime'].substring(0,this.available[i]['end_datetime'].length-6),"MM-DD").value 
