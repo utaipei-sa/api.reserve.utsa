@@ -24,15 +24,16 @@
             <v-row>
               <v-col >
                 <v-menu 
+                  v-model="menu_open"
                   :close-on-content-click="false"
                   transition="scale-transition"
                   offset-y
                   max-width="290px"
                   min-width="290px" >
                   <template v-slot:activator="{props}">
-                    <v-text-field v-bind="props"  label="查詢日期" v-model="format_date"></v-text-field>
+                    <v-text-field v-bind="props"   label="查詢日期" v-model="format_date"></v-text-field>
                   </template>
-                  <v-date-picker  v-model="search_date"></v-date-picker>
+                  <v-date-picker  v-model="search_date" ></v-date-picker>
                 </v-menu>
               </v-col>
             </v-row>
@@ -92,49 +93,111 @@
                     </v-row>
                   </v-container>
                   <v-container v-if="wh.width<780 && date_range!='一天'">
-                    <v-row >
+                    <v-row v-if="wh.width>=500">
                       <v-col class="v-col-2">
-
                       </v-col>
-                      <v-col class="overflow-hidden">
+                      <v-col class="overflow-hidden text-center">
                         08:00~12:00
                       </v-col>
-                      <v-col class="overflow-hidden">
+                      <v-col class="overflow-hidden text-center">
                         13:00~17:00
                       </v-col>
-                      <v-col class="overflow-hidden">
+                      <v-col class="overflow-hidden text-center">
                         18:00~22:00
                       </v-col>
                     </v-row>
-                    <v-row v-for="(i,index) in available[0]">
+                    <v-row v-if="wh.width<500">
                       <v-col class="v-col-2">
-                        {{ available[0][index]['start_datetime'] }}
                       </v-col>
-                      <v-col>
+                      <v-col class="overflow-hidden text-center pa-1">
+                        <div>
+                          08:00
+                        </div>
+                        <div>
+                          ~12:00
+                        </div>
+                      </v-col>
+                      <v-col class="overflow-hidden text-center pa-1">
+                        <div>
+                          13:00
+                        </div>
+                        <div>
+                          ~17:00
+                        </div>
+                      </v-col>
+                      <v-col class="overflow-hidden text-center pa-1">
+                        <div>
+                          18:00
+                        </div>
+                        <div>
+                          ~22:00
+                        </div>
+                      </v-col>
+                    </v-row>
+                    <v-row v-for="(i,index) in available[0]" class="py-3" >
+                      <v-col class="v-col-2 pa-0 align-center" v-if="wh.width<360">
+                        <v-responsive aspect-ratio="1" class="slash">
+                          <v-container class="h-100 justify-center align-center ma-0 pa-0 ">
+                          <v-row  class="h-50 ma-0 pa-0 align-center">
+                            <v-col class=" v-col-6  text-center ma-0 pa-0">
+                              {{ available[0][index]['mouth'] }}
+                            </v-col>
+                          </v-row>
+                          <v-row  class="h-50 ma-0 pa-0 align-center">
+                            <v-col class="v-col-6 ma-0 pa-0"></v-col>
+                            <v-col class="v-col-6 text-center ma-0 pa-0">
+                              {{ available[0][index]['date'] }}
+                            </v-col>  
+                          </v-row>
+                        </v-container>
+                        </v-responsive>
+                      </v-col>
+                      <v-col class="v-col-2 pa-1 align-center" v-if="wh.width>=360 && wh.width<400"> 
+                        <v-responsive aspect-ratio="1" class="slash">
+                          <v-container class="h-100 justify-center align-center ma-0 pa-0 ">
+                          <v-row  class="h-50 ma-0 pa-0 align-center">
+                            <v-col class=" v-col-6  text-center ma-0 pa-0">
+                              {{ available[0][index]['mouth'] }}
+                            </v-col>
+                          </v-row>
+                          <v-row  class="h-50 ma-0 pa-0 align-center">
+                            <v-col class="v-col-6 ma-0 pa-0"></v-col>
+                            <v-col class="v-col-6 text-center ma-0 pa-0">
+                              {{ available[0][index]['date'] }}
+                            </v-col>  
+                          </v-row>
+                        </v-container>
+                        </v-responsive>
+                      </v-col>
+                      <v-col class="v-col-2 pa-2 align-center" v-if=" wh.width>=400"> 
+                        <v-responsive aspect-ratio="1" class="slash">
+                          <v-container class="h-100 justify-center align-center ma-0 pa-0 ">
+                          <v-row  class="h-50 ma-0 pa-0 align-center">
+                            <v-col class=" v-col-6  text-center ma-0 pa-0">
+                              {{ available[0][index]['mouth'] }}
+                            </v-col>
+                          </v-row>
+                          <v-row  class="h-50 ma-0 pa-0 align-center">
+                            <v-col class="v-col-6 ma-0 pa-0"></v-col>
+                            <v-col class="v-col-6 text-center ma-0 pa-0">
+                              {{ available[0][index]['date'] }}
+                            </v-col>  
+                          </v-row>
+                        </v-container>
+                        </v-responsive>
+                      </v-col>
+                      <v-col class="pa-1 text-center ">
                         {{ available[0][index]['availablility']==1?"可借":"不可借" }}
                       </v-col>
-                      <v-col>
+                      <v-col class="pa-1 text-center">
                         {{ available[1][index]['availablility']==1?"可借":"不可借" }}
                       </v-col>
-                      <v-col>
+                      <v-col class="pa-1 text-center"> 
                         {{ available[2][index]['availablility']==1?"可借":"不可借" }}
                       </v-col>
                     </v-row>
                   </v-container>
-                  <v-table v-if="date_range=='一天'">
-                    <thead > 
-                      <tr >
-                        <th>時段</th>
-                        <th>可借用</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr>
-                        <td>{{ available[0]['start_datetime']}}</td>
-                        <td>{{ available[0]['availablility']}}</td>
-                      </tr>
-                    </tbody>
-                  </v-table> 
+                  
                 </v-card>
                 <v-card  color="grey-lighten-1" v-if="type=='物品'">
                   <v-container v-if="wh.width>=780 && date_range!='一天'">
@@ -229,6 +292,7 @@
 
     data(){
       return{
+        menu_open : false,
         wh : useWindowSize(),
         type : "",
         type_temp:"",
@@ -239,7 +303,7 @@
         available :[],
         item:"",
         space:"",
-        date_range_list:["一個禮拜","一天"],
+        date_range_list:["一個禮拜"],
         date_range:"",
         date_range_temp:"",
         search_date:null,
@@ -254,6 +318,10 @@
     computed:{
       format_date(){
         if(this.search_date == null) return ""
+        setTimeout(()=>{
+          this.menu_open = false
+        },120)
+        
         let a = useDateFormat(this.search_date,"YYYY-MM-DDTHH:mm").value
         this.start_datetime = a
         let b = useDateFormat(this.search_date,"YYYY-MM-DD")
@@ -304,6 +372,8 @@
                 this.available[i%3].push(response['data'][i])
                 this.available[i%3][this.available[i%3].length-1]['start_datetime'] = useDateFormat(this.available[i%3][this.available[i%3].length-1]['start_datetime'].substring(0,this.available[i%3][this.available[i%3].length-1]['start_datetime'].length-6),"MM-DD").value
                 this.available[i%3][this.available[i%3].length-1]['end_datetime'] = useDateFormat(this.available[i%3][this.available[i%3].length-1]['end_datetime'].substring(0,this.available[i%3][this.available[i%3].length-1]['end_datetime'].length-6),"MM-DD").value 
+                this.available[i%3][this.available[i%3].length-1]['date'] = useDateFormat(this.available[i%3][this.available[i%3].length-1]['start_datetime'],"DD").value
+                this.available[i%3][this.available[i%3].length-1]['mouth'] = useDateFormat(this.available[i%3][this.available[i%3].length-1]['start_datetime'],"MM").value
               }
               console.log(this.available)
             })
@@ -333,5 +403,9 @@
   }
 </script>
 <style>
-
+.slash{
+  line-height: 0.5rem;
+  background:
+    linear-gradient(135deg, transparent 48.5%, black 50%, black 50%, transparent 50.5%);
+}
 </style>
