@@ -9,16 +9,6 @@ import env from 'dotenv/config'
 import { default as home_router } from './routes/home.js'
 import { default as reserve_router } from './routes/reserve/index.js'
 import { default as docs_router } from './docs/docs.js'
-// var createError = require('http-errors')
-// var express = require('express')
-// var path = require('path')
-// var cookieParser = require('cookie-parser')
-// var logger = require('morgan')
-// var cors = require('cors')
-// var env = require('dotenv').config();
-// var home_router = require('./routes/home')
-// var reserve_router = require('./routes/reserve/index')
-// var docs_router = require('./docs/docs')
 
 const app = express()
 
