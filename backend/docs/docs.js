@@ -4,11 +4,15 @@ import swagger_ui from 'swagger-ui-express'
 import fs from 'fs'
 import YAML from 'yaml'
 import path from 'path'
+import { fileURLToPath } from 'url'
 // const swagger_jsdoc = require('swagger-jsdoc');
 // const swagger_ui = require('swagger-ui-express');
 // const fs = require("fs")
 // const YAML = require('yaml')
 // const path = require('path');
+
+const __filename = fileURLToPath(import.meta.url) // get the resolved path to the file
+const __dirname = path.dirname(__filename) // get the name of the directory
 
 const docs_router = express.Router()
 
