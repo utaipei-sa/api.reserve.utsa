@@ -1,4 +1,5 @@
-const nodemailer = require('nodemailer') // email relative
+import nodemailer from 'nodemailer' // email relative
+// const nodemailer = require('nodemailer') // email relative
 
 /**
  * 寄送 email
@@ -6,7 +7,7 @@ const nodemailer = require('nodemailer') // email relative
  * @param {string} subject 主旨
  * @param {string} content 信件內容
  */
-module.exports.sendEmail =  function(toEmail, subject, content) {
+export default function sendEmail(toEmail, subject, content) {
   // 創建 SMTP 傳輸器
   const transporter = nodemailer.createTransport({
     service: 'Gmail',
