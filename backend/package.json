@@ -2,8 +2,9 @@
   "name": "reserve.utsa",
   "version": "0.0.0",
   "private": true,
+  "type": "module",
   "scripts": {
-    "start": "node ./bin/www"
+    "start": "node ./bin/www.js"
   },
   "dependencies": {
     "bootstrap": "^5.3.2",

@@ -1,17 +1,25 @@
-const reserve_router = require('express').Router()
+import express from 'express'
+const reserve_router = express.Router()
 
 const root = '/reserve'
+function useRouter(router) {
+    reserve_router.use(root, router)
+}
 
-reserve_router.use(root, require('./GET_items'))
-reserve_router.use(root, require('./GET_spaces'))
-reserve_router.use(root, require('./GET_integral_space_availability'))
-reserve_router.use(root, require('./GET_interval_space_availability'))
-reserve_router.use(root, require('./GET_integral_item_availability'))
-reserve_router.use(root, require('./GET_interval_item_availability'))
-reserve_router.use(root, require('./GET_reservation'))
-reserve_router.use(root, require('./POST_reservation'))
-reserve_router.use(root, require('./PUT_reservation'))
-reserve_router.use(root, require('./DELETE_reservation'))
-reserve_router.use(root, require('./GET_verify'))
+async function useRouters() {
+    reserve_router.use(root, (await import('./get_items.js')).default)
+    reserve_router.use(root, (await import('./get_spaces.js')).default)
+    reserve_router.use(root, (await import('./get_integral_space_availability.js')).default)
+    reserve_router.use(root, (await import('./get_interval_space_availability.js')).default)
+    reserve_router.use(root, (await import('./get_integral_item_availability.js')).default)
+    reserve_router.use(root, (await import('./get_interval_item_availability.js')).default)
+    reserve_router.use(root, (await import('./get_reservation.js')).default)
+    reserve_router.use(root, (await import('./post_reservation.js')).default)
+    reserve_router.use(root, (await import('./put_reservation.js')).default)
+    reserve_router.use(root, (await import('./delete_reservation.js')).default)
+    reserve_router.use(root, (await import('./get_verify.js')).default)
+}
 
-module.exports = reserve_router;
+useRouters()
+
+export default reserve_router
