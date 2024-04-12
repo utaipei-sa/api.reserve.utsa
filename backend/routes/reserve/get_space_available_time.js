@@ -1,0 +1,1 @@
+'replace get_interval_space_availability.js and get_integral_space_availability.js'
