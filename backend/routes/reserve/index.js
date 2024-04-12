@@ -2,22 +2,19 @@ import express from 'express'
 const reserve_router = express.Router()
 
 const root = '/reserve'
-function useRouter(router) {
-    reserve_router.use(root, router)
-}
 
-async function useRouters() {
-    reserve_router.use(root, (await import('./get_items.js')).default)
-    reserve_router.use(root, (await import('./get_spaces.js')).default)
-    reserve_router.use(root, (await import('./get_integral_space_availability.js')).default)
-    reserve_router.use(root, (await import('./get_interval_space_availability.js')).default)
-    reserve_router.use(root, (await import('./get_integral_item_availability.js')).default)
-    reserve_router.use(root, (await import('./get_interval_item_availability.js')).default)
-    reserve_router.use(root, (await import('./get_reservation.js')).default)
-    reserve_router.use(root, (await import('./post_reservation.js')).default)
-    reserve_router.use(root, (await import('./put_reservation.js')).default)
-    reserve_router.use(root, (await import('./delete_reservation.js')).default)
-    reserve_router.use(root, (await import('./get_verify.js')).default)
+async function useRouters () {
+  reserve_router.use(root, (await import('./get_items.js')).default)
+  reserve_router.use(root, (await import('./get_spaces.js')).default)
+  reserve_router.use(root, (await import('./get_integral_space_availability.js')).default)
+  reserve_router.use(root, (await import('./get_interval_space_availability.js')).default)
+  reserve_router.use(root, (await import('./get_integral_item_availability.js')).default)
+  reserve_router.use(root, (await import('./get_interval_item_availability.js')).default)
+  reserve_router.use(root, (await import('./get_reservation.js')).default)
+  reserve_router.use(root, (await import('./post_reservation.js')).default)
+  reserve_router.use(root, (await import('./put_reservation.js')).default)
+  reserve_router.use(root, (await import('./delete_reservation.js')).default)
+  reserve_router.use(root, (await import('./get_verify.js')).default)
 }
 
 useRouters()

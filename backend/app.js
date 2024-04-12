@@ -5,10 +5,10 @@ import { fileURLToPath } from 'url'
 import cookieParser from 'cookie-parser'
 import logger from 'morgan'
 import cors from 'cors'
-import env from 'dotenv/config'
-import { default as home_router } from './routes/home.js'
-import { default as reserve_router } from './routes/reserve/index.js'
-import { default as docs_router } from './docs/docs.js'
+// import env from 'dotenv/config'
+import home_router from './routes/home.js'
+import reserve_router from './routes/reserve/index.js'
+import docs_router from './docs/docs.js'
 
 const app = express()
 
@@ -43,12 +43,12 @@ app.use('/api/v1', reserve_router)
 app.use(docs_router)
 
 // catch 404 and forward to error handler
-app.use(function(req, res, next) {
+app.use(function (req, res, next) {
   next(createError(404))
 })
 
 // error handler
-app.use(function(err, req, res, next) {
+app.use(function (err, req, res, next) {
   // set locals, only providing error in development
   res.locals.message = err.message
   res.locals.error = req.app.get('env') === 'development' ? err : {}

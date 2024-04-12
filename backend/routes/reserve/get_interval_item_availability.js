@@ -45,7 +45,7 @@ const router = express.Router()
  *               items:
  *                 $ref: '#/components/schemas/ItemAvailability'
  */
-router.get('/interval_item_availability', async function(req, res, next) {
+router.get('/interval_item_availability', async function (req, res, next) {
   // input:
   //     item_id: string
   //     start_datetime: YYYY-MM-DDThh:mm
@@ -65,27 +65,27 @@ router.get('/interval_item_availability', async function(req, res, next) {
   const end_datetime = req.query.end_datetime
 
   // 檢查輸入是否正確（正規表達式 Regular Expression）
-  const objectId_format = new RegExp('^[a-fA-F0-9]{24}$');  // ObjectId 格式
-  const datetime_format = new RegExp('^(\\d{4})-(\\d{2})-(\\d{2})T(\\d{2}):(\\d{2})');  // 日期時間格式（年-月-日T時:分）
-  if (item_id === undefined || start_datetime === undefined || end_datetime === undefined) {  // 沒給齊參數
+  const objectId_format = /^[a-fA-F0-9]{24}$/ // ObjectId 格式
+  const datetime_format = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/ // 日期時間格式（年-月-日T時:分）
+  if (item_id === undefined || start_datetime === undefined || end_datetime === undefined) { // 沒給齊參數
     return res
       .status(400)
       .json({ error: 'item_id, start_datetime, and end_datetime are required' })
-  } else if (!objectId_format.test(item_id)) {  // check item_id format
+  } else if (!objectId_format.test(item_id)) { // check item_id format
     return res
       .status(400)
       .json({ error: 'item_id format error' })
-  } else if (!datetime_format.test(start_datetime) || !datetime_format.test(end_datetime)) {  // check datetime fromat
+  } else if (!datetime_format.test(start_datetime) || !datetime_format.test(end_datetime)) { // check datetime fromat
     return res
       .status(400)
       .json({ error: 'datetime format error' })
   }
   // 確認 item_id 是否有對應的場地，沒有就報錯
-  let item_found = await items.findOne({ _id: new ObjectId(item_id) })
+  const item_found = await items.findOne({ _id: new ObjectId(item_id) })
   if (!item_found) {
     res
-        .status(400)
-        .json({ error: 'item_id not found error' })
+      .status(400)
+      .json({ error: 'item_id not found error' })
     return
   }
   // 統整物品可否借用資訊
@@ -95,47 +95,46 @@ router.get('/interval_item_availability', async function(req, res, next) {
     { start: 18, end: 22 }
   ]
 
-  let output_array=[]
-  let end_datetime_dayjs=dayjs(end_datetime)
-  let start_datetime_dayjs=dayjs(start_datetime)
-   
+  const output_array = []
+  const end_datetime_dayjs = dayjs(end_datetime)
+  let start_datetime_dayjs = dayjs(start_datetime)
+
   while (start_datetime_dayjs.isBefore(end_datetime_dayjs)) {
     for (
-      let current_timeslot = 0; 
-      start_datetime_dayjs.isBefore(end_datetime_dayjs)&&current_timeslot<3; 
-      start_datetime_dayjs=start_datetime_dayjs.add(1,'hour')
+      let current_timeslot = 0;
+      start_datetime_dayjs.isBefore(end_datetime_dayjs) && current_timeslot < 3;
+      start_datetime_dayjs = start_datetime_dayjs.add(1, 'hour')
     ) {
-      //檢查start_datetime是在哪一個時段的
-      if (start_datetime_dayjs.hour()>=digical_time_slots[current_timeslot].end) {
+      // 檢查start_datetime是在哪一個時段的
+      if (start_datetime_dayjs.hour() >= digical_time_slots[current_timeslot].end) {
         current_timeslot++
-        start_datetime_dayjs=start_datetime_dayjs.subtract(1,'hour')
+        start_datetime_dayjs = start_datetime_dayjs.subtract(1, 'hour')
         continue
       }
       let reserved_quantity = 0
-      //在資料庫中是否有找到此時段的資料,如果否reserved_quantity=0
+      // 在資料庫中是否有找到此時段的資料,如果否reserved_quantity=0
       const item_database_info = await items_reserved_time.findOne({ start_datetime: new Date(start_datetime_dayjs.format()), item_id: new ObjectId(item_id) })
-      if ( item_database_info == null) {
+      if (item_database_info == null) {
         reserved_quantity = 0
         console.log(item_id)
-      }
-      else {
+      } else {
         reserved_quantity = item_database_info.reserved
         console.log(item_database_info.reserved)
       }
 
-      if(start_datetime_dayjs.hour()>=digical_time_slots[current_timeslot].start&&start_datetime_dayjs.hour()<digical_time_slots[current_timeslot].end) {  
+      if (start_datetime_dayjs.hour() >= digical_time_slots[current_timeslot].start && start_datetime_dayjs.hour() < digical_time_slots[current_timeslot].end) {
         output_array.push(
-          {   
-            item_id: item_id,
-            start_datetime: start_datetime_dayjs.format("YYYY-MM-DDTHH:mm"),
-            end_datetime: start_datetime_dayjs.add(1, 'hour').format("YYYY-MM-DDTHH:mm"),
+          {
+            item_id,
+            start_datetime: start_datetime_dayjs.format('YYYY-MM-DDTHH:mm'),
+            end_datetime: start_datetime_dayjs.add(1, 'hour').format('YYYY-MM-DDTHH:mm'),
             available_quantity: reserved_quantity
           }
         )
-      }   
+      }
     }
-    start_datetime_dayjs=start_datetime_dayjs.add(1,'day')
-    start_datetime_dayjs=start_datetime_dayjs.set('hour',0).set('minute',0).set('second',0)
+    start_datetime_dayjs = start_datetime_dayjs.add(1, 'day')
+    start_datetime_dayjs = start_datetime_dayjs.set('hour', 0).set('minute', 0).set('second', 0)
   }
   res.json(output_array)
 })

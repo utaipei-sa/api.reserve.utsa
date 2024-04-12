@@ -30,21 +30,21 @@ async function run() {
 run().catch(console.dir)
 */
 
-//temporary fixed data
-async function setup_spaces() {
+// temporary fixed data
+async function setup_spaces () {
   const temp_data = [
     {
       name: {
         'zh-tw': '學生活動中心',
-        'en': 'Student Activity Center'
+        en: 'Student Activity Center'
       },
       open: 1,
       exception_time: []
-    }, 
+    },
     {
       name: {
         'zh-tw': '勤樸樓B1小舞台',
-        'en': 'Cin-Pu Building B1 Stage'
+        en: 'Cin-Pu Building B1 Stage'
       },
       open: 1,
       exception_time: []
@@ -55,20 +55,20 @@ async function setup_spaces() {
   }
 }
 
-async function setup_items() {
+async function setup_items () {
   const temp_data = [
     {
       name: {
         'zh-tw': '塑膠椅',
-        'en': 'Plastic Chairs'
+        en: 'Plastic Chairs'
       },
       quantity: 30,
       exception_time: []
-    }, 
+    },
     {
       name: {
         'zh-tw': '長桌',
-        'en': 'Tables'
+        en: 'Tables'
       },
       quantity: 2,
       exception_time: []

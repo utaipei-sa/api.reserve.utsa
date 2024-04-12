@@ -26,14 +26,14 @@ const router = express.Router()
  *                   items:
  *                     $ref: '#/components/schemas/Space'
  */
-router.get('/spaces', async function(req, res, next) {
+router.get('/spaces', async function (req, res, next) {
   const data = await spaces
     .find({})
     .project({ _id: 1, name: 1, open: 1, exception_time: 1 })
-    .toArray( function(err, results) {
+    .toArray(function (err, results) {
       console.log(results)
     })
-  res.json({ data: data })
+  res.json({ data })
 })
 
 export default router

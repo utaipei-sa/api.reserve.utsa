@@ -2,7 +2,7 @@ import express from 'express'
 import { ObjectId } from 'mongodb'
 import { reservations, spaces_reserved_time, items_reserved_time } from '../../models/mongodb.js'
 import dayjs from 'dayjs'
-//import { Timestamp } from 'mongodb'
+// import { Timestamp } from 'mongodb'
 
 const router = express.Router()
 
@@ -31,9 +31,9 @@ const router = express.Router()
  *             schema:
  *               $ref: '#/components/schemas/Reservation'
  */
-router.get('/reservation/:reservation_id', async function(req, res, next) {
-  const OBJECT_ID_REGEXP = /^[a-fA-F0-9]{24}$/  // ObjectId 格式 (652765ed3d21844635674e71)
-  const reservation_id=req.params.reservation_id
+router.get('/reservation/:reservation_id', async function (req, res, next) {
+  const OBJECT_ID_REGEXP = /^[a-fA-F0-9]{24}$/ // ObjectId 格式 (652765ed3d21844635674e71)
+  const reservation_id = req.params.reservation_id
 
   if (!OBJECT_ID_REGEXP.test(reservation_id)) {
     res
@@ -42,7 +42,7 @@ router.get('/reservation/:reservation_id', async function(req, res, next) {
     return
   }
 
-  const result = await reservations.findOne({"_id": new ObjectId(req.params.reservation_id)})
+  const result = await reservations.findOne({ _id: new ObjectId(req.params.reservation_id) })
   if (result === null) {
     res
       .status(400)
