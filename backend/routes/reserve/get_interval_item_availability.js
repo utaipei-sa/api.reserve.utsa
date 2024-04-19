@@ -90,52 +90,85 @@ router.get('/interval_item_availability', async function (req, res, next) {
   }
   // 統整物品可否借用資訊
   const digical_time_slots = [
-    { start: 8, end: 12 },
-    { start: 13, end: 17 },
-    { start: 18, end: 22 }
+    { start: 12, end: 23 }
   ]
 
-  const output_array = []
-  const end_datetime_dayjs = dayjs(end_datetime)
-  let start_datetime_dayjs = dayjs(start_datetime)
+  let output_array = [];
+  let end_datetime_dayjs = dayjs(end_datetime);
+  let start_datetime_dayjs = dayjs(start_datetime);
+  let maxValue = 0;
+  if (start_datetime_dayjs.hour() > 12) {
+    start_datetime_dayjs = start_datetime_dayjs.set('hour', 12);
+  }
+  else if (start_datetime_dayjs.hour() < 12) {
+    start_datetime_dayjs = start_datetime_dayjs.subtract(1, 'day').set('hour', 12);
+  }
+  if (end_datetime_dayjs.hour() > 12) {
+    end_datetime_dayjs = end_datetime_dayjs.set('hour', 12);
+  }
+  else if (end_datetime_dayjs.hour() < 12) {
+    end_datetime_dayjs = end_datetime_dayjs.add(1, 'day').set('hour', 12);
 
+  }
   while (start_datetime_dayjs.isBefore(end_datetime_dayjs)) {
-    for (
-      let current_timeslot = 0;
-      start_datetime_dayjs.isBefore(end_datetime_dayjs) && current_timeslot < 3;
-      start_datetime_dayjs = start_datetime_dayjs.add(1, 'hour')
-    ) {
-      // 檢查start_datetime是在哪一個時段的
-      if (start_datetime_dayjs.hour() >= digical_time_slots[current_timeslot].end) {
-        current_timeslot++
-        start_datetime_dayjs = start_datetime_dayjs.subtract(1, 'hour')
-        continue
-      }
-      let reserved_quantity = 0
-      // 在資料庫中是否有找到此時段的資料,如果否reserved_quantity=0
-      const item_database_info = await items_reserved_time.findOne({ start_datetime: new Date(start_datetime_dayjs.format()), item_id: new ObjectId(item_id) })
+    for (var count = 0; start_datetime_dayjs.isBefore(end_datetime_dayjs) && count <= 23; count++) {
+      const item_database_info = await items_reserved_time.findOne({ start_datetime: new Date(start_datetime_dayjs.add(count, 'hour').format()), item_id: new ObjectId(item_id) });
       if (item_database_info == null) {
-        reserved_quantity = 0
-        console.log(item_id)
-      } else {
-        reserved_quantity = item_database_info.reserved
-        console.log(item_database_info.reserved)
+        continue;
       }
-
-      if (start_datetime_dayjs.hour() >= digical_time_slots[current_timeslot].start && start_datetime_dayjs.hour() < digical_time_slots[current_timeslot].end) {
-        output_array.push(
-          {
-            item_id,
-            start_datetime: start_datetime_dayjs.format('YYYY-MM-DDTHH:mm'),
-            end_datetime: start_datetime_dayjs.add(1, 'hour').format('YYYY-MM-DDTHH:mm'),
-            available_quantity: reserved_quantity
-          }
-        )
+      if (item_database_info.reserved > maxValue) {
+        maxValue = item_database_info.reserved;
       }
     }
-    start_datetime_dayjs = start_datetime_dayjs.add(1, 'day')
-    start_datetime_dayjs = start_datetime_dayjs.set('hour', 0).set('minute', 0).set('second', 0)
+    output_array.push({
+      item_id: item_id,
+      start_datetime_dayjs: start_datetime_dayjs.format("YYYY-MM-DDTHH:mm"),
+      end_datetime_dayjs: start_datetime_dayjs.add(1, 'day').format("YYYY-MM-DDTHH:mm"),
+      reserved: maxValue
+
+    })
+    start_datetime_dayjs=start_datetime_dayjs.add(1, 'day');
+    maxValue=0;
+    console.log("ss")
   }
+
+
+  // while(start_datetime_dayjs.isBefore(end_datetime_dayjs)){
+  //     for(let current_timeslot = 0;start_datetime_dayjs.isBefore(end_datetime_dayjs)&&current_timeslot<3;start_datetime_dayjs=start_datetime_dayjs.add(1,'hour')){
+
+  //         //檢查start_datetime是在哪一個時段的
+  //         if(start_datetime_dayjs.hour()>=digical_time_slots[current_timeslot].end){
+  //             current_timeslot++;
+  //             start_datetime_dayjs=start_datetime_dayjs.subtract(1,'hour');
+  //             continue;
+  //         }
+  //         let reserved_quantity = 0;
+  //         //在資料庫中是否有找到此時段的資料,如果否reserved_quantity=0
+  //         const item_database_info = await items_reserved_time.findOne({ start_datetime: new Date(start_datetime_dayjs.format()), item_id: new ObjectId(item_id) });
+  //         if ( item_database_info == null) {
+  //             reserved_quantity = 0;
+  //             console.log(item_id);
+  //         }
+  //         else {
+  //             reserved_quantity = item_database_info.reserved;
+  //             console.log(item_database_info.reserved);
+  //         }
+
+  //         if(start_datetime_dayjs.hour()>=digical_time_slots[current_timeslot].start&&start_datetime_dayjs.hour()<digical_time_slots[current_timeslot].end){  
+  //             output_array.push(
+  //                 {   
+  //                     item_id: item_id,
+  //                     start_datetime: start_datetime_dayjs.format("YYYY-MM-DDTHH:mm"),
+  //                     end_datetime: start_datetime_dayjs.add(1, 'hour').format("YYYY-MM-DDTHH:mm"),
+  //                     available_quantity: reserved_quantity
+  //                 }
+  //             );
+
+  //         }   
+  //     }
+  //     start_datetime_dayjs=start_datetime_dayjs.add(1,'day');
+  //     start_datetime_dayjs=start_datetime_dayjs.set('hour',0).set('minute',0).set('second',0);
+  // }
   res.json(output_array)
 })
 
