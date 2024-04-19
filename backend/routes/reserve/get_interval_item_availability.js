@@ -104,10 +104,10 @@ router.get('/interval_item_availability', async function (req, res, next) {
     start_datetime_dayjs = start_datetime_dayjs.subtract(1, 'day').set('hour', 12);
   }
   if (end_datetime_dayjs.hour() > 12) {
-    end_datetime_dayjs = end_datetime_dayjs.set('hour', 12);
+    end_datetime_dayjs = end_datetime_dayjs.add(1, 'day').set('hour', 12);
   }
   else if (end_datetime_dayjs.hour() < 12) {
-    end_datetime_dayjs = end_datetime_dayjs.add(1, 'day').set('hour', 12);
+    end_datetime_dayjs = end_datetime_dayjs.set('hour', 12);
 
   }
   while (start_datetime_dayjs.isBefore(end_datetime_dayjs)) {
@@ -129,7 +129,6 @@ router.get('/interval_item_availability', async function (req, res, next) {
     })
     start_datetime_dayjs=start_datetime_dayjs.add(1, 'day');
     maxValue=0;
-    console.log("ss")
   }
 
 
