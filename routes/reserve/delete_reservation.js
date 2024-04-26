@@ -65,38 +65,25 @@ router.delete('/reservation/:reservation_id', async function (req, res, next) {
 
   // 刪除預約紀錄
   const reservation_result = await reservations.deleteMany({ _id: new ObjectId(reservation_id) })
-  const space_reservations_result= await spaces_reserved_time.deleteMany({ _id: new ObjectId(reservation_id) })
-  const items_reserved_time_result= await items_reserved_time.deleteMany({ _id: new ObjectId(reservation_id) });
-  console.log(reservation_id);
-  // 輸出/回傳'
-  // if (reservation_result.deletedCount === 1) {
-  //   res.json({ info: 'Delete successfully' })
-  // } else {
-  //   res.json({ info: 'Reservation not found' })
-  // }
-  let output = [];
-  console.log(reservation_result.deletedCount)
-  console.log(space_reservations_result.deletedCount);
-  console.log(items_reserved_time_result.deletedCount);
-  if(reservation_result.deletedCount>0){
+  const space_reservations_result = await spaces_reserved_time.deleteMany({ _id: new ObjectId(reservation_id) })
+  const items_reserved_time_result = await items_reserved_time.deleteMany({ _id: new ObjectId(reservation_id) })
+  const output = []
+  if (reservation_result.deletedCount > 0) {
     output.push({ info: 'reservation Delete successfully' })
-  }
-  else{
+  } else {
     output.push({ info: 'reservation not found' })
   }
-  if(space_reservations_result.deletedCount>0){
+  if (space_reservations_result.deletedCount > 0) {
     output.push({ info: 'spaces_reserved Delete successfully' })
-  }
-  else{
+  } else {
     output.push({ info: 'spaces_reserved not found' })
   }
-  if(items_reserved_time_result.deletedCount>0){
+  if (items_reserved_time_result.deletedCount > 0) {
     output.push({ info: 'items_reserved Delete successfully' })
-  }
-  else{
+  } else {
     output.push({ info: 'items_reserved not found' })
   }
-  res.json(output);
+  res.json(output)
 })
 
 export default router
