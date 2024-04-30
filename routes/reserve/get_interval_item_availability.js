@@ -121,10 +121,10 @@ router.get('/interval_item_availability', async function (req, res, next) {
     const items_quantity_info = await items.findOne({ _id: new ObjectId(item_id) })
     available_quantity = items_quantity_info.quantity - maxValue
     output_array.push({
-      item_id,
+      item_id: item_id,
       start_datetime: start_datetime_dayjs.format('YYYY-MM-DDTHH:mm'),
       end_datetime: start_datetime_dayjs.add(1, 'day').format('YYYY-MM-DDTHH:mm'),
-      available_quantity
+      available_quantity:available_quantity
 
     })
     start_datetime_dayjs = start_datetime_dayjs.add(1, 'day')
