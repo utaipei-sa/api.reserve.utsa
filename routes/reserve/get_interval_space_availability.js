@@ -154,8 +154,9 @@ router.get('/interval_space_availability', async function (req, res, next) {
     start_datetime_dayjs = start_datetime_dayjs.add(1, 'day')
     start_datetime_dayjs = start_datetime_dayjs.set('hour', 0).set('minute', 0).set('second', 0)
   }
-
+  
   res.json(output_array)
+
 })
 
 export default router
