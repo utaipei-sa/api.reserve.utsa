@@ -142,7 +142,7 @@ router.get('/interval_space_availability', async function (req, res, next) {
       if (start_datetime_dayjs.hour() >= digical_time_slots[current_timeslot].start && start_datetime_dayjs.hour() < digical_time_slots[current_timeslot].end) {
         output_array.push(
           {
-            space_id,
+            space_id:space_id,
             start_datetime: start_datetime_dayjs.set('hour', digical_time_slots[current_timeslot].start).format('YYYY-MM-DDTHH:mm'),
             end_datetime: start_datetime_dayjs.set('hour', digical_time_slots[current_timeslot].end).format('YYYY-MM-DDTHH:mm'),
             availability: reserved_value
@@ -154,8 +154,9 @@ router.get('/interval_space_availability', async function (req, res, next) {
     start_datetime_dayjs = start_datetime_dayjs.add(1, 'day')
     start_datetime_dayjs = start_datetime_dayjs.set('hour', 0).set('minute', 0).set('second', 0)
   }
-
+  
   res.json(output_array)
+
 })
 
 export default router

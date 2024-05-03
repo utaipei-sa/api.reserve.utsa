@@ -89,48 +89,48 @@ router.get('/interval_item_availability', async function (req, res, next) {
     return
   }
   // 統整物品可否借用資訊
-  const digical_time_slots = [
-    { start: 12, end: 23 }
-  ]
+  // const digical_time_slots = [
+  //   { start: 12, end: 23 }
+  // ]
 
-  let output_array = [];
-  let end_datetime_dayjs = dayjs(end_datetime);
-  let start_datetime_dayjs = dayjs(start_datetime);
-  let maxValue = 0;
+  const output_array = []
+  let end_datetime_dayjs = dayjs(end_datetime)
+  let start_datetime_dayjs = dayjs(start_datetime)
+  let maxValue = 0
   if (start_datetime_dayjs.hour() > 12) {
-    start_datetime_dayjs = start_datetime_dayjs.set('hour', 12);
-  }
-  else if (start_datetime_dayjs.hour() < 12) {
-    start_datetime_dayjs = start_datetime_dayjs.subtract(1, 'day').set('hour', 12);
+    start_datetime_dayjs = start_datetime_dayjs.set('hour', 12)
+  } else if (start_datetime_dayjs.hour() < 12) {
+    start_datetime_dayjs = start_datetime_dayjs.subtract(1, 'day').set('hour', 12)
   }
   if (end_datetime_dayjs.hour() > 12) {
-    end_datetime_dayjs = end_datetime_dayjs.add(1, 'day').set('hour', 12);
+    end_datetime_dayjs = end_datetime_dayjs.add(1, 'day').set('hour', 12)
+  } else if (end_datetime_dayjs.hour() < 12) {
+    end_datetime_dayjs = end_datetime_dayjs.set('hour', 12)
   }
-  else if (end_datetime_dayjs.hour() < 12) {
-    end_datetime_dayjs = end_datetime_dayjs.set('hour', 12);
-
-  }
+  let available_quantity = 0
   while (start_datetime_dayjs.isBefore(end_datetime_dayjs)) {
-    for (var count = 0; start_datetime_dayjs.isBefore(end_datetime_dayjs) && count <= 23; count++) {
-      const item_database_info = await items_reserved_time.findOne({ start_datetime: new Date(start_datetime_dayjs.add(count, 'hour').format()), item_id: new ObjectId(item_id) });
+    for (let count = 0; start_datetime_dayjs.isBefore(end_datetime_dayjs) && count <= 23; count++) {
+      const item_database_info = await items_reserved_time.findOne({ start_datetime: new Date(start_datetime_dayjs.add(count, 'hour').format()), item_id: new ObjectId(item_id) })
       if (item_database_info == null) {
-        continue;
+        continue
       }
       if (item_database_info.reserved > maxValue) {
-        maxValue = item_database_info.reserved;
+        maxValue = item_database_info.reserved
       }
     }
+    const items_quantity_info = await items.findOne({ _id: new ObjectId(item_id) })
+    available_quantity = items_quantity_info.quantity - maxValue
     output_array.push({
       item_id: item_id,
-      start_datetime_dayjs: start_datetime_dayjs.format("YYYY-MM-DDTHH:mm"),
-      end_datetime_dayjs: start_datetime_dayjs.add(1, 'day').format("YYYY-MM-DDTHH:mm"),
-      reserved: maxValue
+      start_datetime: start_datetime_dayjs.format('YYYY-MM-DDTHH:mm'),
+      end_datetime: start_datetime_dayjs.add(1, 'day').format('YYYY-MM-DDTHH:mm'),
+      available_quantity:available_quantity
 
     })
-    start_datetime_dayjs=start_datetime_dayjs.add(1, 'day');
-    maxValue=0;
+    start_datetime_dayjs = start_datetime_dayjs.add(1, 'day')
+    maxValue = 0
+    available_quantity = 0
   }
-
 
   // while(start_datetime_dayjs.isBefore(end_datetime_dayjs)){
   //     for(let current_timeslot = 0;start_datetime_dayjs.isBefore(end_datetime_dayjs)&&current_timeslot<3;start_datetime_dayjs=start_datetime_dayjs.add(1,'hour')){
@@ -153,9 +153,9 @@ router.get('/interval_item_availability', async function (req, res, next) {
   //             console.log(item_database_info.reserved);
   //         }
 
-  //         if(start_datetime_dayjs.hour()>=digical_time_slots[current_timeslot].start&&start_datetime_dayjs.hour()<digical_time_slots[current_timeslot].end){  
+  //         if(start_datetime_dayjs.hour()>=digical_time_slots[current_timeslot].start&&start_datetime_dayjs.hour()<digical_time_slots[current_timeslot].end){
   //             output_array.push(
-  //                 {   
+  //                 {
   //                     item_id: item_id,
   //                     start_datetime: start_datetime_dayjs.format("YYYY-MM-DDTHH:mm"),
   //                     end_datetime: start_datetime_dayjs.add(1, 'hour').format("YYYY-MM-DDTHH:mm"),
@@ -163,7 +163,7 @@ router.get('/interval_item_availability', async function (req, res, next) {
   //                 }
   //             );
 
-  //         }   
+  //         }
   //     }
   //     start_datetime_dayjs=start_datetime_dayjs.add(1,'day');
   //     start_datetime_dayjs=start_datetime_dayjs.set('hour',0).set('minute',0).set('second',0);
