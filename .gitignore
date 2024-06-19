@@ -136,3 +136,5 @@ dist
 
 # React production
 /build
+
+db-data
