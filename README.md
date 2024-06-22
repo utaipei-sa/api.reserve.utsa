@@ -17,3 +17,10 @@ Develop documentation: [Wiki](https://github.com/utaipei-sa/reserve.utsa/wiki)
 1. `cd frontend`  
 2. `npm install`  
 3. `npm run dev`  
+
+**backend by docker**
+
+1. `docker-compose up -d --build`
+
+### Environment variables:  
+- `RESERVE_MONGODB_URI` This URI is used when connecting to MongoDB.
