@@ -1,5 +1,7 @@
 # reserve.utsa
 
+[![zh-tw](https://img.shields.io/badge/lang-zh--tw-blue.svg)](https://github.com/utaipei-sa/api.reserve.utsa/blob/main/README.zh-tw.md)
+
 A platform to reserve the spaces and items managed by UTSA.
 
 Develop documentation: [Wiki](https://github.com/utaipei-sa/reserve.utsa/wiki)
