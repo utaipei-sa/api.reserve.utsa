@@ -5,13 +5,14 @@ import { ObjectId } from 'mongodb'
 import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc.js'
 import { default as email_obj } from '../../utilities/email/email.js'
+import { error_response, R_SUCCESS, R_ID_NOT_FOUND, R_INVALID_INFO, R_INVALID_RESERVATION } from '../../utilities/response.js'
 
 const router = express.Router()
 dayjs.extend(utc)
 
 /**
  * @openapi
- * /reserve:
+ * /reserve/reserve:
  *   post:
  *     tags:
  *       - reserve
@@ -28,6 +29,26 @@ dayjs.extend(utc)
  *     responses:
  *       '200':
  *         description: OK
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 code:
+ *                   type: string
+ *                 message:
+ *                   type: string
+ *       '400':
+ *         description: Bad request
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error_code:
+ *                   type: string
+ *                 message:
+ *                   type: string
  */
 router.post('/reserve', async function (req, res, next) {
   // define constants and variables
@@ -72,7 +93,7 @@ router.post('/reserve', async function (req, res, next) {
   if (error_message.length) {
     res
       .status(400)
-      .json({ error: error_message })
+      .json(error_response(R_INVALID_INFO, error_message))
     return
   }
 
@@ -97,7 +118,7 @@ router.post('/reserve', async function (req, res, next) {
     if (error_message.length) {
       res
         .status(400)
-        .json({ error: error_message })
+        .json(error_response(R_INVALID_RESERVATION, error_message))
       return
     }
 
@@ -105,8 +126,8 @@ router.post('/reserve', async function (req, res, next) {
     let space_found = await spaces.findOne({ _id: new ObjectId(space_reservation.space_id) })
     if (!space_found) {
       res
-        .status(400)
-        .json({ error: 'space_reservations space_id not found error' })
+        .status(404)
+        .json(error_response(R_ID_NOT_FOUND, 'Space ID not found'))
       return
     }
     // space時間確認
@@ -116,7 +137,7 @@ router.post('/reserve', async function (req, res, next) {
     if (start_datetime.isAfter(end_datetime)) {
       res
         .status(400)
-        .json({ error: 'space_reservations end_datetime earlier than start_datetime error' })
+        .json(error_response(R_INVALID_RESERVATION, 'space_reservations end_datetime earlier than start_datetime error'))
       return
     }
 
@@ -152,7 +173,7 @@ router.post('/reserve', async function (req, res, next) {
     if (stop_flag) {
       res
         .status(400)
-        .json({ error: 'space_datetime repeat error' })
+        .json(error_response(R_INVALID_RESERVATION, 'space_datetime repeat error'))
       return
     }
   }
@@ -171,7 +192,7 @@ router.post('/reserve', async function (req, res, next) {
     } else if (db_space_check.reserved) {
       res
         .status(400)
-        .json({ error: 'space_datetime has reserved error' })
+        .json(error_response(R_INVALID_RESERVATION, 'space_datetime has reserved error'))
       return
     }
   }
@@ -194,7 +215,7 @@ router.post('/reserve', async function (req, res, next) {
     if (error_message.length) {
       res
         .status(400)
-        .json({ error: error_message })
+        .json(error_response(R_INVALID_RESERVATION, error_message))
       return
     }
 
@@ -203,8 +224,8 @@ router.post('/reserve', async function (req, res, next) {
     // console.log(item_found)
     if (!item_found) {  // <-- notice what's this when not found (should be same as space)
       res
-        .status(400)
-        .json({ error: 'item_reservations item_id not found error' })
+        .status(404)
+        .json(error_response(R_ID_NOT_FOUND, 'item_reservations item_id not found error'))
       return
     }
 
@@ -215,7 +236,7 @@ router.post('/reserve', async function (req, res, next) {
     if (start_datetime.isAfter(end_datetime)) {
       res
         .status(400)
-        .json({ error: 'item_reservation end_datetime earlier than start_datetime error' })
+        .json(error_response(R_INVALID_RESERVATION, 'item_reservation end_datetime earlier than start_datetime error'))
       return
     }
 
@@ -249,7 +270,7 @@ router.post('/reserve', async function (req, res, next) {
     if (stop_flag) {
       res
         .status(400)
-        .json({ error: 'item_datetime repeat error' })
+        .json(error_response(R_INVALID_RESERVATION, 'item_datetime repeat error'))
       return
     }
   }
@@ -272,7 +293,7 @@ router.post('/reserve', async function (req, res, next) {
       } else {
         res
           .status(400)
-          .json({ error: 'item_datetime has over reserved error' })
+          .json(error_response(R_INVALID_RESERVATION, 'item_datetime has over reserved error'))
         return
       }
     }
@@ -354,7 +375,7 @@ router.post('/reserve', async function (req, res, next) {
   // result.insertedId
   // reservation_id
 
-  res.json({ message: 'Success!' })
+  res.json({ code: R_SUCCESS, message: 'Success!' })
   // send_email(doc,"example.com")
   // send verify email
 })
