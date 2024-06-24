@@ -43,4 +43,3 @@ Develop documentation: [Wiki](https://github.com/utaipei-sa/reserve.utsa/wiki)
 ## Environment variables
 
 - `RESERVE_MONGODB_URI` This URI is used when connecting to MongoDB.
-

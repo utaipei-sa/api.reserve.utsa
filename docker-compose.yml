@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  api:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      - RESERVE_MONGODB_URI=mongodb://mongo-db:27017
+    depends_on:
+      - mongo-db
+    networks:
+      - reserve-api
+
+  mongo-db:
+    image: mongo:latest
+    ports:
+      - "27017:27017"
+    # volumes:
+    #   - ./db-data:/data/db
+    networks:
+      - reserve-api
+
+networks:
+  reserve-api:
+    driver: host
