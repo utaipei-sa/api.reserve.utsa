@@ -14,7 +14,7 @@ const router = express.Router()
  *     operationId: GetSpaces
  *     responses:
  *       '200':
- *         description: OK
+ *         description: A list of spaces
  *         content:
  *           application/json:
  *             schema:
@@ -30,10 +30,14 @@ router.get('/spaces', async function (req, res, next) {
   const data = await spaces
     .find({})
     .project({ _id: 1, name: 1, open: 1, exception_time: 1 })
-    .toArray(function (err, results) {
-      console.log(results)
-    })
-  res.json({ data })
+    .toArray()
+  const return_data = data.map((element) => ({
+    _id: element._id,
+    name: element.name,
+    open: element.open,
+    exception_time: element.exception_time
+  }))
+  res.json({ data: return_data })
 })
 
 export default router
