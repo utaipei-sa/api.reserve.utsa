@@ -1,6 +1,7 @@
 import express from 'express'
 import { ObjectId } from 'mongodb'
 import { spaces } from '../../models/mongodb.js'
+import { error_response, R_ID_NOT_FOUND, R_INVALID_INFO } from '../../utilities/response.js'
 
 const router = express.Router()
 
@@ -37,7 +38,7 @@ const router = express.Router()
  *               properties:
  *                 error_code:
  *                   type: string
- *                   example: R_FORMAT_ERROR
+ *                   example: R_INVALID_INFO
  *                 message:
  *                   type: string
  *                   example: space_id format error
@@ -63,10 +64,7 @@ router.get('/space/:space_id', async function (req, res, next) {
   if (!OBJECT_ID_REGEXP.test(space_id)) {
     res
       .status(400)
-      .json({
-        error_code: 'R_FORMAT_ERROR',
-        message: 'space_id format error'
-      })
+      .json(error_response(R_INVALID_INFO, 'space_id format error'))
     return
   }
 
@@ -77,10 +75,7 @@ router.get('/space/:space_id', async function (req, res, next) {
   if (data === null) {
     res
       .status(404)
-      .json({
-        error_code: 'R_ID_NOT_FOUND',
-        message: 'space_id not found'
-      })
+      .json(error_response(R_ID_NOT_FOUND, 'space_id not found'))
     return
   }
 
