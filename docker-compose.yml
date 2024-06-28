@@ -12,7 +12,7 @@ services:
     networks:
       - reserve-api
 
-  mongo-db:
+  mongo-db: 
     image: mongo:latest
     ports:
       - "27017:27017"
