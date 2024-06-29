@@ -49,7 +49,6 @@ dayjs.extend(utc)
  *                   type: string
  */
 router.post('/reserve', async function (req, res, next) {
-  // define constants and variables
   const EMAIL_REGEXP = /^[\w-.+]+@([\w-]+\.)+[\w-]{2,4}$/ // user+name@domain.com
   const SUBMIT_DATETIME_REGEXP = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(\.\d*)?\+08:?00$/ // 2024-03-03T22:25:32.000+08:00
   const DATETIME_MINUTE_REGEXP = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})$/ // 2024-03-03T22:25
@@ -96,14 +95,13 @@ router.post('/reserve', async function (req, res, next) {
   }
 
   // TODO: add reservation_id
-  // process data
   const reservation_id = new ObjectId()
   const received_space_reserved_time = []
   const received_item_reserved_time = []
 
   // space reservation process
   for (const space_reservation of received_space_reservations) {
-    // check
+    // check data format
     if (!OBJECT_ID_REGEXP.test(space_reservation.space_id)) {
       error_message += 'space_reservations space_id format error\n'
     }
@@ -243,7 +241,7 @@ router.post('/reserve', async function (req, res, next) {
       end_datetime = end_datetime.minute(0)
       end_datetime = end_datetime.add(1, 'hour')
     }
-    //
+
     let stop_flag = 0
     for (; start_datetime.isBefore(end_datetime);) {
       for (let i = 0; i < received_item_reserved_time.length; i++) {
@@ -360,11 +358,8 @@ router.post('/reserve', async function (req, res, next) {
   }
   console.log(received_item_reserved_time)
 
-  // result.insertedId
-  // reservation_id
-
   res.json({ code: R_SUCCESS, message: 'Success!' })
-  // send verify email
+  // TODO send verify email
 })
 
 export default router
