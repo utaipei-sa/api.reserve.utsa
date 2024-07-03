@@ -1,6 +1,8 @@
 import express from 'express'
 import { reservations, spaces_reserved_time, items_reserved_time } from '../../models/mongodb.js'
 import { ObjectId } from 'mongodb'
+import { error_response, R_SUCCESS, R_ID_NOT_FOUND, R_INVALID_INFO, R_INVALID_RESERVATION } from '../../utilities/response.js'
+
 // import { Timestamp } from 'mongodb'
 
 const router = express.Router()
@@ -64,24 +66,78 @@ router.delete('/reservation/:reservation_id', async function (req, res, next) {
   // TODO:    使用 reservation.item_reservations 的時段清單，逐一減去 items_reserved_time collection 內所有位於時段內的物品預約數量
 
   // 刪除預約紀錄
-  const reservation_result = await reservations.deleteMany({ _id: new ObjectId(reservation_id) })
-  const space_reservations_result = await spaces_reserved_time.deleteMany({ _id: new ObjectId(reservation_id) })
-  const items_reserved_time_result = await items_reserved_time.deleteMany({ _id: new ObjectId(reservation_id) })
   const output = []
-  if (reservation_result.deletedCount > 0) {
-    output.push({ info: 'reservation Delete successfully' })
-  } else {
-    output.push({ info: 'reservation not found' })
+  const reservation_find = await reservations.findOne({ _id: { $in: [new ObjectId(reservation_id)] } })
+  if (reservation_find == null) {
+    output.push({
+      code: R_ID_NOT_FOUND,
+      message: "Reservation ID not found"
+    })
   }
-  if (space_reservations_result.deletedCount > 0) {
-    output.push({ info: 'spaces_reserved Delete successfully' })
-  } else {
-    output.push({ info: 'spaces_reserved not found' })
-  }
-  if (items_reserved_time_result.deletedCount > 0) {
-    output.push({ info: 'items_reserved Delete successfully' })
-  } else {
-    output.push({ info: 'items_reserved not found' })
+  else {
+    // console.log(reservation_find)
+    let reservation_quantity = 0
+    if (reservation_find.item_reservations != null) {
+      reservation_quantity = reservation_find.item_reservations[0].quantity
+    }
+
+
+    const item_reserved_time_find = await items_reserved_time.find({ reservation_id: { $in: [new ObjectId(reservation_id)] } }).toArray()
+    const space_reserved_time_find = await spaces_reserved_time.find({ reservation_id: { $in: [new ObjectId(reservation_id)] } }).toArray()
+
+
+    //delete items_reserved_time
+    let tempQuantity = 0;
+    let tempID;
+    console.log(item_reserved_time_find)
+    console.log("AAAA")
+    for (const item of item_reserved_time_find) {
+      console.log(item)
+      tempQuantity = item.reserved_quantity - reservation_quantity
+      tempID = item._id
+      console.log(tempID)
+      const updateResult = await items_reserved_time.updateOne({
+        _id: tempID//filter
+      },
+        {
+          $set: {
+            reserved_quantity: tempQuantity//change data
+          }
+          ,
+          $pull: {
+            reservation_id: new ObjectId(reservation_id)
+          }
+        })
+      console.log(updateResult.matchedCount)
+    }
+
+    //space
+    for (const space of space_reserved_time_find) {
+      tempID = space._id
+      await spaces_reserved_time.updateOne({
+        _id: tempID//filter
+      },
+        {
+          $set: {
+            reserved: 0//change data
+          }
+          ,
+          $pull: {
+            reservations: new ObjectId(reservation_id)
+          }
+        })
+    }
+
+
+    const reservation_result = await reservations.deleteMany({ _id: new ObjectId(reservation_id) })
+    const item_result = await items_reserved_time.deleteMany({ reserved_quantity: 0 })
+    const space_result = await spaces_reserved_time.deleteMany({ reserved_quantity: 0 })
+    if (reservation_result.deletedCount > 0) {
+      output.push({
+        code: R_SUCCESS,
+        message: "Delete success!"
+      })
+    }
   }
   res.json(output)
 })
