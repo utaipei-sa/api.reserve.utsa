@@ -75,7 +75,6 @@ router.delete('/reservation/:reservation_id', async function (req, res, next) {
     })
   }
   else {
-    // console.log(reservation_find)
     let reservation_quantity = 0
     if (reservation_find.item_reservations != null) {
       reservation_quantity = reservation_find.item_reservations[0].quantity
@@ -87,28 +86,24 @@ router.delete('/reservation/:reservation_id', async function (req, res, next) {
 
 
     //delete items_reserved_time
-    let tempQuantity = 0;
-    let tempID;
-    console.log(item_reserved_time_find)
-    console.log("AAAA")
+    
     for (const item of item_reserved_time_find) {
-      console.log(item)
-      tempQuantity = item.reserved_quantity - reservation_quantity
-      tempID = item._id
-      console.log(tempID)
+      let quantity = 0;
+      let ID;
+      quantity = item.reserved_quantity - reservation_quantity
+      ID = item._id
       const updateResult = await items_reserved_time.updateOne({
-        _id: tempID//filter
+        _id: ID//filter
       },
         {
           $set: {
-            reserved_quantity: tempQuantity//change data
+            reserved_quantity: quantity//change data
           }
           ,
           $pull: {
             reservation_id: new ObjectId(reservation_id)
           }
         })
-      console.log(updateResult.matchedCount)
     }
 
     //space
