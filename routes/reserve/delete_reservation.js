@@ -9,7 +9,7 @@ const router = express.Router()
 
 /**
  * @openapi
- * /reserve/reservation/{reservation_id}:
+ * /reserve/{reservation_id}:
  *   delete:
  *     tags:
  *       - reserve
@@ -32,7 +32,7 @@ const router = express.Router()
  *             schema:
  *               $ref: '#/components/schemas/Reservation'
  */
-router.delete('/reservation/:reservation_id', async function (req, res, next) {
+router.delete('/reserve/{reservation_id}', async function (req, res, next) {
   // 取得參數
   const reservation_id = req.params.reservation_id
 
@@ -89,11 +89,10 @@ router.delete('/reservation/:reservation_id', async function (req, res, next) {
     
     for (const item of item_reserved_time_find) {
       let quantity = 0;
-      let ID;
       quantity = item.reserved_quantity - reservation_quantity
-      ID = item._id
+      
       const updateResult = await items_reserved_time.updateOne({
-        _id: ID//filter
+        _id: item._id//filter
       },
         {
           $set: {
@@ -108,9 +107,8 @@ router.delete('/reservation/:reservation_id', async function (req, res, next) {
 
     //space
     for (const space of space_reserved_time_find) {
-      tempID = space._id
       await spaces_reserved_time.updateOne({
-        _id: tempID//filter
+        _id: space._id//filter
       },
         {
           $set: {
