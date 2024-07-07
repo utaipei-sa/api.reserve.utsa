@@ -9,7 +9,7 @@ const router = express.Router()
 
 /**
  * @openapi
- * /reserve/{reservation_id}:
+ * /reserve/reserve/{reservation_id}:
  *   delete:
  *     tags:
  *       - reserve
@@ -32,7 +32,7 @@ const router = express.Router()
  *             schema:
  *               $ref: '#/components/schemas/Reservation'
  */
-router.delete('/reserve/{reservation_id}', async function (req, res, next) {
+router.delete('/reserve/:reservation_id', async function (req, res, next) {
   // 取得參數
   const reservation_id = req.params.reservation_id
 
@@ -60,9 +60,14 @@ router.delete('/reserve/{reservation_id}', async function (req, res, next) {
       message: 'Reservation ID not found'
     })
   } else {
-    let reservation_quantity = 0
+    const storeReserveInfo = []
     if (reservation_find.item_reservations != null) {
-      reservation_quantity = reservation_find.item_reservations[0].quantity
+      for (const element of reservation_find.item_reservations) {
+        storeReserveInfo.push({
+          item_id: element.item_id,
+          quantity: element.quantity
+        })
+      }
     }
 
     const item_reserved_time_find = await items_reserved_time.find({ reservation_id: { $in: [new ObjectId(reservation_id)] } }).toArray()
@@ -72,7 +77,8 @@ router.delete('/reserve/{reservation_id}', async function (req, res, next) {
 
     for (const item of item_reserved_time_find) {
       let quantity = 0
-      quantity = item.reserved_quantity - reservation_quantity
+      const index = storeReserveInfo.findIndex(e => e.item_id === item.item_id)
+      quantity = item.reserved_quantity - storeReserveInfo[index].quantity
 
       await items_reserved_time.updateOne({
         _id: item._id// filter
