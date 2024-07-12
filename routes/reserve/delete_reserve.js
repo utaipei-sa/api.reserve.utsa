@@ -41,24 +41,31 @@ router.delete('/reserve/:reservation_id', async function (req, res, next) {
   if (reservation_id === undefined) { // 沒給參數
     res
       .status(400)
-      .json({ error: 'reservation_id is required' })
+      .json({
+        code: R_ID_NOT_FOUND,
+        message: 'Reservation ID not found'
+      })
     return
   } else if (!OBJECT_ID_REGEXP.test(reservation_id)) { // check reservation_id format
     res
       .status(400)
-      .json({ error: 'reservation_id format error' })
+      .json({
+        code: R_ID_NOT_FOUND,
+        message: 'Reservation ID not found'
+      })
     return
   }
 
   // 查詢欲刪除的預約紀錄資訊
   // 刪除預約紀錄
-  const output = []
   const reservation_find = await reservations.findOne({ _id: { $in: [new ObjectId(reservation_id)] } })
   if (reservation_find == null) {
-    output.push({
-      code: R_ID_NOT_FOUND,
-      message: 'Reservation ID not found'
-    })
+    res
+      .status(400)
+      .json({
+        code: R_ID_NOT_FOUND,
+        message: 'Reservation ID not found'
+      })
   } else {
     const storeReserveInfo = []
     if (reservation_find.item_reservations != null) {
@@ -112,13 +119,14 @@ router.delete('/reserve/:reservation_id', async function (req, res, next) {
     await items_reserved_time.deleteMany({ reserved_quantity: 0 })
     await spaces_reserved_time.deleteMany({ reserved: 0 })
     if (reservation_result.deletedCount > 0) {
-      output.push({
-        code: R_SUCCESS,
-        message: 'Delete success!'
-      })
+      res
+        .status(200)
+        .json({
+          code: R_SUCCESS,
+          message: 'Delete success!'
+        })
     }
   }
-  res.json(output)
 })
 
 export default router
