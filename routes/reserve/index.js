@@ -12,6 +12,7 @@ async function useRouters () {
   reserve_router.use(root, (await import('./get_interval_space_availability.js')).default)
   reserve_router.use(root, (await import('./get_integral_item_availability.js')).default)
   reserve_router.use(root, (await import('./get_interval_item_availability.js')).default)
+  reserve_router.use(root, (await import('./get_item_available_time.js')).default)
   reserve_router.use(root, (await import('./get_reservation.js')).default)
   reserve_router.use(root, (await import('./put_reservation.js')).default)
   reserve_router.use(root, (await import('./delete_reserve.js')).default)

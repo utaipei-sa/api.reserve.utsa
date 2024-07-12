@@ -109,7 +109,7 @@ router.get('/interval_item_availability', async function (req, res, next) {
   }
   let available_quantity = 0
   while (start_datetime_dayjs.isBefore(end_datetime_dayjs)) {
-    for (let count = 0; start_datetime_dayjs.isBefore(end_datetime_dayjs) && count <= 23; count++) {
+    for (let count = 0; count <= 23; count++) {
       const item_database_info = await items_reserved_time.findOne({ start_datetime: new Date(start_datetime_dayjs.add(count, 'hour').format()), item_id: new ObjectId(item_id) })
       if (item_database_info == null) {
         continue
