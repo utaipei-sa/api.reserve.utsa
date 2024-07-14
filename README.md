@@ -41,5 +41,12 @@ Develop documentation: [Wiki](https://github.com/utaipei-sa/reserve.utsa/wiki)
 4. Follow the instruction, and enjoy your development journey!
 
 ## Environment variables
+在使用可預約後會送出驗證 Email
+API 在 Email 送出後
 
+RESERVE_MONGODB_URI=mongodb://localhost:27017
+
+- `FRONTEND_BASE_URL` Base URL of website, is used to create verification link
 - `RESERVE_MONGODB_URI` This URI is used when connecting to MongoDB.
+- `EMAIL` Email address for sending email
+- `EMAIL_PASSWORD` Password for login to Email address in `EMAIL`
