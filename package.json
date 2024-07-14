@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "start": "node ./bin/www.js",
+    "start": "node -r dotenv/config ./bin/www.js",
     "lint": "npx eslint ."
   },
   "dependencies": {
