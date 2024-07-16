@@ -38,7 +38,7 @@ router.get('/reservation/:reservation_id', async function (req, res, next) {
   if (!OBJECT_ID_REGEXP.test(reservation_id)) {
     res
       .status(400)
-      .json(error_response(R_INVALID_INFO, 'object_id format error\n'))
+      .json(error_response(R_INVALID_INFO, 'object_id format error'))
     return
   }
 
@@ -49,21 +49,6 @@ router.get('/reservation/:reservation_id', async function (req, res, next) {
       .json(error_response(R_ID_NOT_FOUND, 'reservation not found'))
     return
   }
-
-  const { _id,verify,status,history, ...data } = result
-
-  let submitTimestamp = null
-  let serverTimestamp = null
-  submitTimestamp = result.history[0].submit_timestamp
-  serverTimestamp = result.history[0].server_timestamp
-  
-  const FinalResult = {
-    ...data,
-    submit_timestamp: submitTimestamp,
-    server_timestamp: serverTimestamp
-  } 
-
-  res.json(FinalResult)
 
   const { _id,verify,status,history, ...data } = result
 

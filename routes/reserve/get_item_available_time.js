@@ -101,7 +101,7 @@ router.get('/item_available_time', async function (req, res, next) {
   {
     res
       .status(400)
-      .json(error_response(R_INVALID_INFO, error_message))
+      .json(error_response(R_INVALID_INFO, error_message.trim().split('\n')))
     return
   }
 
