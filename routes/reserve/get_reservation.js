@@ -64,6 +64,21 @@ router.get('/reservation/:reservation_id', async function (req, res, next) {
   } 
 
   res.json(FinalResult)
+
+  const { _id,verify,status,history, ...data } = result
+
+  let submitTimestamp = null
+  let serverTimestamp = null
+  submitTimestamp = result.history[0].submit_timestamp
+  serverTimestamp = result.history[0].server_timestamp
+  
+  const FinalResult = {
+    ...data,
+    submit_timestamp: submitTimestamp,
+    server_timestamp: serverTimestamp
+  } 
+
+  res.json(FinalResult)
 })
 
 export default router
