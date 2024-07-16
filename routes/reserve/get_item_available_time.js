@@ -1,8 +1,8 @@
-import express from 'express'
+import express, { response } from 'express'
 import { items, items_reserved_time } from '../../models/mongodb.js'
 import { ObjectId } from 'mongodb'
 import dayjs from 'dayjs'
-
+import { error_response, R_SUCCESS, R_ID_NOT_FOUND, R_INVALID_INFO, R_INVALID_RESERVATION } from '../../utilities/response.js'
 const router = express.Router()
 
 /**
@@ -16,6 +16,7 @@ const router = express.Router()
  *     operationId: GetItemAvailableTime
  *     parameters:
  *       - name: intervals
+ *         description: 是否切分成各時段進行回傳
  *         in: query
  *         required: false
  *         schema:
@@ -69,33 +70,50 @@ router.get('/item_available_time', async function (req, res, next) {
   const start_datetime = req.query.start_datetime
   const end_datetime = req.query.end_datetime
   let intervals= req.query.intervals
+  let error_message=''
+  let stop_flag = 0
   // 檢查輸入是否正確（正規表達式 Regular Expression）
   const objectId_format = /^[a-fA-F0-9]{24}$/ // ObjectId 格式
   const datetime_format = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/ // 日期時間格式（年-月-日T時:分）
   if (item_id === undefined || start_datetime === undefined || end_datetime === undefined) { // 沒給齊參數
-    return res
-      .status(400)
-      .json({ error: 'item_id, start_datetime, and end_datetime are required' })
-  } else if (!objectId_format.test(item_id)) { // check item_id format
-    return res
-      .status(400)
-      .json({ error: 'item_id format error' })
-  } else if (!datetime_format.test(start_datetime) || !datetime_format.test(end_datetime)) { // check datetime fromat
-    return res
-      .status(400)
-      .json({ error: 'datetime format error' })
+    error_message += 'item_id, start_datetime, and end_datetime are required\n'
+    stop_flag = 1
+  } 
+  else if (!objectId_format.test(item_id)) { // check item_id format
+    error_message += 'item_id format error\n'
+    stop_flag = 1
+  } 
+  else if (!datetime_format.test(start_datetime) || !datetime_format.test(end_datetime)) { // check datetime fromat
+    error_message += 'datetime format error\n'
+    stop_flag = 1
   }
+
+  if(intervals === undefined){
+    intervals = "false"
+  }
+  if(intervals.toLowerCase()!="true"&&intervals.toLowerCase()!="false")
+  {
+    error_message += 'intervals format error\n'
+    stop_flag = 1
+  }
+
+  if(stop_flag === 1)
+  {
+    res
+      .status(400)
+      .json(error_response(R_INVALID_INFO, error_message))
+    return
+  }
+
   // 確認 item_id 是否有對應的場地，沒有就報錯
   const item_found = await items.findOne({ _id: new ObjectId(item_id) })
   if (!item_found) {
     res
       .status(400)
-      .json({ error: 'item_id not found error' })
+      .json(error_response(R_ID_NOT_FOUND, 'Item ID not found'))
     return
   }
-  if(intervals === undefined){
-    intervals = "false"
-  }
+  
 
   const interval_array = []
   const integral_array = []
@@ -155,12 +173,6 @@ router.get('/item_available_time', async function (req, res, next) {
   }
   else if(intervals.toLowerCase()==="false"){
     res.json(integral_array)
-  }
-  else{
-    res
-      .status(400)
-      .json({ error: 'intervals error' })
-    return
   }
 })
 
