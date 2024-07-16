@@ -20,7 +20,7 @@ Develop documentation: [Wiki](https://github.com/utaipei-sa/reserve.utsa/wiki)
 2. `npm install`  
 3. `cp .env.template .env`
 4. Fill environment variables in `.env` according to the document
-4. `nodemon` (if you don't need auto reload, you can use `npm start`)  
+5. `nodemon` (if you don't need auto reload, you can use `npm start`)  
 
 ### Docker
 

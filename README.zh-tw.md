@@ -18,7 +18,9 @@ UTSA 管理的空間及物品預約平台。
 
 1. `cd backend`  
 2. `npm install`  
-3. `nodemon`（如果你不需要自動重新載入，可以使用 `npm start`）
+3. `cp .env.template .env`
+4. 根據文件描述填寫 `.env` 內的環境變數
+5. `nodemon`（如果你不需要自動重新載入，可以使用 `npm start`）
 
 ### Docker
 
@@ -42,4 +44,7 @@ UTSA 管理的空間及物品預約平台。
 
 ## 環境變數
 
+- `FRONTEND_BASE_URL` 網站的 URL，用於創建驗證鏈接
 - `RESERVE_MONGODB_URI` 這個 URI 用於連接到 MongoDB。
+- `EMAIL` 用於發送電子郵件給使用者的電子郵件地址
+- `EMAIL_PASSWORD` 用於登錄 `EMAIL` 中電子郵件地址的密碼
