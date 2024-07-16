@@ -1,6 +1,7 @@
 import express from 'express'
 import { ObjectId } from 'mongodb'
 import { reservations, spaces_reserved_time, items_reserved_time } from '../../models/mongodb.js'
+import { error_response, R_SUCCESS, R_ID_NOT_FOUND, R_INVALID_INFO, R_INVALID_RESERVATION } from '../../utilities/response.js'
 // import { Timestamp } from 'mongodb'
 
 const router = express.Router()
@@ -37,7 +38,7 @@ router.get('/reservation/:reservation_id', async function (req, res, next) {
   if (!OBJECT_ID_REGEXP.test(reservation_id)) {
     res
       .status(400)
-      .json({ error: 'object_id format error' })
+      .json(error_response(R_INVALID_INFO, 'object_id format error\n'))
     return
   }
 
@@ -45,7 +46,7 @@ router.get('/reservation/:reservation_id', async function (req, res, next) {
   if (result === null) {
     res
       .status(400)
-      .json({ error: 'reservation not found' })
+      .json(error_response(R_ID_NOT_FOUND, 'reservation not found'))
     return
   }
 
