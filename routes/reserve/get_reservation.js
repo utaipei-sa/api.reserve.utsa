@@ -38,7 +38,7 @@ router.get('/reservation/:reservation_id', async function (req, res, next) {
   if (!OBJECT_ID_REGEXP.test(reservation_id)) {
     res
       .status(400)
-      .json(error_response(R_INVALID_INFO, 'object_id format error\n'))
+      .json(error_response(R_INVALID_INFO, 'object_id format error'))
     return
   }
 
