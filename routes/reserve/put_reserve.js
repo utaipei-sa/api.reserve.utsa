@@ -118,6 +118,7 @@ router.put('/reserve/:reservation_id', async function (req, res, next) {
   // compare space reservations -> difference lists (add and delete)
   const add_space_reservations = []
   const remove_space_reservations = original_reservation.space_reservations
+  const updated_timeslot_space_reservations = []
   // check add_space_reservations list
   for (const updated_space_reservation of updated_space_reservations) {
     // check format
@@ -153,10 +154,7 @@ router.put('/reserve/:reservation_id', async function (req, res, next) {
         .json(error_response(R_INVALID_RESERVATION, 'space_reservations end_datetime earlier than start_datetime is not allowed'))
       return
     }
-
-
-
-    // TODO: tear down time slots
+    // tear down time slots
     // minute set to 0 (use an hour as the unit of a time slot)
     start_datetime = start_datetime.minute(0)
     if (end_datetime.minute() !== 0 || end_datetime.second() !== 0 || end_datetime.millisecond() !== 0) {
@@ -164,36 +162,34 @@ router.put('/reserve/:reservation_id', async function (req, res, next) {
       end_datetime = end_datetime.add(1, 'hour')
     }
     // cut into hours
-    let stop_flag = false
-    for (; start_datetime.isBefore(end_datetime);) {
-      for (const space_reserved_time_segment of updated_space_reservations) {
-        // chech if there has any reservation is repeated
-        // no any repeated => push into updated_space_reservationstime
-        if (dayjs(space_reserved_time_segment.start_datetime).isSame(start_datetime)) {
-          stop_flag = true
-          break
+    while (start_datetime.isBefore(end_datetime)) {
+      // check if there are any repeated reservation
+      for (const temp_reservation of updated_timeslot_space_reservations) {
+        if (
+          temp_reservation.space_id === updated_space_reservation.space_id &&
+          new Date(temp_reservation.start_datetime) === new Date(start_datetime.format())
+        ) {
+          res
+            .status(400)
+            .json(error_response(R_INVALID_RESERVATION, 'space_reservations repeat error'))
+          return
         }
       }
-      if (stop_flag === true) {
-        break
-      }
-      updated_space_reservations.push({
+      // add data
+      console.log({
         start_datetime: new Date(start_datetime.format()),
         end_datetime: new Date(start_datetime.add(1, 'hour').format()),
-        space_id: updated_space_reservation.space_id,
-        reserved: 1
+        space_id: updated_space_reservation.space_id
+      })  // debug
+      updated_timeslot_space_reservations.push({
+        start_datetime: new Date(start_datetime.format()),
+        end_datetime: new Date(start_datetime.add(1, 'hour').format()),
+        space_id: updated_space_reservation.space_id
       })
       start_datetime = start_datetime.add(1, 'hour')
     }
-    if (stop_flag === true) {
-      res
-        .status(400)
-        .json(error_response(R_INVALID_RESERVATION, 'space_reservations datetime repeat error'))  // TODO: fix the bug
-      return
-    }
-
-
-
+  }
+  for (const updated_space_reservation of updated_timeslot_space_reservations) {
     // not reserved => add
     const original_space_reservation_index = original_reservation.space_reservations.findIndex(
       (space_reservation) => {
@@ -241,6 +237,7 @@ router.put('/reserve/:reservation_id', async function (req, res, next) {
   const add_item_reservations = []
   const remove_item_reservations = []
   const original_item_reservations = original_reservation.item_reservations
+  const updated_timeslot_item_reservations = []
   // check add_item_reservations list
   for (const updated_item_reservation of updated_item_reservations) {
     // check format
@@ -276,10 +273,7 @@ router.put('/reserve/:reservation_id', async function (req, res, next) {
         .json(error_response(R_INVALID_RESERVATION, 'item_reservations end_datetime earlier than start_datetime is not allowed'))
       return
     }
-
-    
-    
-    // TODO: tear down time slots
+    // tear down time slots
     // minute set to 0 (use an hour as the unit of a time slot)
     start_datetime = start_datetime.minute(0)
     if (end_datetime.minute() !== 0 || end_datetime.second() !== 0 || end_datetime.millisecond() !== 0) {
@@ -287,20 +281,21 @@ router.put('/reserve/:reservation_id', async function (req, res, next) {
       end_datetime = end_datetime.add(1, 'hour')
     }
     // cut into hours
-    let stop_flag = false
-    for (; start_datetime.isBefore(end_datetime);) {
-      for (const item_reserved_time_segment of updated_item_reservations) {
-        // chech if there has any reservation is repeated
-        // no any repeated => push into updated_item_reservationstime
-        if (dayjs(item_reserved_time_segment.start_datetime).isSame(start_datetime)) {
-          stop_flag = true
-          break
+    while (start_datetime.isBefore(end_datetime)) {
+      // check if there are any repeated reservation
+      for (const temp_reservation of updated_timeslot_item_reservations) {
+        if (
+          temp_reservation.item_id === updated_item_reservation.item_id &&
+          new Date(temp_reservation.start_datetime) === new Date(start_datetime.format())
+        ) {
+          res
+            .status(400)
+            .json(error_response(R_INVALID_RESERVATION, 'item_reservations repeat error'))
+          return
         }
       }
-      if (stop_flag === true) {
-        break
-      }
-      updated_item_reservations.push({
+      // add data
+      updated_timeslot_item_reservations.push({
         start_datetime: new Date(start_datetime.format()),
         end_datetime: new Date(start_datetime.add(1, 'hour').format()),
         item_id: updated_item_reservation.item_id,
@@ -308,16 +303,8 @@ router.put('/reserve/:reservation_id', async function (req, res, next) {
       })
       start_datetime = start_datetime.add(1, 'hour')
     }
-    if (stop_flag === true) {
-      res
-        .status(400)
-        .json(error_response(R_INVALID_RESERVATION, 'item_reservations datetime repeat error'))
-      return
-    }
-
-
-
-
+  }
+  for (const updated_item_reservation of updated_timeslot_item_reservations) {
     // categorize update_item_reservation to add and remove list
     const original_item_reservation_index = original_reservation.item_reservations.findIndex(
       (item_reservation) => {
@@ -365,8 +352,6 @@ router.put('/reserve/:reservation_id', async function (req, res, next) {
       }
     } else { // new time slot (not reserved originally)
       const new_reservations = []
-      console.log(updated_item_reservation.reservations) // TODO: tear down time slots
-      new_reservations.push(...updated_item_reservation.reservations)
       new_reservations.push(original_reservation._id) // add reservation_id to the list
       add_item_reservations.push({
         item_id: updated_item_reservation.item_id,
@@ -418,39 +403,69 @@ router.put('/reserve/:reservation_id', async function (req, res, next) {
     spaces_reserved_time.insertMany(add_space_reservations)
   }
 
-  // TODO: remove items reservations (copy from delete_reservation.js)
+  // remove items reservations (copy from delete_reservation.js)
   for (const remove_item_reservation of remove_space_reservations) {
-    spaces_reserved_time.updateOne(
-      {
+    const found = await spaces_reserved_time.findOne({
+      item_id: remove_item_reservation.item_id,
+      start_datetime: remove_item_reservation.start_datetime
+    })
+
+    if (found == null) {
+      continue
+    } else if (found.quantity - remove_item_reservation.quantity <= 0) {
+      spaces_reserved_time.deleteOne({
         item_id: remove_item_reservation.item_id,
         start_datetime: remove_item_reservation.start_datetime
-      }, {
-        $inc: { quantity: -remove_item_reservation.quantity },
-        $set: { reservations: remove_item_reservation.reservations }
-      }
-    )
+      })
+    } else {
+      spaces_reserved_time.updateOne(
+        {
+          item_id: remove_item_reservation.item_id,
+          start_datetime: remove_item_reservation.start_datetime
+        }, {
+          $inc: { quantity: -remove_item_reservation.quantity },
+          $set: { reservations: remove_item_reservation.reservations }  // TODO: check
+        }
+      )
+    }
   }
-  // TODO: add items reservations (copy from post_reservation.js)
+  // add items reservations (copy from post_reservation.js)
   for (const add_item_reservation of add_space_reservations) {
-    spaces_reserved_time.updateOne(
-      {
+    const found = await spaces_reserved_time.findOne({
+      item_id: add_item_reservation.item_id,
+      start_datetime: add_item_reservation.start_datetime
+    })
+
+    if (found == null) {
+      spaces_reserved_time.updateOne(
+        {
+          item_id: add_item_reservation.item_id,
+          start_datetime: add_item_reservation.start_datetime
+        }, {
+          $inc: { quantity: add_item_reservation.quantity },
+          $set: { reservations: add_item_reservation.reservations }  // TODO: check
+        }
+      )
+    } else {
+      spaces_reserved_time.insertOne({
         item_id: add_item_reservation.item_id,
-        start_datetime: add_item_reservation.start_datetime
-      }, {
-        $inc: { quantity: add_item_reservation.quantity },
-        $set: { reservations: add_item_reservation.reservations }
-      }
-    )
+        start_datetime: add_item_reservation.start_datetime,
+        end_datetime: add_item_reservation.end_datetime,
+        quantity: add_item_reservation.quantity,
+        reservations: add_item_reservation.reservations
+      })
+    }
   }
 
   // update reservation
+  original_reservation.history.push({
+    submit_timestamp: new Date(submit_datetime),
+    server_timestamp: new Date(), // now
+    type: 'modified'
+  })
   const updated_reservation = {
     status: 'modified',
-    history: original_reservation.history.push({
-      submit_timestamp: new Date(submit_datetime),
-      server_timestamp: new Date(), // now
-      type: 'modified'
-    }),
+    history: original_reservation.history,
     organization,
     name,
     department_grade,
@@ -464,8 +479,6 @@ router.put('/reserve/:reservation_id', async function (req, res, next) {
     { _id: new ObjectId(reservation_id) },
     { $set: updated_reservation }
   )
-
-  console.log(reservation_update_result) // TODO: process according to result and then remove it
 
   // TODO: send email
 
