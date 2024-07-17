@@ -193,6 +193,11 @@ components:
     ReservationUpdate:
       type: object
       properties:
+        submit_datetime:
+          type: string
+          format: date-time
+          description: 用戶端提交時間
+          example: '2024-03-02T21:59:43.000+08:00'
         name:
           type: string
           description: 借用人姓名
