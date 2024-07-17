@@ -1,9 +1,7 @@
 import express from 'express'
 import { reservations, spaces_reserved_time, items_reserved_time } from '../../models/mongodb.js'
 import { ObjectId } from 'mongodb'
-import { error_response, R_SUCCESS, R_ID_NOT_FOUND, R_INVALID_INFO, R_INVALID_RESERVATION } from '../../utilities/response.js'
-
-// import { Timestamp } from 'mongodb'
+import { error_response, R_SUCCESS, R_ID_NOT_FOUND } from '../../utilities/response.js'
 
 const router = express.Router()
 
@@ -40,11 +38,11 @@ router.delete('/reserve/:reservation_id', async function (req, res, next) {
   // 檢查輸入是否正確
   if (reservation_id === undefined) { // 沒給參數
     res
-    .status(400)
-    .json(error_response(R_ID_NOT_FOUND, 'Reservation ID not found'))
+      .status(400)
+      .json(error_response(R_ID_NOT_FOUND, 'Reservation ID not found'))
     return
   } else if (!OBJECT_ID_REGEXP.test(reservation_id)) { // check reservation_id format
-      res
+    res
       .status(400)
       .json(error_response(R_ID_NOT_FOUND, 'Reservation ID not found'))
     return
@@ -54,7 +52,7 @@ router.delete('/reserve/:reservation_id', async function (req, res, next) {
   // 刪除預約紀錄
   const reservation_find = await reservations.findOne({ _id: { $in: [new ObjectId(reservation_id)] } })
   if (reservation_find == null) {
-      res
+    res
       .status(400)
       .json(error_response(R_ID_NOT_FOUND, 'Reservation ID not found'))
   } else {
@@ -111,8 +109,8 @@ router.delete('/reserve/:reservation_id', async function (req, res, next) {
     await spaces_reserved_time.deleteMany({ reserved: 0 })
     if (reservation_result.deletedCount > 0) {
       res
-      .status(200)
-      .json({ code: R_SUCCESS, message: 'Success!' })
+        .status(200)
+        .json({ code: R_SUCCESS, message: 'Success!' })
     }
   }
 })
