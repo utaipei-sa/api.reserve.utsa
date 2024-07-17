@@ -3,7 +3,9 @@ import { reservations, spaces_reserved_time, items_reserved_time, spaces, items 
 import { ObjectId } from 'mongodb'
 import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc.js'
-import { error_response, R_SUCCESS, R_ID_NOT_FOUND, R_INVALID_INFO, R_INVALID_RESERVATION } from '../../utilities/response.js'
+import { URL } from 'url'
+import { error_response, R_SUCCESS, R_ID_NOT_FOUND, R_INVALID_INFO, R_INVALID_RESERVATION, R_SEND_EMAIL_FAILED } from '../../utilities/response.js'
+import send_reservation_email from '../../utilities/email/sendReservationEmail.js'
 
 const router = express.Router()
 dayjs.extend(utc)
@@ -358,8 +360,20 @@ router.post('/reserve', async function (req, res, next) {
   }
   console.log(received_item_reserved_time)
 
+  // send verify email
+  const verify_link = new URL(`verify/${reservation_id}`, process.env.FRONTEND_BASE_URL)
+  try {
+    const email_response = await send_reservation_email(doc, verify_link.href)
+    console.log('The email has been sent: ' + email_response)
+  } catch (error) {
+    console.error('Error sending email:', error)
+    res
+      .status(400)
+      .json(error_response(R_SEND_EMAIL_FAILED, error.response))
+    return
+  }
+
   res.json({ code: R_SUCCESS, message: 'Success!' })
-  // TODO send verify email
 })
 
 export default router

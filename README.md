@@ -18,7 +18,9 @@ Develop documentation: [Wiki](https://github.com/utaipei-sa/reserve.utsa/wiki)
 
 1. `cd backend`  
 2. `npm install`  
-3. `nodemon` (if you don't need auto reload, you can use `npm start`)  
+3. `cp .env.template .env`
+4. Fill environment variables in `.env` according to the document
+5. `nodemon` (if you don't need auto reload, you can use `npm start`)  
 
 ### Docker
 
@@ -42,4 +44,7 @@ Develop documentation: [Wiki](https://github.com/utaipei-sa/reserve.utsa/wiki)
 
 ## Environment variables
 
+- `FRONTEND_BASE_URL` Base URL of website, is used to create verification link
 - `RESERVE_MONGODB_URI` This URI is used when connecting to MongoDB.
+- `EMAIL` Email address for sending email
+- `EMAIL_PASSWORD` Password for login to Email address in `EMAIL`
