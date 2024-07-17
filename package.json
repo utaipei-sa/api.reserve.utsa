@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "start": "node -r dotenv/config ./bin/www.js",
+    "start": "node --env-file=.env ./bin/www.js",
     "lint": "npx eslint ."
   },
   "dependencies": {
@@ -13,7 +13,6 @@
     "cors": "^2.8.5",
     "dayjs": "^1.11.10",
     "debug": "~2.6.9",
-    "dotenv": "^16.4.5",
     "express": "~4.19.2",
     "http-errors": "~1.6.3",
     "mongodb": "^6.1.0",
