@@ -28,7 +28,23 @@ const router = express.Router()
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/Reservation'
+ *               type: object
+ *               properties:
+ *                 error_code:
+ *                   type: string
+ *                 message:
+ *                   type: string
+ *       '400':
+ *         description: Bad request
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error_code:
+ *                   type: 'Reservation ID not found'
+ *                 message:
+ *                   type: string
  */
 router.delete('/reserve/:reservation_id', async function (req, res, next) {
   // 取得參數
