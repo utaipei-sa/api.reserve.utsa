@@ -30,7 +30,7 @@ const router = express.Router()
  *             schema:
  *               type: object
  *               properties:
- *                 error_code:
+ *                 code:
  *                   type: string
  *                 message:
  *                   type: string
@@ -42,7 +42,7 @@ const router = express.Router()
  *               type: object
  *               properties:
  *                 error_code:
- *                   type: 'Reservation ID not found'
+ *                   type: string
  *                 message:
  *                   type: string
  */
