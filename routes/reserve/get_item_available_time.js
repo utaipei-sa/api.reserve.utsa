@@ -1,8 +1,8 @@
-import express, { response } from 'express'
+import express from 'express'
 import { items, items_reserved_time } from '../../models/mongodb.js'
 import { ObjectId } from 'mongodb'
 import dayjs from 'dayjs'
-import { error_response, R_SUCCESS, R_ID_NOT_FOUND, R_INVALID_INFO, R_INVALID_RESERVATION } from '../../utilities/response.js'
+import { error_response, R_ID_NOT_FOUND, R_INVALID_INFO } from '../../utilities/response.js'
 const router = express.Router()
 
 /**
@@ -20,7 +20,7 @@ const router = express.Router()
  *         in: query
  *         required: false
  *         schema:
- *           type: string 
+ *           type: string
  *       - name: item_id
  *         in: query
  *         description: 物品 ID
@@ -52,53 +52,35 @@ const router = express.Router()
  *                 $ref: '#/components/schemas/ItemAvailability'
  */
 router.get('/item_available_time', async function (req, res, next) {
-  // input:
-  //     item_id: string
-  //     start_datetime: YYYY-MM-DDThh:mm
-  //     end_datetime: YYYY-MM-DDThh:mm
-  // output:
-  //     {
-  //         data:{
-  //             start_date: YYYY-MM-DDThh:mm,
-  //             end_date : YYYY-MM-DDThh:mm,
-  //             available_quantity: integer
-  //         }
-  //     }
-
-  // 取得參數
   const item_id = req.query.item_id
   const start_datetime = req.query.start_datetime
   const end_datetime = req.query.end_datetime
-  let intervals= req.query.intervals
-  let error_message=''
+  let intervals = req.query.intervals
+  let error_message = ''
   let stop_flag = 0
   // 檢查輸入是否正確（正規表達式 Regular Expression）
   const objectId_format = /^[a-fA-F0-9]{24}$/ // ObjectId 格式
   const datetime_format = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/ // 日期時間格式（年-月-日T時:分）
-  if (item_id === undefined || start_datetime === undefined || end_datetime === undefined) { // 沒給齊參數
+  if (item_id === undefined || start_datetime === undefined || end_datetime === undefined) {
     error_message += 'item_id, start_datetime, and end_datetime are required\n'
     stop_flag = 1
-  } 
-  else if (!objectId_format.test(item_id)) { // check item_id format
+  } else if (!objectId_format.test(item_id)) { // check item_id format
     error_message += 'item_id format error\n'
     stop_flag = 1
-  } 
-  else if (!datetime_format.test(start_datetime) || !datetime_format.test(end_datetime)) { // check datetime fromat
+  } else if (!datetime_format.test(start_datetime) || !datetime_format.test(end_datetime)) {
     error_message += 'datetime format error\n'
     stop_flag = 1
   }
 
-  if(intervals === undefined){
-    intervals = "false"
+  if (intervals === undefined) {
+    intervals = 'false'
   }
-  if(intervals.toLowerCase()!="true"&&intervals.toLowerCase()!="false")
-  {
+  if (intervals.toLowerCase() !== 'true' && intervals.toLowerCase() !== 'false') {
     error_message += 'intervals format error\n'
     stop_flag = 1
   }
 
-  if(stop_flag === 1)
-  {
+  if (stop_flag === 1) {
     res
       .status(400)
       .json(error_response(R_INVALID_INFO, error_message.trim().split('\n')))
@@ -113,7 +95,6 @@ router.get('/item_available_time', async function (req, res, next) {
       .json(error_response(R_ID_NOT_FOUND, 'Item ID not found'))
     return
   }
-  
 
   const interval_array = []
   const integral_array = []
@@ -146,19 +127,18 @@ router.get('/item_available_time', async function (req, res, next) {
     }
     const items_quantity_info = await items.findOne({ _id: new ObjectId(item_id) })
     available_quantity = items_quantity_info.quantity - maxValue
-    if(first_count){
+    if (first_count) {
       min_available_quantity = available_quantity
       first_count = false
-    }
-    else{
+    } else {
       min_available_quantity = available_quantity < min_available_quantity ? available_quantity : min_available_quantity
     }
-    if(intervals.toLowerCase()==="true"){
+    if (intervals.toLowerCase() === 'true') {
       interval_array.push({
-        item_id: item_id,
+        item_id,
         start_datetime: start_datetime_dayjs.format('YYYY-MM-DDTHH:mm'),
         end_datetime: start_datetime_dayjs.add(1, 'day').format('YYYY-MM-DDTHH:mm'),
-        available_quantity:available_quantity
+        available_quantity
       })
     }
     start_datetime_dayjs = start_datetime_dayjs.add(1, 'day')
@@ -168,10 +148,9 @@ router.get('/item_available_time', async function (req, res, next) {
   integral_array.push({
     available_quantity: min_available_quantity
   })
-  if(intervals.toLowerCase()==="true"){
+  if (intervals.toLowerCase() === 'true') {
     res.json(interval_array)
-  }
-  else if(intervals.toLowerCase()==="false"){
+  } else if (intervals.toLowerCase() === 'false') {
     res.json(integral_array)
   }
 })
