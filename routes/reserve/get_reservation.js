@@ -1,7 +1,7 @@
 import express from 'express'
 import { ObjectId } from 'mongodb'
-import { reservations, spaces_reserved_time, items_reserved_time } from '../../models/mongodb.js'
-import { error_response, R_SUCCESS, R_ID_NOT_FOUND, R_INVALID_INFO, R_INVALID_RESERVATION } from '../../utilities/response.js'
+import { reservations } from '../../models/mongodb.js'
+import { error_response, R_ID_NOT_FOUND, R_INVALID_INFO } from '../../utilities/response.js'
 // import { Timestamp } from 'mongodb'
 
 const router = express.Router()
@@ -50,19 +50,15 @@ router.get('/reservation/:reservation_id', async function (req, res, next) {
     return
   }
 
-  const { _id,verify,status,history, ...data } = result
+  const { _id, verify, status, history, ...data } = result
 
-  let submitTimestamp = null
-  let serverTimestamp = null
-  submitTimestamp = result.history[0].submit_timestamp
-  serverTimestamp = result.history[0].server_timestamp
-  
+  const submitTimestamp = result.history[0].submit_timestamp
+  const serverTimestamp = result.history[0].server_timestamp
   const FinalResult = {
     ...data,
     submit_timestamp: submitTimestamp,
     server_timestamp: serverTimestamp
-  } 
-
+  }
   res.json(FinalResult)
 })
 
