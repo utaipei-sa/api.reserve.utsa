@@ -1,5 +1,3 @@
-// 'replace get_interval_space_availability.js and get_integral_space_availability.js'
-
 import express from 'express'
 import { ObjectId } from 'mongodb'
 import { spaces, spaces_reserved_time } from '../../models/mongodb.js'
