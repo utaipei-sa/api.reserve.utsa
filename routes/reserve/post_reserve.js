@@ -313,52 +313,7 @@ router.post('/reserve', async function (req, res, next) {
     item_reservations: received_item_reservations,
     note
   }
-  const reservations_result = await reservations.insertOne(doc)
-  console.log(received_item_reserved_time)
-  // TODO :: update items reserved_quantity
-  for (let i = 0; i < received_item_reserved_time.length; i++) {
-    console.log(i)
-    max_quantity = await items.findOne({ _id: new ObjectId(received_item_reserved_time[i].item_id) })
-    db_item_check = await items_reserved_time.findOne({
-      start_datetime: received_item_reserved_time[i].start_datetime,
-      item_id: received_item_reserved_time[i].item_id
-    })
-
-    if (db_item_check != null) {
-      console.log('suc')
-      console.log(db_item_check)
-      await items_reserved_time.updateOne(
-        {
-          _id: db_item_check._id
-        },
-        {
-          $inc: { reserved_quantity: received_item_reserved_time[i].reserved_quantity },
-          $push: { reservation_id: reservations_result.insertedId }
-        }
-      )
-      received_item_reserved_time.splice(i, 1)
-      i--
-      console.log(received_item_reserved_time)
-    } else {
-      console.log('fail')
-      console.log(db_item_check)
-    }
-  }
-
-  for (const spaces_reserved_time_each of received_space_reserved_time) {
-    spaces_reserved_time_each.reservation_id = reservations_result.insertedId
-  }
-  if (received_space_reserved_time.length > 0) {
-    spaces_reserved_time.insertMany(received_space_reserved_time)
-  }
-  for (const items_reserved_time_each of received_item_reserved_time) {
-    items_reserved_time_each.reservation_id = [reservations_result.insertedId]
-  }
-  console.log(received_item_reserved_time)
-  if (received_item_reserved_time.length > 0) {
-    items_reserved_time.insertMany(received_item_reserved_time)
-  }
-  console.log(received_item_reserved_time)
+  await reservations.insertOne(doc)
 
   // send verify email
   const verify_link = new URL(`verify/${reservation_id}`, process.env.FRONTEND_BASE_URL)
