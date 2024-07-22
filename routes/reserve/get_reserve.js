@@ -31,7 +31,7 @@ const router = express.Router()
  *             schema:
  *               $ref: '#/components/schemas/Reservation'
  */
-router.get('/reservation/:reservation_id', async function (req, res, next) {
+router.get('/reserve/:reservation_id', async function (req, res, next) {
   const OBJECT_ID_REGEXP = /^[a-fA-F0-9]{24}$/ // ObjectId 格式 (652765ed3d21844635674e71)
   const reservation_id = req.params.reservation_id
 

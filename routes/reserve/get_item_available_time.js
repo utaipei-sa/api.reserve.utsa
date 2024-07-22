@@ -97,7 +97,6 @@ router.get('/item_available_time', async function (req, res, next) {
   }
 
   const interval_array = []
-  const integral_array = []
   let end_datetime_dayjs = dayjs(end_datetime)
   let start_datetime_dayjs = dayjs(start_datetime)
   let maxValue = 0
@@ -117,12 +116,13 @@ router.get('/item_available_time', async function (req, res, next) {
   let available_quantity = 0
   while (start_datetime_dayjs.isBefore(end_datetime_dayjs)) {
     for (let count = 0; count <= 23; count++) {
-      const item_database_info = await items_reserved_time.findOne({ start_datetime: new Date(start_datetime_dayjs.add(count, 'hour').format()), item_id: new ObjectId(item_id) })
+      const item_database_info = await items_reserved_time.findOne({ start_datetime: new Date(start_datetime_dayjs.add(count, 'hour').format()), item_id })
       if (item_database_info == null) {
         continue
       }
-      if (item_database_info.reserved > maxValue) {
-        maxValue = item_database_info.reserved
+      if (item_database_info.reserved_quantity > maxValue) {
+        maxValue = item_database_info.reserved_quantity
+        // console.log(maxValue)
       }
     }
     const items_quantity_info = await items.findOne({ _id: new ObjectId(item_id) })
@@ -145,13 +145,13 @@ router.get('/item_available_time', async function (req, res, next) {
     maxValue = 0
     available_quantity = 0
   }
-  integral_array.push({
+  const integral = {
     available_quantity: min_available_quantity
-  })
+  }
   if (intervals.toLowerCase() === 'true') {
     res.json(interval_array)
   } else if (intervals.toLowerCase() === 'false') {
-    res.json(integral_array)
+    res.json(integral)
   }
 })
 
