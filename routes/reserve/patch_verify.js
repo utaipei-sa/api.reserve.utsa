@@ -1,7 +1,7 @@
 import express from 'express'
 import dayjs from 'dayjs'
 import { ObjectId } from 'mongodb'
-import { reservations, spaces_reserved_time, items_reserved_time, spaces, items } from '../../models/mongodb.js'
+import { reservations, spaces_reserved_time, items_reserved_time, items } from '../../models/mongodb.js'
 import { error_response, R_SUCCESS, R_ID_NOT_FOUND, R_INVALID_INFO, R_ALREADY_VERIFIED, R_INVALID_RESERVATION } from '../../utilities/response.js'
 
 const router = express.Router()
@@ -102,7 +102,6 @@ router.patch('/verify/:reservation_id', async function (req, res, next) {
   const received_item_reservations = reservation.item_reservations
   const received_space_reserved_time = []
   const received_item_reserved_time = []
-  let error_message = ''
   // space reservation process
   for (const space_reservation of received_space_reservations) {
     // space時間確認
