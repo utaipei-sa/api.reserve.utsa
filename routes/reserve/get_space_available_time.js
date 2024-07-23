@@ -2,7 +2,7 @@ import express from 'express'
 import { ObjectId } from 'mongodb'
 import { spaces, spaces_reserved_time } from '../../models/mongodb.js'
 import dayjs from 'dayjs'
-import { error_response, R_ID_NOT_FOUND } from '../../utilities/response.js'
+import { error_response, R_ID_NOT_FOUND, R_INVALID_INFO } from '../../utilities/response.js'
 
 const router = express.Router()
 
@@ -14,7 +14,7 @@ const router = express.Router()
  *       - reserve
  *     summary: 查詢特定時段場地是否可預約
  *     description: 查詢特定時段場地是否可預約
- *     operationId: GetIntegralSpaceAvailability
+ *     operationId: GetSpaceAvailableTime
  *     parameters:
  *       - name: intervals
  *         description: 是否切分成各時段進行回傳
@@ -60,7 +60,7 @@ const router = express.Router()
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/SpaceAvailability'
- *      
+ *
  */
 router.get('/space_available_time', async function (req, res, next) {
   // 取得參數
@@ -74,17 +74,17 @@ router.get('/space_available_time', async function (req, res, next) {
   if (space_id === undefined || start_datetime === undefined || end_datetime === undefined) { // 沒給齊參數
     res
       .status(400)
-      .json(error_response(R_ID_NOT_FOUND, 'Reservation ID not found'))
+      .json(error_response(R_INVALID_INFO, 'item_id, start_datetime, and end_datetime are required'))
     return
   } else if (!OBJECT_ID_REGEXP.test(space_id)) { // check space_id format
     res
       .status(400)
-      .json(error_response(R_ID_NOT_FOUND, 'Reservation ID not found'))
+      .json(error_response(R_INVALID_INFO, 'Reservation ID format error'))
     return
   } else if (!DATETIME_MINUTE_REGEXP.test(start_datetime) || !DATETIME_MINUTE_REGEXP.test(end_datetime)) { // check datetime fromat
     res
       .status(400)
-      .json(error_response(R_ID_NOT_FOUND, 'Reservation ID not found'))
+      .json(error_response(R_INVALID_INFO, 'Reservation start_datetime format error'))
     return
   }
   // 查詢場地資訊
@@ -95,7 +95,7 @@ router.get('/space_available_time', async function (req, res, next) {
       .json(error_response(R_ID_NOT_FOUND, 'Reservation ID not found'))
     return
   }
-  if (space_intervals === "true") { // intervals
+  if (space_intervals === 'true') { // intervals
     // 統整場地可否借用資訊
     const digical_time_slots = [
       { start: 8, end: 12 },
@@ -119,18 +119,17 @@ router.get('/space_available_time', async function (req, res, next) {
         }
         let reserved_value = 0
         // 在資料庫中是否有找到此時段的資料,如果否reserved_value=0
-        let space_database_info
 
-        for (let i = 0; i <= 3; i++) {
-          space_database_info = await spaces_reserved_time.findOne({ start_datetime: new Date(start_datetime_dayjs.add(i, 'hour').format()), space_id })
+        for (let i = 0; i <= 3 && reserved_value === 0; i++) {
+          const space_database_info = await spaces_reserved_time.findOne({ start_datetime: new Date(start_datetime_dayjs.add(i, 'hour').format()), space_id })
           if (space_database_info == null) {
             console.log('hey this is null')
             continue
           }
           reserved_value = space_database_info.reserved
-          if (reserved_value === 1) {
-            break
-          }
+          // if (reserved_value === 1) {
+          //   break
+          // }
         }
 
         if (start_datetime_dayjs.hour() >= digical_time_slots[current_timeslot].start && start_datetime_dayjs.hour() < digical_time_slots[current_timeslot].end) {
@@ -160,28 +159,15 @@ router.get('/space_available_time', async function (req, res, next) {
       reserved: 1
     }).toArray() // 搜尋時間範圍內已被預約的時段
 
-    // console.log(spaces_reservations)
-    if (spaces_reservations.length > 0) {
-      // 已被借用(不可借)
-      res.json({
-        data: {
-          space_id,
-          start_datetime,
-          end_datetime,
-          availability: 0
-        }
-      })
-    } else {
-      // 未被借用(可借)
-      res.json({
-        data: {
-          space_id,
-          start_datetime,
-          end_datetime,
-          availability: 1
-        }
-      })
-    }
+    const availability = spaces_reservations.length > 0 ? 0 : 1
+    res.json({
+      data: {
+        space_id,
+        start_datetime,
+        end_datetime,
+        availability
+      }
+    })
   }
 })
 
