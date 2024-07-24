@@ -59,7 +59,9 @@ const router = express.Router()
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/SpaceAvailability'
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/SpaceAvailability'
  *
  */
 router.get('/space_available_time', async function (req, res, next) {
@@ -125,12 +127,7 @@ router.get('/space_available_time', async function (req, res, next) {
 
     const availability = spaces_reservations.length > 0 ? 0 : 1
     res.json({
-      data: {
-        space_id,
-        start_datetime,
-        end_datetime,
-        availability
-      }
+      availability
     })
   }
 })
