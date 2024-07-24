@@ -105,45 +105,9 @@ router.get('/space_available_time', async function (req, res, next) {
     const output_array = []
     const end_datetime_dayjs = dayjs(end_datetime)
     let start_datetime_dayjs = dayjs(start_datetime)
+
     while (start_datetime_dayjs.isBefore(end_datetime_dayjs)) {
-      for (
-        let current_timeslot = 0;
-        start_datetime_dayjs.isBefore(end_datetime_dayjs) && current_timeslot < 3;
-        start_datetime_dayjs = start_datetime_dayjs.add(1, 'hour')
-      ) {
-        // 檢查start_datetime是在哪一個時段的
-        if (start_datetime_dayjs.hour() >= digical_time_slots[current_timeslot].end) {
-          current_timeslot++
-          start_datetime_dayjs = start_datetime_dayjs.subtract(1, 'hour')
-          continue
-        }
-        let reserved_value = 0
-        // 在資料庫中是否有找到此時段的資料,如果否reserved_value=0
-
-        for (let i = 0; i <= 3 && reserved_value === 0; i++) {
-          const space_database_info = await spaces_reserved_time.findOne({ start_datetime: new Date(start_datetime_dayjs.add(i, 'hour').format()), space_id })
-          if (space_database_info == null) {
-            console.log('hey this is null')
-            continue
-          }
-          reserved_value = space_database_info.reserved
-          // if (reserved_value === 1) {
-          //   break
-          // }
-        }
-
-        if (start_datetime_dayjs.hour() >= digical_time_slots[current_timeslot].start && start_datetime_dayjs.hour() < digical_time_slots[current_timeslot].end) {
-          output_array.push(
-            {
-              space_id,
-              start_datetime: start_datetime_dayjs.set('hour', digical_time_slots[current_timeslot].start).format('YYYY-MM-DDTHH:mm'),
-              end_datetime: start_datetime_dayjs.set('hour', digical_time_slots[current_timeslot].end).format('YYYY-MM-DDTHH:mm'),
-              availability: 1 - reserved_value
-            }
-          )
-          start_datetime_dayjs = start_datetime_dayjs.set('hour', digical_time_slots[current_timeslot].end)
-        }
-      }
+      await cacuTimeSlot(start_datetime_dayjs, end_datetime_dayjs, digical_time_slots, space_id, output_array)
       start_datetime_dayjs = start_datetime_dayjs.add(1, 'day')
       start_datetime_dayjs = start_datetime_dayjs.set('hour', 0).set('minute', 0).set('second', 0)
     }
@@ -170,5 +134,42 @@ router.get('/space_available_time', async function (req, res, next) {
     })
   }
 })
+
+async function cacuTimeSlot(start_datetime_dayjs, end_datetime_dayjs, digical_time_slots, space_id, output_array) {
+  for (
+    let current_timeslot = 0;
+    start_datetime_dayjs.isBefore(end_datetime_dayjs) && current_timeslot < 3;
+    start_datetime_dayjs = start_datetime_dayjs.add(1, 'hour')
+  ) {
+    // 檢查start_datetime是在哪一個時段的
+    if (start_datetime_dayjs.hour() >= digical_time_slots[current_timeslot].end) {
+      current_timeslot++
+      start_datetime_dayjs = start_datetime_dayjs.subtract(1, 'hour')
+      continue
+    }
+    let reserved_value = 0
+    // 在資料庫中是否有找到此時段的資料,如果否reserved_value=0
+
+    for (let i = 0; i <= 3 && reserved_value === 0; i++) {
+      const space_database_info = await spaces_reserved_time.findOne({ start_datetime: new Date(start_datetime_dayjs.add(i, 'hour').format()), space_id })
+      if (space_database_info == null) {
+        continue
+      }
+      reserved_value = space_database_info.reserved
+    }
+
+    if (start_datetime_dayjs.hour() >= digical_time_slots[current_timeslot].start && start_datetime_dayjs.hour() < digical_time_slots[current_timeslot].end) {
+      output_array.push(
+        {
+          space_id,
+          start_datetime: start_datetime_dayjs.set('hour', digical_time_slots[current_timeslot].start).format('YYYY-MM-DDTHH:mm'),
+          end_datetime: start_datetime_dayjs.set('hour', digical_time_slots[current_timeslot].end).format('YYYY-MM-DDTHH:mm'),
+          availability: 1 - reserved_value
+        }
+      )
+      start_datetime_dayjs = start_datetime_dayjs.set('hour', digical_time_slots[current_timeslot].end)
+    }
+  }
+}
 
 export default router
