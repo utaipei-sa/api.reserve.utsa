@@ -247,7 +247,7 @@ router.post('/reserve', async function (req, res, next) {
     let stop_flag = 0
     for (; start_datetime.isBefore(end_datetime);) {
       for (let i = 0; i < received_item_reserved_time.length; i++) {
-        if (dayjs(received_item_reserved_time[i].start_datetime).isSame(start_datetime)) {
+        if (dayjs(received_item_reserved_time[i].start_datetime).isSame(start_datetime) && received_item_reserved_time[i].item_id === item_reservation.item_id) {
           stop_flag = 1
           break
         }
