@@ -152,7 +152,7 @@ router.post('/reserve', async function (req, res, next) {
         // 判斷收到的reservation時間段是否有重複的，
         // 有的話就直接ret space_datetime repeat error
         // 沒有就push進received_space_reserved_time
-        if (dayjs(received_space_reserved_time[i].start_datetime).isSame(start_datetime)) {
+        if (dayjs(received_space_reserved_time[i].start_datetime).isSame(start_datetime) && received_space_reserved_time[i].space_id === space_reservation.space_id) {
           stop_flag = 1
           break
         }
