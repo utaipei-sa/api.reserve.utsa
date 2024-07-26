@@ -7,7 +7,8 @@ import {
   error_response,
   R_ID_NOT_FOUND,
   R_INVALID_INFO,
-  R_INVALID_RESERVATION
+  R_INVALID_RESERVATION,
+  R_SUCCESS
 } from '../../utilities/response.js'
 
 const router = express.Router()
@@ -473,6 +474,11 @@ router.put('/reserve/:reservation_id', async function (req, res, next) {
   )
 
   // TODO: send email
+
+  res.json({
+    code: R_SUCCESS,
+    message: 'Success!'
+  })
 })
 
 export default router
