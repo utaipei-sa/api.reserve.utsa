@@ -1,7 +1,7 @@
 import express from 'express'
 import { ObjectId } from 'mongodb'
-import { reservations, spaces_reserved_time, items_reserved_time } from '../../models/mongodb.js'
-import dayjs from 'dayjs'
+import { reservations } from '../../models/mongodb.js'
+import { error_response, R_ID_NOT_FOUND, R_INVALID_INFO } from '../../utilities/response.js'
 // import { Timestamp } from 'mongodb'
 
 const router = express.Router()
@@ -31,14 +31,14 @@ const router = express.Router()
  *             schema:
  *               $ref: '#/components/schemas/Reservation'
  */
-router.get('/reservation/:reservation_id', async function (req, res, next) {
+router.get('/reserve/:reservation_id', async function (req, res, next) {
   const OBJECT_ID_REGEXP = /^[a-fA-F0-9]{24}$/ // ObjectId 格式 (652765ed3d21844635674e71)
   const reservation_id = req.params.reservation_id
 
   if (!OBJECT_ID_REGEXP.test(reservation_id)) {
     res
       .status(400)
-      .json({ error: 'object_id format error' })
+      .json(error_response(R_INVALID_INFO, 'object_id format error'))
     return
   }
 
@@ -46,10 +46,20 @@ router.get('/reservation/:reservation_id', async function (req, res, next) {
   if (result === null) {
     res
       .status(400)
-      .json({ error: 'reservation not found' })
+      .json(error_response(R_ID_NOT_FOUND, 'reservation not found'))
     return
   }
-  res.json(result)
+
+  const { _id, verify, status, history, ...data } = result
+
+  const submitTimestamp = result.history[0].submit_timestamp
+  const serverTimestamp = result.history[0].server_timestamp
+  const FinalResult = {
+    ...data,
+    submit_timestamp: submitTimestamp,
+    server_timestamp: serverTimestamp
+  }
+  res.json(FinalResult)
 })
 
 export default router
