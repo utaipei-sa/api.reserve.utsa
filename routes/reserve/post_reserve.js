@@ -270,6 +270,8 @@ router.post('/reserve', async function (req, res, next) {
       return
     }
   }
+
+  // Check if DB has enough items to be reserved
   let db_item_check
   let max_quantity
   for (let i = 0; i < received_item_reserved_time.length; i++) {
@@ -278,17 +280,14 @@ router.post('/reserve', async function (req, res, next) {
       start_datetime: received_item_reserved_time[i].start_datetime,
       item_id: received_item_reserved_time[i].item_id
     })
-    if (db_item_check == null) {
+    const item_reserved_quantity = db_item_check?.reserved_quantity || 0
+    if (item_reserved_quantity <= max_quantity.quantity - received_item_reserved_time[i].reserved_quantity) {
       continue
     } else {
-      if (db_item_check.reserved_quantity <= max_quantity.quantity - received_item_reserved_time[i].reserved_quantity) {
-        continue
-      } else {
-        res
-          .status(400)
-          .json(error_response(R_INVALID_RESERVATION, 'item_datetime has over reserved error'))
-        return
-      }
+      res
+        .status(400)
+        .json(error_response(R_INVALID_RESERVATION, 'item_datetime has over reserved error'))
+      return
     }
   }
 
