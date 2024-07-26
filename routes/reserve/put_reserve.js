@@ -118,8 +118,12 @@ router.put('/reserve/:reservation_id', async function (req, res, next) {
   const verify = original_reservation.verify === 1
 
   // compare space reservations -> difference lists (add and delete)
+  const original_space_reservations = await spaces_reserved_time.find({
+    reservations: { $in: [reservation_id] }
+  }).toArray()
   const add_space_reservations = []
-  const remove_space_reservations = original_reservation.space_reservations
+  // const remove_space_reservations = original_reservation.space_reservations
+  let remove_space_reservations = original_space_reservations
   const updated_timeslot_space_reservations = []
   // check add_space_reservations list
   for (const updated_space_reservation of updated_space_reservations) {
@@ -188,7 +192,7 @@ router.put('/reserve/:reservation_id', async function (req, res, next) {
   }
   for (const updated_space_reservation of updated_timeslot_space_reservations) {
     // not reserved => add
-    const original_space_reservation_index = original_reservation.space_reservations.findIndex(
+    const original_space_reservation_index = original_space_reservations.findIndex(
       (space_reservation) => {
         return (
           space_reservation.space_id === updated_space_reservation.space_id &&
@@ -207,10 +211,12 @@ router.put('/reserve/:reservation_id', async function (req, res, next) {
       })
     }
 
-    remove_space_reservations.splice(original_space_reservation_index, 1)
+    if (original_space_reservation_index !== -1) {
+      original_space_reservations.splice(original_space_reservation_index, 1)
+    }
   }
-  // TODO: remove_space_reservations unknown
-  console.log(215, remove_space_reservations)
+  // give all remaining space_reservations to remove_spave_reservations
+  remove_space_reservations = original_space_reservations
   // check the spaces have not been reserved
   let db_find_result = null // db find result
   for (const add_space_reservation of add_space_reservations) {
@@ -232,7 +238,10 @@ router.put('/reserve/:reservation_id', async function (req, res, next) {
   // compare item reservations -> difference lists (add and delete)
   const add_item_reservations = []
   const remove_item_reservations = []
-  const original_item_reservations = original_reservation.item_reservations
+  // const original_item_reservations = original_reservation.item_reservations
+  const original_item_reservations = await items_reserved_time.find({
+    reservations: { $in: [reservation_id] }
+  }).toArray()
   const updated_timeslot_item_reservations = []
   // check add_item_reservations list
   for (const updated_item_reservation of updated_item_reservations) {
@@ -390,6 +399,7 @@ router.put('/reserve/:reservation_id', async function (req, res, next) {
 
   if (verify) {
     // remove spaces reservations
+    console.log(400, 'remove_spaces: ', remove_space_reservations)  // debug
     for (const remove_space_reservation of remove_space_reservations) {
       console.log(397, remove_space_reservation)  // debug
       const result = await spaces_reserved_time.deleteOne({
@@ -400,6 +410,7 @@ router.put('/reserve/:reservation_id', async function (req, res, next) {
     }
     // add spaces reservations
     if (add_space_reservations.length > 0) {
+      console.log(416, 'add_spaces: ', add_space_reservations)  // debug
       const result = await spaces_reserved_time.insertMany(add_space_reservations)
       console.log(407, result)  // debug
     }
@@ -418,7 +429,7 @@ router.put('/reserve/:reservation_id', async function (req, res, next) {
           item_id: remove_item_reservation.item_id,
           start_datetime: remove_item_reservation.start_datetime
         })
-        console.log(424, result)  // debug
+        console.log(424, 'remove_items', result)  // debug
       } else {
         const result = await itemss_reserved_time.updateOne(
           {
@@ -449,7 +460,7 @@ router.put('/reserve/:reservation_id', async function (req, res, next) {
             $set: { reservations: add_item_reservation.reservations }  // TODO: check
           }
         )
-        console.log(455, result)  // debug
+        console.log(455, 'add_items: ', result)  // debug
       } else {
         const result = await items_reserved_time.insertOne({
           item_id: add_item_reservation.item_id,
@@ -458,7 +469,7 @@ router.put('/reserve/:reservation_id', async function (req, res, next) {
           quantity: add_item_reservation.quantity,
           reservations: add_item_reservation.reservations
         })
-        console.log(464, result)  // debug
+        console.log(464, 'add_items: ', result)  // debug
       }
     }
   }
