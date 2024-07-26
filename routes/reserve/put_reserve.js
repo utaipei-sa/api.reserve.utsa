@@ -5,7 +5,6 @@ import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc.js'
 import {
   error_response,
-  R_SUCCESS,
   R_ID_NOT_FOUND,
   R_INVALID_INFO,
   R_INVALID_RESERVATION
@@ -467,17 +466,13 @@ router.put('/reserve/:reservation_id', async function (req, res, next) {
     item_reservations: updated_item_reservations,
     note
   }
-  const reservation_update_result = await reservations.updateOne(
+  // const reservation_update_result = await
+  reservations.updateOne(
     { _id: new ObjectId(reservation_id) },
     { $set: updated_reservation }
   )
 
   // TODO: send email
-
-  res.json({
-    code: R_SUCCESS,
-    message: 'Success!'
-  })
 })
 
 export default router
