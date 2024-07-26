@@ -54,8 +54,8 @@ dayjs.extend(utc)
 router.put('/reserve/:reservation_id', async function (req, res, next) {
   // define constants and variables
   const EMAIL_REGEXP = /^[\w-.+]+@([\w-]+\.)+[\w-]{2,4}$/ // user+name@domain.com
-  const SUBMIT_DATETIME_REGEXP = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(\.\d*)?\+08:?00$/ // 2024-03-03T22:25:32.000+08:00
-  const DATETIME_MINUTE_REGEXP = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})$/ // 2024-03-03T22:25
+  const DATETIME_REGEXP = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(\.\d*)?\+08:?00$/ // 2024-03-03T22:25:32.000+08:00
+  // const DATETIME_MINUTE_REGEXP = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})$/ // 2024-03-03T22:25
   const OBJECT_ID_REGEXP = /^[a-fA-F0-9]{24}$/ // ObjectId 格式 (652765ed3d21844635674e71)
 
   const reservation_id = req.params.reservation_id
@@ -93,7 +93,7 @@ router.put('/reserve/:reservation_id', async function (req, res, next) {
   if (!EMAIL_REGEXP.test(email)) {
     error_message += 'email format error\n'
   }
-  if (!SUBMIT_DATETIME_REGEXP.test(submit_datetime)) {
+  if (!DATETIME_REGEXP.test(submit_datetime)) {
     error_message += 'submit_datetime format error\n'
   }
   if (!name) { // name string or undefined
@@ -115,6 +115,8 @@ router.put('/reserve/:reservation_id', async function (req, res, next) {
     return
   }
 
+  const verify = original_reservation.verify === 1
+
   // compare space reservations -> difference lists (add and delete)
   const add_space_reservations = []
   const remove_space_reservations = original_reservation.space_reservations
@@ -125,10 +127,10 @@ router.put('/reserve/:reservation_id', async function (req, res, next) {
     if (!OBJECT_ID_REGEXP.test(updated_space_reservation.space_id)) {
       error_message += 'space_id format error\n'
     }
-    if (!DATETIME_MINUTE_REGEXP.test(updated_space_reservation.start_datetime)) {
+    if (!DATETIME_REGEXP.test(updated_space_reservation.start_datetime)) {
       error_message += 'start_datetime format error\n'
     }
-    if (!DATETIME_MINUTE_REGEXP.test(updated_space_reservation.end_datetime)) {
+    if (!DATETIME_REGEXP.test(updated_space_reservation.end_datetime)) {
       error_message += 'end_datetime format error\n'
     }
     if (error_message.length) {
@@ -176,11 +178,6 @@ router.put('/reserve/:reservation_id', async function (req, res, next) {
         }
       }
       // add data
-      console.log({
-        start_datetime: new Date(start_datetime.format()),
-        end_datetime: new Date(start_datetime.add(1, 'hour').format()),
-        space_id: updated_space_reservation.space_id
-      })  // debug
       updated_timeslot_space_reservations.push({
         start_datetime: new Date(start_datetime.format()),
         end_datetime: new Date(start_datetime.add(1, 'hour').format()),
@@ -200,19 +197,20 @@ router.put('/reserve/:reservation_id', async function (req, res, next) {
         )
       }
     )
-    if (!original_space_reservation_index) {
-      const original_space_found = original_reservation.space_reservations[original_space_reservation_index]
+    if (original_space_reservation_index === -1) {
       add_space_reservations.push({
-        start_datetime: original_space_found.start_datetime,
-        end_datetime: original_space_found.end_datetime,
-        space_id: original_space_found.space_id,
+        start_datetime: updated_space_reservation.start_datetime,
+        end_datetime: updated_space_reservation.end_datetime,
+        space_id: updated_space_reservation.space_id,
         reserved: 1,
-        reservations: [original_reservation._id]
+        reservations: [reservation_id]
       })
     }
 
     remove_space_reservations.splice(original_space_reservation_index, 1)
   }
+  // TODO: remove_space_reservations unknown
+  console.log(215, remove_space_reservations)
   // check the spaces have not been reserved
   let db_find_result = null // db find result
   for (const add_space_reservation of add_space_reservations) {
@@ -223,9 +221,7 @@ router.put('/reserve/:reservation_id', async function (req, res, next) {
       reserved: 1
     })
 
-    if (db_find_result == null) {
-      continue
-    } else if (db_find_result.reserved) {
+    if (db_find_result !== null && db_find_result.reserved !== null) {
       res
         .status(400)
         .json(error_response(R_INVALID_RESERVATION, 'space_datetime has been reserved'))
@@ -244,10 +240,10 @@ router.put('/reserve/:reservation_id', async function (req, res, next) {
     if (!OBJECT_ID_REGEXP.test(updated_item_reservation.item_id)) {
       error_message += 'item_id format error\n'
     }
-    if (!DATETIME_MINUTE_REGEXP.test(updated_item_reservation.start_datetime)) {
+    if (!DATETIME_REGEXP.test(updated_item_reservation.start_datetime)) {
       error_message += 'start_datetime format error\n'
     }
-    if (!DATETIME_MINUTE_REGEXP.test(updated_item_reservation.end_datetime)) {
+    if (!DATETIME_REGEXP.test(updated_item_reservation.end_datetime)) {
       error_message += 'end_datetime format error\n'
     }
     if (error_message.length) {
@@ -304,6 +300,7 @@ router.put('/reserve/:reservation_id', async function (req, res, next) {
       start_datetime = start_datetime.add(1, 'hour')
     }
   }
+  // TODO: updated_timeslot_item_reservations success!
   for (const updated_item_reservation of updated_timeslot_item_reservations) {
     // categorize update_item_reservation to add and remove list
     const original_item_reservation_index = original_reservation.item_reservations.findIndex(
@@ -315,7 +312,7 @@ router.put('/reserve/:reservation_id', async function (req, res, next) {
         )
       }
     )
-    if (!original_item_reservation_index) {
+    if (original_item_reservation_index > -1) {
       // check item quantity
       const original_item_found = original_reservation.item_reservations[original_item_reservation_index]
       if (updated_item_reservation.quantity > original_item_found.quantity) {
@@ -368,6 +365,8 @@ router.put('/reserve/:reservation_id', async function (req, res, next) {
   for (const original_item_reservation of original_item_reservations) {
     remove_item_reservations.push(original_item_reservation)
   }
+  // TODO: remove_item_reservations unknown
+  console.log(372, remove_item_reservations)
   // check items not all reserved
   let max_quantity = 0
   db_find_result = null // db find result
@@ -381,9 +380,7 @@ router.put('/reserve/:reservation_id', async function (req, res, next) {
       _id: ObjectId.createFromHexString(add_item_reservation.item_id)
     }).quantity
 
-    if (db_find_result == null) {
-      continue
-    } else if (db_find_result.quantity + add_item_reservation.quantity > max_quantity) {
+    if (db_find_result !== null && db_find_result.quantity + add_item_reservation.quantity > max_quantity) {
       res
         .status(400)
         .json(error_response(R_INVALID_RESERVATION, 'item_datetime has all been reserved'))
@@ -391,69 +388,78 @@ router.put('/reserve/:reservation_id', async function (req, res, next) {
     }
   }
 
-  // remove spaces reservations
-  for (const remove_space_reservation of remove_space_reservations) {
-    spaces_reserved_time.deleteOne({
-      start_datetime: remove_space_reservation.start_datetime,
-      space_id: remove_space_reservation.space_id
-    })
-  }
-  // add spaces reservations
-  if (add_space_reservations.length > 0) {
-    spaces_reserved_time.insertMany(add_space_reservations)
-  }
+  if (verify) {
+    // remove spaces reservations
+    for (const remove_space_reservation of remove_space_reservations) {
+      console.log(397, remove_space_reservation)  // debug
+      const result = await spaces_reserved_time.deleteOne({
+        start_datetime: remove_space_reservation.start_datetime,
+        space_id: remove_space_reservation.space_id
+      })
+      console.log(402, result)  // debug
+    }
+    // add spaces reservations
+    if (add_space_reservations.length > 0) {
+      const result = await spaces_reserved_time.insertMany(add_space_reservations)
+      console.log(407, result)  // debug
+    }
 
-  // remove items reservations (copy from delete_reservation.js)
-  for (const remove_item_reservation of remove_space_reservations) {
-    const found = await spaces_reserved_time.findOne({
-      item_id: remove_item_reservation.item_id,
-      start_datetime: remove_item_reservation.start_datetime
-    })
-
-    if (found == null) {
-      continue
-    } else if (found.quantity - remove_item_reservation.quantity <= 0) {
-      spaces_reserved_time.deleteOne({
+    // remove items reservations (copy from delete_reservation.js)
+    for (const remove_item_reservation of remove_item_reservations) {
+      const found = await spaces_reserved_time.findOne({
         item_id: remove_item_reservation.item_id,
         start_datetime: remove_item_reservation.start_datetime
       })
-    } else {
-      spaces_reserved_time.updateOne(
-        {
+
+      if (found === null) {
+        continue
+      } else if (found.quantity - remove_item_reservation.quantity <= 0) {
+        const result = await items_reserved_time.deleteOne({
           item_id: remove_item_reservation.item_id,
           start_datetime: remove_item_reservation.start_datetime
-        }, {
-          $inc: { quantity: -remove_item_reservation.quantity },
-          $set: { reservations: remove_item_reservation.reservations }  // TODO: check
-        }
-      )
+        })
+        console.log(424, result)  // debug
+      } else {
+        const result = await itemss_reserved_time.updateOne(
+          {
+            item_id: remove_item_reservation.item_id,
+            start_datetime: remove_item_reservation.start_datetime
+          }, {
+            $inc: { quantity: -remove_item_reservation.quantity },
+            $set: { reservations: remove_item_reservation.reservations }  // TODO: check
+          }
+        )
+        console.log(435, result)  // debug
+      }
     }
-  }
-  // add items reservations (copy from post_reservation.js)
-  for (const add_item_reservation of add_space_reservations) {
-    const found = await spaces_reserved_time.findOne({
-      item_id: add_item_reservation.item_id,
-      start_datetime: add_item_reservation.start_datetime
-    })
-
-    if (found == null) {
-      spaces_reserved_time.updateOne(
-        {
-          item_id: add_item_reservation.item_id,
-          start_datetime: add_item_reservation.start_datetime
-        }, {
-          $inc: { quantity: add_item_reservation.quantity },
-          $set: { reservations: add_item_reservation.reservations }  // TODO: check
-        }
-      )
-    } else {
-      spaces_reserved_time.insertOne({
+    // add items reservations (copy from post_reservation.js)
+    for (const add_item_reservation of add_item_reservations) {
+      const found = await spaces_reserved_time.findOne({
         item_id: add_item_reservation.item_id,
-        start_datetime: add_item_reservation.start_datetime,
-        end_datetime: add_item_reservation.end_datetime,
-        quantity: add_item_reservation.quantity,
-        reservations: add_item_reservation.reservations
+        start_datetime: add_item_reservation.start_datetime
       })
+
+      if (found !== null) {
+        const result = await items_reserved_time.updateOne(
+          {
+            item_id: add_item_reservation.item_id,
+            start_datetime: add_item_reservation.start_datetime
+          }, {
+            $inc: { quantity: add_item_reservation.quantity },
+            $set: { reservations: add_item_reservation.reservations }  // TODO: check
+          }
+        )
+        console.log(455, result)  // debug
+      } else {
+        const result = await items_reserved_time.insertOne({
+          item_id: add_item_reservation.item_id,
+          start_datetime: add_item_reservation.start_datetime,
+          end_datetime: add_item_reservation.end_datetime,
+          quantity: add_item_reservation.quantity,
+          reservations: add_item_reservation.reservations
+        })
+        console.log(464, result)  // debug
+      }
     }
   }
 
