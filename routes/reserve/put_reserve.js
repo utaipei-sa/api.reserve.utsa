@@ -179,7 +179,7 @@ router.put('/reserve/:reservation_id', async function (req, res, next) {
       for (const temp_reservation of updated_timeslot_space_reservations) {
         if (
           temp_reservation.space_id === updated_space_reservation.space_id &&
-          new Date(temp_reservation.start_datetime) === new Date(start_datetime.format())
+          start_datetime.diff(temp_reservation.start_datetime) === 0
         ) {
           res
             .status(400)
@@ -223,6 +223,8 @@ router.put('/reserve/:reservation_id', async function (req, res, next) {
   }
   // give all remaining space_reservations to remove_spave_reservations
   remove_space_reservations = original_space_reservations
+  console.log('add_space_reservations: ', add_space_reservations) // debug
+  console.log('remove_space_reservations: ', remove_space_reservations) // debug
   // check the spaces have not been reserved
   let db_find_result = null // db find result
   for (const add_space_reservation of add_space_reservations) {
@@ -230,7 +232,8 @@ router.put('/reserve/:reservation_id', async function (req, res, next) {
     db_find_result = await spaces_reserved_time.findOne({
       start_datetime: add_space_reservation.start_datetime,
       space_id: add_space_reservation.space_id,
-      reserved: 1
+      reserved: 1,
+      reservations: { $nin: [reservation_id] }
     })
 
     if (db_find_result !== null && db_find_result.reserved !== null) {
@@ -360,11 +363,14 @@ router.put('/reserve/:reservation_id', async function (req, res, next) {
   }
   // put all remaining original_item_reservation into remove_item_reservations
   remove_item_reservations = original_item_reservations
+  console.log('add_item_reservations: ', add_item_reservations) // debug
+  console.log('remove_item_reservations: ', remove_item_reservations) // debug
   // check items not all reserved
   let max_quantity = 0
   db_find_result = null // db find result
   for (const add_item_reservation of add_item_reservations) {
     // find data drom db
+    // TODO: should exclude self item reservations
     db_find_result = await items_reserved_time.findOne({
       start_datetime: add_item_reservation.start_datetime,
       item_id: add_item_reservation.item_id
