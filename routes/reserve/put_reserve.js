@@ -44,7 +44,14 @@ dayjs.extend(utc)
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/Reservation'
+ *               type: object
+ *               properties:
+ *                 code:
+ *                   type: string
+ *                   example: R_SUCCESS
+ *                 message:
+ *                   type: string
+ *                   example: "Success!"
  *       '400':
  *         description: Bad request
  *         content:
@@ -202,8 +209,8 @@ router.put('/reserve/:reservation_id', async function (req, res, next) {
       (space_reservation) => {
         return (
           space_reservation.space_id === updated_space_reservation.space_id &&
-          space_reservation.start_datetime === updated_space_reservation.start_datetime &&
-          space_reservation.end_datetime === updated_space_reservation.end_datetime
+          space_reservation.start_datetime.getTime() === updated_space_reservation.start_datetime.getTime() &&
+          space_reservation.end_datetime.getTime() === updated_space_reservation.end_datetime.getTime()
         )
       }
     )
@@ -246,7 +253,7 @@ router.put('/reserve/:reservation_id', async function (req, res, next) {
 
   // compare item reservations -> difference lists (add and delete)
   const add_item_reservations = []
-  let remove_item_reservations = []
+  const remove_item_reservations = []
   const original_item_reservations = await items_reserved_time.find({
     reservations: { $in: [reservation_id] }
   }).toArray()
@@ -286,6 +293,13 @@ router.put('/reserve/:reservation_id', async function (req, res, next) {
         .json(error_response(R_INVALID_RESERVATION, 'item_reservations end_datetime earlier than start_datetime is not allowed'))
       return
     }
+    // check if the quantity is > 0
+    if (updated_item_reservation.quantity <= 0) {
+      res
+        .status(400)
+        .json(error_response(R_INVALID_RESERVATION, 'item_reservations quantity must > 0'))
+      return
+    }
     // tear down time slots
     // minute set to 0 (use an hour as the unit of a time slot)
     start_datetime = start_datetime.minute(0)
@@ -323,8 +337,8 @@ router.put('/reserve/:reservation_id', async function (req, res, next) {
       (item_reservation) => {
         return (
           item_reservation.item_id === updated_item_reservation.item_id &&
-          item_reservation.start_datetime === updated_item_reservation.start_datetime &&
-          item_reservation.end_datetime === updated_item_reservation.end_datetime
+          item_reservation.start_datetime.getTime() === updated_item_reservation.start_datetime.getTime() &&
+          item_reservation.end_datetime.getTime() === updated_item_reservation.end_datetime.getTime()
         )
       }
     )
@@ -337,7 +351,7 @@ router.put('/reserve/:reservation_id', async function (req, res, next) {
           start_datetime: updated_item_reservation.start_datetime,
           end_datetime: updated_item_reservation.end_datetime,
           quantity: updated_item_reservation.quantity - original_item_found.quantity,
-          reservations: updated_item_reservation.reservations
+          reservations: original_item_found.reservations
         })
       } else if (updated_item_reservation.quantity < original_item_found.quantity) {
         remove_item_reservations.push({
@@ -345,12 +359,11 @@ router.put('/reserve/:reservation_id', async function (req, res, next) {
           start_datetime: updated_item_reservation.start_datetime,
           end_datetime: updated_item_reservation.end_datetime,
           quantity: original_item_found.quantity - updated_item_reservation.quantity,
-          reservations: updated_item_reservation.reservations
+          reservations: original_item_found.reservations
         })
-      } else { // updated_item_reservation.quantity === original_item_found.quantity
-        // remove reservation_id from the list
-        original_item_reservations.splice(original_item_reservation_index, 1)
       }
+      // remove from original_item_reservations
+      original_item_reservations.splice(original_item_reservation_index, 1)
     } else { // new time slot (not reserved originally)
       add_item_reservations.push({
         item_id: updated_item_reservation.item_id,
@@ -362,7 +375,15 @@ router.put('/reserve/:reservation_id', async function (req, res, next) {
     }
   }
   // put all remaining original_item_reservation into remove_item_reservations
-  remove_item_reservations = original_item_reservations
+  for (const original_item_reservation of original_item_reservations) {
+    // remove self reservation_id from remove_item_reservations reservations list
+    original_item_reservation.reservations.splice(
+      original_item_reservation.reservations.findIndex(
+        (t) => t === reservation_id
+      ), 1
+    )
+    remove_item_reservations.push(original_item_reservation)
+  }
   console.log('add_item_reservations: ', add_item_reservations) // debug
   console.log('remove_item_reservations: ', remove_item_reservations) // debug
   // check items not all reserved
@@ -370,16 +391,20 @@ router.put('/reserve/:reservation_id', async function (req, res, next) {
   db_find_result = null // db find result
   for (const add_item_reservation of add_item_reservations) {
     // find data drom db
-    // TODO: should exclude self item reservations
     db_find_result = await items_reserved_time.findOne({
       start_datetime: add_item_reservation.start_datetime,
       item_id: add_item_reservation.item_id
     })
-    max_quantity = await items.findOne({
-      _id: ObjectId.createFromHexString(add_item_reservation.item_id)
-    }).quantity
+    if (db_find_result === null) {
+      db_find_result = { quantity: 0 }
+    }
 
-    if (db_find_result !== null && db_find_result.quantity + add_item_reservation.quantity > max_quantity) {
+    max_quantity = await items.findOne({
+      _id: new ObjectId(add_item_reservation.item_id)
+    })
+    max_quantity = max_quantity.quantity
+
+    if (db_find_result.quantity + add_item_reservation.quantity > max_quantity) {
       res
         .status(400)
         .json(error_response(R_INVALID_RESERVATION, 'item_datetime has all been reserved'))
