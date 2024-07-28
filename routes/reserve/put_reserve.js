@@ -453,7 +453,7 @@ router.put('/reserve/:reservation_id', async function (req, res, next) {
     }
     // add items reservations (copy from post_reservation.js)
     for (const add_item_reservation of add_item_reservations) {
-      const found = await spaces_reserved_time.findOne({
+      const found = await items_reserved_time.findOne({
         item_id: add_item_reservation.item_id,
         start_datetime: add_item_reservation.start_datetime
       })
