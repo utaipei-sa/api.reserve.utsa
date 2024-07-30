@@ -1,9 +1,20 @@
 import sendEmail from '../../utilities/email/email.js'
 import {
-  subject as new_reserve_subject,
-  html as new_reserve_html
+  subject as new_reservation_subject,
+  html as new_reservation_html
 } from './templates/new_reservation.js'
-// TODO: import more templates
+import {
+  subject as reservation_verified_subject,
+  html as reservation_verified_html
+} from './templates/verify_reservation.js'
+import {
+  subject as reservation_modified_subject,
+  html as reservation_modified_html
+} from './templates/update_reservation.js'
+import {
+  subject as reservation_deleted_subject,
+  html as reservation_deleted_html
+} from './templates/cancel_reservation.js'
 
 export const NEW_RESERVATION = 'new_reservation'
 export const RESERVATION_VERIFIED = 'reservation_verified'
@@ -16,20 +27,20 @@ export default async function send_mail_template (template_type, data) {
 
   switch (template_type) {
     case NEW_RESERVATION:
-      subject = new_reserve_subject
-      html = await new_reserve_html(data)
+      subject = new_reservation_subject
+      html = await new_reservation_html(data)
       break
     case RESERVATION_VERIFIED:
-      subject = '' // TODO: replace with template
-      html = ''
+      subject = reservation_verified_subject
+      html = reservation_verified_html(data)
       break
     case RESERVATION_MODIFIED:
-      subject = ''
-      html = ''
+      subject = reservation_modified_subject
+      html = reservation_modified_html(data)
       break
     case RESERVATION_DELETED:
-      subject = ''
-      html = ''
+      subject = reservation_deleted_subject
+      html = reservation_deleted_html(data)
       break
     default:
       return 'ERROR! No template type'

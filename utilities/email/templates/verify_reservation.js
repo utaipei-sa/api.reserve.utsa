@@ -9,7 +9,7 @@ dayjs.extend(weekday)
 dayjs.locale('zh-tw')
 dayjs.tz.setDefault('Asia/Taipei')
 
-export const subject = '【學生會】預約成功通知'
+export const subject = '【學生會】驗證成功通知'
 export const html = async (reservation) => {
   let space_reservations_string = ''
   let item_reservations_string = ''
@@ -56,7 +56,7 @@ export const html = async (reservation) => {
     </head>
     <body>
       <p>您好：</p>
-      <p>感謝您使用學生會預約系統，以下是預約資訊：</p>
+      <p>您已完成電子郵件驗證，以下是預約資訊：</p>
       <p>
         <ul>
           <li>借用單位：${reservation.organization}</li>
@@ -78,15 +78,15 @@ export const html = async (reservation) => {
           <li>備註：${reservation.note}</li>
         </ul>
       </p>
-      <p>↓ 請盡速進行驗證，驗證完畢才算完成預約！</p>
+      <p>↓ 如欲更改或取消預約，請點擊按鈕進行操作</p>
       <table width="100%" cellspacing="0" cellpadding="0">
         <tr>
           <td>
             <table cellspacing="0" cellpadding="0">
               <tr>
                 <td style="border-radius: 2px; background-color: #3FAAEF;">
-                  <a href="${new URL(`verify/${reservation._id}`, process.env.FRONTEND_BASE_URL)}" target="_blank" style="padding: 8px 12px; border: 1px solid #3FAAEF;border-radius: 2px;font-family: Helvetica, Arial, sans-serif;font-size: 14px; color: #ffffff;text-decoration: none;font-weight:bold;display: inline-block;">
-                    點我進行驗證
+                  <a href="${new URL(`edit/${reservation._id}`, process.env.FRONTEND_BASE_URL)}" target="_blank" style="padding: 8px 12px; border: 1px solid #3FAAEF;border-radius: 2px;font-family: Helvetica, Arial, sans-serif;font-size: 14px; color: #ffffff;text-decoration: none;font-weight:bold;display: inline-block;">
+                    點我更改/取消預約
                   </a>
                 </td>
               </tr>
@@ -94,7 +94,7 @@ export const html = async (reservation) => {
           </td>
         </tr>
       </table>
-      <p><i>若非您本人進行借用，請直接忽略此信件。</i></p>
+      <p><i>若非您本人進行借用，請 <a href="mailto:utsa@go.utaipei.edu.tw">聯絡我們</a></i></p>
       <p>臺北市立大學學生會 借用預約系統</p>
     </body>
     </html>
