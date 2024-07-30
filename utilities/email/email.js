@@ -2,7 +2,7 @@ import nodemailer from 'nodemailer' // email relative
 
 /**
  * 寄送 email
- * @param {string} to_email 收件者的 email address
+ * @param toEmail
  * @param {string} subject 主旨
  * @param {string} content 信件內容
  */
@@ -18,7 +18,7 @@ export default async function sendEmail (toEmail, subject, content) {
 
   // 郵件內容 utsa@go.utaipei.edu.tw
   const mailOptions = {
-    from: process.env.EMAIL, // 你的 Gmail 地址
+    from: `"學生會借用預約系統" <${process.env.EMAIL}>`, // 你的 Gmail 地址
     to: toEmail, // 使用者填寫的郵箱地址
     subject,
     html: content // 郵件正文內容
