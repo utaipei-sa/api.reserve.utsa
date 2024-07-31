@@ -233,7 +233,7 @@ router.patch('/verify/:reservation_id', async function (req, res, next) {
         },
         {
           $inc: { reserved_quantity: received_item_reserved_time[i].reserved_quantity },
-          $push: { reservation_id }
+          $push: { reservations: reservation_id }
         }
       )
       received_item_reserved_time.splice(i, 1)
@@ -246,13 +246,14 @@ router.patch('/verify/:reservation_id', async function (req, res, next) {
   }
 
   for (const spaces_reserved_time_each of received_space_reserved_time) {
-    spaces_reserved_time_each.reservation_id = reservation_id
+    spaces_reserved_time_each.reservations = [reservation_id]
   }
   if (received_space_reserved_time.length > 0) {
     spaces_reserved_time.insertMany(received_space_reserved_time)
   }
+
   for (const items_reserved_time_each of received_item_reserved_time) {
-    items_reserved_time_each.reservation_id = [reservation_id]
+    items_reserved_time_each.reservations = [reservation_id]
   }
   console.log(received_item_reserved_time)
   if (received_item_reserved_time.length > 0) {
