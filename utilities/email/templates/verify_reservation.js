@@ -19,13 +19,13 @@ export const html = async (reservation) => {
     const space = await spaces.findOne({
       _id: new ObjectId(space_reservation.space_id)
     })
-    const space_name = space?.name['zh-tw'] || '(查無名稱)'
+    const space_name = space?.name['zh-tw'] || '(查無場地名稱)'
     const start_datetime = space_reservation.start_datetime
     const end_datetime = space_reservation.end_datetime
     space_reservations_string += `
       <li>
-        場地：${space_name}<br>
-        期間：${time_period_string(start_datetime, end_datetime)}
+        ${space_name}<br>
+        ${time_period_string(start_datetime, end_datetime)}
       </li>
     `
   }
@@ -35,13 +35,13 @@ export const html = async (reservation) => {
     const item = await items.findOne({
       _id: new ObjectId(item_reservation.item_id)
     })
-    const item_name = item?.name['zh-tw'] || '(查無名稱)'
+    const item_name = item?.name['zh-tw'] || '(查無物品名稱)'
     const start_datetime = item_reservation.start_datetime
     const end_datetime = item_reservation.end_datetime
     item_reservations_string += `
       <li>
-        物品：${item_name}<br>
-        期間：${time_period_string(start_datetime, end_datetime)}<br>
+        ${item_name}<br>
+        ${time_period_string(start_datetime, end_datetime)}<br>
         數量：${item_reservation.quantity}
       </li>
     `
@@ -84,8 +84,8 @@ export const html = async (reservation) => {
           <td>
             <table cellspacing="0" cellpadding="0">
               <tr>
-                <td style="border-radius: 2px; background-color: #3FAAEF;">
-                  <a href="${new URL(`edit/${reservation._id}`, process.env.FRONTEND_BASE_URL)}" target="_blank" style="padding: 8px 12px; border: 1px solid #3FAAEF;border-radius: 2px;font-family: Helvetica, Arial, sans-serif;font-size: 14px; color: #ffffff;text-decoration: none;font-weight:bold;display: inline-block;">
+                <td style="border-radius: 2px; background-color: #1867C0;">
+                  <a href="${new URL(`edit/${reservation._id}`, process.env.FRONTEND_BASE_URL)}" target="_blank" style="padding: 8px 12px; border: 1px solid #1867C0;border-radius: 2px;font-family: Helvetica, Arial, sans-serif;font-size: 14px; color: #ffffff;text-decoration: none;font-weight:bold;display: inline-block;">
                     點我更改/取消預約
                   </a>
                 </td>
@@ -106,8 +106,8 @@ function time_period_string (start_datetime, end_datetime) {
   const start_time = dayjs(start_datetime)
   const end_time = dayjs(end_datetime)
   const start_string = `${start_time.format('YYYY/MM/DD')}(${weekdaysMin[start_time.day()]}) ${start_time.format('HH:mm')}`
-  const end_string = start_time.format('YYYYMMDD') !== end_time.format('YYYYMMDD')
+  const end_string = start_time.format('YYYYMMDD') === end_time.format('YYYYMMDD')
     ? end_time.format('HH:mm')
-    : `${end_time.format('YYYY/MM/DD')}(${weekdaysMin[end_time.day()]}}) ${end_time.format('HH:mm')}`
-  return `${start_string}~${end_string}`
+    : `${end_time.format('YYYY/MM/DD')}(${weekdaysMin[end_time.day()]}) ${end_time.format('HH:mm')}`
+  return `${start_string} ~ ${end_string}`
 }
