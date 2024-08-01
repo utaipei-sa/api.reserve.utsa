@@ -121,7 +121,7 @@ router.patch('/verify/:reservation_id', async function (req, res, next) {
         // 判斷收到的reservation時間段是否有重複的，
         // 有的話就直接ret space_datetime repeat error
         // 沒有就push進received_space_reserved_time
-        if (dayjs(received_space_reserved_time[i].start_datetime).isSame(start_datetime)) {
+        if (dayjs(received_space_reserved_time[i].start_datetime).isSame(start_datetime) && received_space_reserved_time[i].space_id === space_reservation.id) {
           stop_flag = 1
           break
         }
@@ -175,7 +175,7 @@ router.patch('/verify/:reservation_id', async function (req, res, next) {
     let stop_flag = 0
     for (; start_datetime.isBefore(end_datetime);) {
       for (let i = 0; i < received_item_reserved_time.length; i++) {
-        if (dayjs(received_item_reserved_time[i].start_datetime).isSame(start_datetime)) {
+        if (dayjs(received_item_reserved_time[i].start_datetime).isSame(start_datetime) && received_item_reserved_time[i].item_id === item_reservation.id) {
           stop_flag = 1
           break
         }
@@ -192,6 +192,7 @@ router.patch('/verify/:reservation_id', async function (req, res, next) {
       start_datetime = start_datetime.add(1, 'hour')
     }
   }
+  console.log('item time', received_item_reserved_time)
   let db_item_check
   let max_quantity
   for (let i = 0; i < received_item_reserved_time.length; i++) {
@@ -233,7 +234,7 @@ router.patch('/verify/:reservation_id', async function (req, res, next) {
         },
         {
           $inc: { reserved_quantity: received_item_reserved_time[i].reserved_quantity },
-          $push: { reservation_id }
+          $push: { reservations: reservation_id }
         }
       )
       received_item_reserved_time.splice(i, 1)
@@ -246,13 +247,14 @@ router.patch('/verify/:reservation_id', async function (req, res, next) {
   }
 
   for (const spaces_reserved_time_each of received_space_reserved_time) {
-    spaces_reserved_time_each.reservation_id = reservation_id
+    spaces_reserved_time_each.reservations = [reservation_id]
   }
   if (received_space_reserved_time.length > 0) {
     spaces_reserved_time.insertMany(received_space_reserved_time)
   }
+
   for (const items_reserved_time_each of received_item_reserved_time) {
-    items_reserved_time_each.reservation_id = [reservation_id]
+    items_reserved_time_each.reservations = [reservation_id]
   }
   console.log(received_item_reserved_time)
   if (received_item_reserved_time.length > 0) {

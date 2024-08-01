@@ -198,6 +198,9 @@ router.post('/reserve', async function (req, res, next) {
   // item reservation process
   for (const item_reservation of received_item_reservations) {
     // check
+    if (!Number.isInteger(item_reservation.quantity)) {
+      error_message += 'item_reservations quantity need to be a integer\n'
+    }
     if (item_reservation.quantity <= 0) {
       error_message += 'item_reservations quantity error\n'
     }
