@@ -12,7 +12,6 @@ async function useRouters () {
   reserve_router.use(root, (await import('./get_reserve.js')).default)
   reserve_router.use(root, (await import('./put_reserve.js')).default)
   reserve_router.use(root, (await import('./delete_reserve.js')).default)
-  reserve_router.use(root, (await import('./get_verify.js')).default)
   reserve_router.use(root, (await import('./post_reserve.js')).default)
   reserve_router.use(root, (await import('./get_space_available_time.js')).default)
   reserve_router.use(root, (await import('./patch_verify.js')).default)
