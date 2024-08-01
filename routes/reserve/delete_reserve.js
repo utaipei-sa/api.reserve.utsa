@@ -82,8 +82,8 @@ router.delete('/reserve/:reservation_id', async function (req, res, next) {
       }
     }
 
-    const item_reserved_time_find = await items_reserved_time.find({ reservation_id: { $in: [new ObjectId(reservation_id)] } }).toArray()
-    const space_reserved_time_find = await spaces_reserved_time.find({ reservation_id: { $in: [new ObjectId(reservation_id)] } }).toArray()
+    const item_reserved_time_find = await items_reserved_time.find({ reservations: { $in: [new ObjectId(reservation_id)] } }).toArray()
+    const space_reserved_time_find = await spaces_reserved_time.find({ reservations: { $in: [new ObjectId(reservation_id)] } }).toArray()
 
     // delete items_reserved_time
 
@@ -100,7 +100,7 @@ router.delete('/reserve/:reservation_id', async function (req, res, next) {
           reserved_quantity: quantity// change data
         },
         $pull: {
-          reservation_id: new ObjectId(reservation_id)
+          reservations: new ObjectId(reservation_id)
         }
       })
     }
