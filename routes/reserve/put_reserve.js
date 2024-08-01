@@ -270,6 +270,9 @@ router.put('/reserve/:reservation_id', async function (req, res, next) {
     if (!DATETIME_REGEXP.test(updated_item_reservation.end_datetime)) {
       error_message += 'end_datetime format error\n'
     }
+    if (Number.isInteger(updated_item_reservation.quantity) === false) {
+      error_message += 'quantity is not integer error\n'
+    }
     if (error_message.length) {
       res
         .status(400)
@@ -345,20 +348,20 @@ router.put('/reserve/:reservation_id', async function (req, res, next) {
     if (original_item_reservation_index > -1) {
       // check item quantity
       const original_item_found = original_item_reservations[original_item_reservation_index]
-      if (updated_item_reservation.quantity > original_item_found.quantity) {
+      if (updated_item_reservation.quantity > original_item_found.reserved_quantity) {
         add_item_reservations.push({
           item_id: updated_item_reservation.item_id,
           start_datetime: updated_item_reservation.start_datetime,
           end_datetime: updated_item_reservation.end_datetime,
-          reserved_quantity: updated_item_reservation.quantity - original_item_found.quantity,
+          reserved_quantity: updated_item_reservation.quantity - original_item_found.reserved_quantity,
           reservations: original_item_found.reservations
         })
-      } else if (updated_item_reservation.quantity < original_item_found.quantity) {
+      } else if (updated_item_reservation.quantity < original_item_found.reserved_quantity) {
         remove_item_reservations.push({
           item_id: updated_item_reservation.item_id,
           start_datetime: updated_item_reservation.start_datetime,
           end_datetime: updated_item_reservation.end_datetime,
-          reserved_quantity: original_item_found.quantity - updated_item_reservation.quantity,
+          reserved_quantity: original_item_found.reserved_quantity - updated_item_reservation.quantity,
           reservations: original_item_found.reservations
         })
       }
@@ -427,7 +430,6 @@ router.put('/reserve/:reservation_id', async function (req, res, next) {
 
     // remove items reservations (copy from delete_reservation.js)
     for (const remove_item_reservation of remove_item_reservations) {
-      console.log(430, 'remove_item_reservation: ', remove_item_reservation)  // debug
       const found = await items_reserved_time.findOne({
         item_id: remove_item_reservation.item_id,
         start_datetime: remove_item_reservation.start_datetime
