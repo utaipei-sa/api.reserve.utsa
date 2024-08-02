@@ -76,15 +76,15 @@ const router = express.Router()
  */
 router.patch('/verify/:reservation_id', async function (req, res, next) {
   const OBJECT_ID_REGEXP = /^[a-fA-F0-9]{24}$/ // ObjectId 格式 (652765ed3d21844635674e71)
-  const reservation_id = req.params.reservation_id
-  if (!OBJECT_ID_REGEXP.test(reservation_id)) {
+  if (!OBJECT_ID_REGEXP.test(req.params.reservation_id)) {
     res
       .status(400)
       .json(error_response(R_INVALID_INFO, 'reservation_id format error'))
     return
   }
+  const reservation_id = new ObjectId(req.params.reservation_id)
 
-  const reservation = await reservations.findOne({ _id: new ObjectId(req.params.reservation_id) })
+  const reservation = await reservations.findOne({ _id: reservation_id })
   if (!reservation) {
     res
       .status(404)
@@ -263,7 +263,7 @@ router.patch('/verify/:reservation_id', async function (req, res, next) {
   console.log(received_item_reserved_time)
 
   await reservations.updateOne(
-    { _id: new ObjectId(req.params.reservation_id) },
+    { _id: reservation_id },
     { $set: { verify: 1 } }
   )
 
