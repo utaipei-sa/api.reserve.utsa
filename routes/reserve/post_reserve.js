@@ -1,3 +1,4 @@
+import { randomBytes } from 'crypto'
 import express from 'express'
 import { reservations, spaces_reserved_time, items_reserved_time, spaces, items } from '../../models/mongodb.js'
 import { ObjectId } from 'mongodb'
@@ -97,7 +98,7 @@ router.post('/reserve', async function (req, res, next) {
   }
 
   // TODO: add reservation_id
-  const reservation_id = new ObjectId()
+  const reservation_id = new ObjectId(randomBytes(12))
   const received_space_reserved_time = []
   const received_item_reserved_time = []
 
