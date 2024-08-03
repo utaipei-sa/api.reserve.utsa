@@ -63,7 +63,6 @@ router.delete('/reserve/:reservation_id', async function (req, res, next) {
       .json(error_response(R_ID_NOT_FOUND, 'Reservation ID not found'))
     return
   }
-
   // 查詢欲刪除的預約紀錄資訊
   // 刪除預約紀錄
   const reservation_find = await reservations.findOne({ _id: { $in: [new ObjectId(reservation_id)] } })
@@ -81,10 +80,8 @@ router.delete('/reserve/:reservation_id', async function (req, res, next) {
         })
       }
     }
-
-    const item_reserved_time_find = await items_reserved_time.find({ reservations: { $in: [new ObjectId(reservation_id)] } }).toArray()
-    const space_reserved_time_find = await spaces_reserved_time.find({ reservations: { $in: [new ObjectId(reservation_id)] } }).toArray()
-
+    const item_reserved_time_find = await items_reserved_time.find({ reservations: { $in: [reservation_id] } }).toArray()
+    const space_reserved_time_find = await spaces_reserved_time.find({ reservations: { $in: [reservation_id] } }).toArray()
     // delete items_reserved_time
 
     for (const item of item_reserved_time_find) {
@@ -100,7 +97,7 @@ router.delete('/reserve/:reservation_id', async function (req, res, next) {
           reserved_quantity: quantity// change data
         },
         $pull: {
-          reservations: new ObjectId(reservation_id)
+          reservations: reservation_id
         }
       })
     }
@@ -115,12 +112,12 @@ router.delete('/reserve/:reservation_id', async function (req, res, next) {
           reserved: 0// change data
         },
         $pull: {
-          reservations: new ObjectId(reservation_id)
+          reservations: reservation_id
         }
       })
     }
 
-    const reservation_result = await reservations.deleteMany({ _id: new ObjectId(reservation_id) })
+    const reservation_result = await reservations.deleteMany({ _id: reservation_id })
     await items_reserved_time.deleteMany({ reserved_quantity: 0 })
     await spaces_reserved_time.deleteMany({ reserved: 0 })
     if (reservation_result.deletedCount > 0) {
