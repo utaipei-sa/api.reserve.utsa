@@ -132,7 +132,7 @@ router.get('/space_available_time', async function (req, res, next) {
   }
 })
 
-async function cacuTimeSlot(start_datetime_dayjs, end_datetime_dayjs, digical_time_slots, space_id, output_array) {
+async function cacuTimeSlot (start_datetime_dayjs, end_datetime_dayjs, digical_time_slots, space_id, output_array) {
   for (
     let current_timeslot = 0;
     start_datetime_dayjs.isBefore(end_datetime_dayjs) && current_timeslot < 3;
