@@ -1,4 +1,4 @@
-import { items, spaces, reservations, items_reserved_time, spaces_reserved_time } from './mongodb.js'
+import { items, spaces, reservations } from './mongodb.js'
 
 export async function read_one_item (filter) {
   return await items.findOne(filter)
