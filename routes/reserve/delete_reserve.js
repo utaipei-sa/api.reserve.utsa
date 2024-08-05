@@ -117,7 +117,7 @@ router.delete('/reserve/:reservation_id', async function (req, res, next) {
       })
     }
 
-    const reservation_result = await reservations.deleteMany({ _id: reservation_id })
+    const reservation_result = await reservations.deleteMany({ _id: new ObjectId(reservation_id) })
     await items_reserved_time.deleteMany({ reserved_quantity: 0 })
     await spaces_reserved_time.deleteMany({ reserved: 0 })
     if (reservation_result.deletedCount > 0) {
