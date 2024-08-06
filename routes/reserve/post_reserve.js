@@ -3,10 +3,8 @@ import { reservations, spaces_reserved_time, items_reserved_time, spaces, items 
 import { ObjectId } from 'mongodb'
 import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc.js'
-import { URL } from 'url'
 import { error_response, R_SUCCESS, R_ID_NOT_FOUND, R_INVALID_INFO, R_INVALID_RESERVATION, R_SEND_EMAIL_FAILED } from '../../utilities/response.js'
-import send_reservation_email from '../../utilities/email/sendReservationEmail.js'
-
+import { send_reservation_email } from '../../utilities/email/sendReservationEmail.js'
 const router = express.Router()
 dayjs.extend(utc)
 
@@ -53,7 +51,7 @@ dayjs.extend(utc)
 router.post('/reserve', async function (req, res, next) {
   const EMAIL_REGEXP = /^[\w-.+]+@([\w-]+\.)+[\w-]{2,4}$/ // user+name@domain.com
   const SUBMIT_DATETIME_REGEXP = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(\.\d*)?\+08:?00$/ // 2024-03-03T22:25:32.000+08:00
-  const DATETIME_MINUTE_REGEXP = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})$/ // 2024-03-03T22:25
+  const DATETIME_MINUTE_REGEXP = /^(20[2-9][0-9])-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])T([01][0-9]|2[0-3]):([0-5][0-9])$/ // 2024-03-03T22:25
   const OBJECT_ID_REGEXP = /^[0-9a-fA-F]{24}$/ // 652765ed3d21844635674e71
 
   const submit_datetime = req.body.submit_datetime
@@ -131,6 +129,7 @@ router.post('/reserve', async function (req, res, next) {
     // space時間確認
     let start_datetime = dayjs(space_reservation.start_datetime)
     let end_datetime = dayjs(space_reservation.end_datetime)
+
     // 起始時間必定早於結束時間
     if (start_datetime.isAfter(end_datetime)) {
       res
@@ -232,7 +231,13 @@ router.post('/reserve', async function (req, res, next) {
     // =============== ↓底下還沒更新↓ ===============
     let start_datetime = dayjs(item_reservation.start_datetime)
     let end_datetime = dayjs(item_reservation.end_datetime)
-
+    const limit_end_datetime = start_datetime.add(7, 'day')
+    if (end_datetime.isAfter(limit_end_datetime)) {
+      res
+        .status(400)
+        .json(error_response(R_INVALID_RESERVATION, 'You can only reserve seven days'))
+      return
+    }
     if (start_datetime.isAfter(end_datetime)) {
       res
         .status(400)
@@ -318,6 +323,7 @@ router.post('/reserve', async function (req, res, next) {
   await reservations.insertOne(doc)
 
   // send verify email
+
   const verify_link = new URL(`verify/${reservation_id}`, process.env.FRONTEND_BASE_URL)
   try {
     const email_response = await send_reservation_email(doc, verify_link.href)
