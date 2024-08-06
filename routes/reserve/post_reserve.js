@@ -237,7 +237,7 @@ router.post('/reserve', async function (req, res, next) {
     if (end_datetime.isAfter(limit_end_datetime)) {
       res
         .status(400)
-        .json(error_response(R_INVALID_RESERVATION, 'You can only reserve seven days'))
+        .json(error_response(R_INVALID_RESERVATION, 'You can make a reservation for up to seven days.'))
       return
     }
     if (start_datetime.isAfter(end_datetime)) {
