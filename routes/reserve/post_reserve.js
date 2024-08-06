@@ -4,8 +4,9 @@ import { reservations, spaces_reserved_time, items_reserved_time, spaces, items 
 import { ObjectId } from 'mongodb'
 import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc.js'
+import { URL } from 'url'
 import { error_response, R_SUCCESS, R_ID_NOT_FOUND, R_INVALID_INFO, R_INVALID_RESERVATION, R_SEND_EMAIL_FAILED } from '../../utilities/response.js'
-import { send_reservation_email } from '../../utilities/email/sendReservationEmail.js'
+import send_reservation_email from '../../utilities/email/sendReservationEmail.js'
 const router = express.Router()
 dayjs.extend(utc)
 
