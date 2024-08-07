@@ -53,7 +53,7 @@ dayjs.extend(utc)
 router.post('/reserve', async function (req, res, next) {
   const EMAIL_REGEXP = /^[\w-.+]+@([\w-]+\.)+[\w-]{2,4}$/ // user+name@domain.com
   const SUBMIT_DATETIME_REGEXP = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(\.\d*)?\+08:?00$/ // 2024-03-03T22:25:32.000+08:00
-  const DATETIME_MINUTE_REGEXP = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})$/ // 2024-03-03T22:25
+  // const DATETIME_MINUTE_REGEXP = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})$/ // 2024-03-03T22:25
   const OBJECT_ID_REGEXP = /^[0-9a-fA-F]{24}$/ // 652765ed3d21844635674e71
 
   const submit_datetime = req.body.submit_datetime
@@ -107,10 +107,10 @@ router.post('/reserve', async function (req, res, next) {
     if (!OBJECT_ID_REGEXP.test(space_reservation.space_id)) {
       error_message += 'space_reservations space_id format error\n'
     }
-    if (!DATETIME_MINUTE_REGEXP.test(space_reservation.start_datetime)) {
+    if (!SUBMIT_DATETIME_REGEXP.test(space_reservation.start_datetime)) {
       error_message += 'space_reservations start_datetime format error\n'
     }
-    if (!DATETIME_MINUTE_REGEXP.test(space_reservation.end_datetime)) {
+    if (!SUBMIT_DATETIME_REGEXP.test(space_reservation.end_datetime)) {
       error_message += 'space_reservations end_datetime format error\n'
     }
     if (error_message.length) {
@@ -207,10 +207,10 @@ router.post('/reserve', async function (req, res, next) {
     if (!OBJECT_ID_REGEXP.test(item_reservation.item_id)) {
       error_message += 'item_reservations item_id format error\n'
     }
-    if (!DATETIME_MINUTE_REGEXP.test(item_reservation.start_datetime)) {
+    if (!SUBMIT_DATETIME_REGEXP.test(item_reservation.start_datetime)) {
       error_message += 'item_reservations start_datetime format error\n'
     }
-    if (!DATETIME_MINUTE_REGEXP.test(item_reservation.end_datetime)) {
+    if (!SUBMIT_DATETIME_REGEXP.test(item_reservation.end_datetime)) {
       error_message += 'item_reservations end_datetime format error\n'
     }
     if (error_message.length) {
