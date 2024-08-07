@@ -52,8 +52,7 @@ dayjs.extend(utc)
  */
 router.post('/reserve', async function (req, res, next) {
   const EMAIL_REGEXP = /^[\w-.+]+@([\w-]+\.)+[\w-]{2,4}$/ // user+name@domain.com
-  const SUBMIT_DATETIME_REGEXP = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(\.\d*)?\+08:?00$/ // 2024-03-03T22:25:32.000+08:00
-  const DATETIME_MINUTE_REGEXP = /^(20[2-9][0-9])-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])T([01][0-9]|2[0-3]):([0-5][0-9])$/ // 2024-03-03T22:25
+  const SUBMIT_DATETIME_REGEXP = /^(20[2-9]\d)-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])T([01]\d|2[0-3]):([0-5]\d):([0-5]\d)(\.\d+)?\+08:00$/ // 2024-03-03T22:25:32.000+08:00
   const OBJECT_ID_REGEXP = /^[0-9a-fA-F]{24}$/ // 652765ed3d21844635674e71
 
   const submit_datetime = req.body.submit_datetime
