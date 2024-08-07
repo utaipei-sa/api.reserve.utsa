@@ -1,5 +1,5 @@
 export const subject = '【學生會】預約取消通知'
-export const html = async (reservation) => `
+export const html = `
     <!DOCTYPE html>
     <html lang="zh-Hant-TW">
     <head>

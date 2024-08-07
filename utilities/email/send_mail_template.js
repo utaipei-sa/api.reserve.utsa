@@ -40,7 +40,7 @@ export default async function send_mail_template (template_type, data) {
       break
     case RESERVATION_DELETED:
       subject = reservation_deleted_subject
-      html = reservation_deleted_html(data)
+      html = reservation_deleted_html
       break
     default:
       return 'ERROR! No template type'
