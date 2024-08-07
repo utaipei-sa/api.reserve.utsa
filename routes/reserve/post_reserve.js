@@ -341,7 +341,7 @@ router.post('/reserve', async function (req, res, next) {
       .status(400)
       .json(error_response(R_SEND_EMAIL_FAILED, error.response))
     return
-  }  
+  }
 
   res.json({ code: R_SUCCESS, message: 'Success!' })
 })
