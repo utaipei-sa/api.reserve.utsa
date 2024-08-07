@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "start": "node --env-file=.env ./bin/www.js",
-    "lint": "npx eslint ."
+    "lint": "npx eslint .",
+    "lint:fix" : "eslint . --fix"
   },
   "dependencies": {
     "bootstrap": "^5.3.2",
