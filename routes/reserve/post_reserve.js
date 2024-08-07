@@ -130,7 +130,13 @@ router.post('/reserve', async function (req, res, next) {
     // space時間確認
     let start_datetime = dayjs(space_reservation.start_datetime)
     let end_datetime = dayjs(space_reservation.end_datetime)
-
+    const limit_space_end_datetime = start_datetime.add(7, 'day')
+    if (end_datetime.isAfter(limit_space_end_datetime)) {
+      res
+        .status(400)
+        .json(error_response(R_INVALID_RESERVATION, 'You can make a reservation for up to seven days.'))
+      return
+    }
     // 起始時間必定早於結束時間
     if (start_datetime.isAfter(end_datetime)) {
       res
@@ -324,7 +330,7 @@ router.post('/reserve', async function (req, res, next) {
   await reservations.insertOne(doc)
 
   // send verify email
-
+/*
   const verify_link = new URL(`verify/${reservation_id}`, process.env.FRONTEND_BASE_URL)
   try {
     const email_response = await send_reservation_email(doc, verify_link.href)
@@ -335,7 +341,7 @@ router.post('/reserve', async function (req, res, next) {
       .status(400)
       .json(error_response(R_SEND_EMAIL_FAILED, error.response))
     return
-  }
+  }*/
 
   res.json({ code: R_SUCCESS, message: 'Success!' })
 })
