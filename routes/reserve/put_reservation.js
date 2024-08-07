@@ -37,12 +37,12 @@ const router = express.Router()
  *             schema:
  *               $ref: '#/components/schemas/Reservation'
  */
-router.put('/reservation/:reservation_id', async function(req, res, next) {
+router.put('/reservation/:reservation_id', async function (req, res, next) {
   // define constants and variables
-  const EMAIL_REGEXP = /^[\w-.\+]+@([\w-]+\.)+[\w-]{2,4}$/  // user+name@domain.com
-  const SUBMIT_DATETIME_REGEXP = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(\.\d*)?\+08:?00$/  // 2024-03-03T22:25:32.000+08:00
-  const DATETIME_MINUTE_REGEXP = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})$/  // 2024-03-03T22:25
-  const OBJECT_ID_REGEXP = /^[a-fA-F0-9]{24}$/  // ObjectId 格式 (652765ed3d21844635674e71)
+  const EMAIL_REGEXP = /^[\w-.\+]+@([\w-]+\.)+[\w-]{2,4}$/ // user+name@domain.com
+  const SUBMIT_DATETIME_REGEXP = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(\.\d*)?\+08:?00$/ // 2024-03-03T22:25:32.000+08:00
+  const DATETIME_MINUTE_REGEXP = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})$/ // 2024-03-03T22:25
+  const OBJECT_ID_REGEXP = /^[a-fA-F0-9]{24}$/ // ObjectId 格式 (652765ed3d21844635674e71)
 
   const reservation_id = req.params.reservation_id
   const submit_datetime = req.body.submit_datetime
@@ -72,7 +72,7 @@ router.put('/reservation/:reservation_id', async function(req, res, next) {
       .json({ error: 'reservation_id not found error' })
     return
   }
-    
+
   if (received_space_reservations.length + received_item_reservations.length <= 0) {
     error_message += 'empty reservation error\n'
   }
@@ -82,16 +82,16 @@ router.put('/reservation/:reservation_id', async function(req, res, next) {
   if (!SUBMIT_DATETIME_REGEXP.test(submit_datetime)) {
     error_message += 'submit_datetime format error\n'
   }
-  if (!name) {  // name string or undefined
+  if (!name) { // name string or undefined
     error_message += 'name empty error\n'
   }
-  if (!department_grade) {  // name string or undefined
+  if (!department_grade) { // name string or undefined
     error_message += 'department_grade empty error\n'
   }
-  if (!organization) {  // empty string or undefined
+  if (!organization) { // empty string or undefined
     error_message += 'organization empty error\n'
   }
-  if (!reason) {  // empty string or undefined
+  if (!reason) { // empty string or undefined
     error_message += 'reason empty error\n'
   }
   if (error_message.length) {
