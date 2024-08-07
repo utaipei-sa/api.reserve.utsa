@@ -13,10 +13,16 @@ export default async function validateSpaceReservation (space_reservation) {
   if (OBJECT_ID_REGEXP.test(space_reservation.space_id) === false) {
     error_message += 'space_id format error\n'
   }
-  if (DATETIME_MINUTE_REGEXP.test(space_reservation.start_datetime) === false) {
+  if (
+    DATETIME_MINUTE_REGEXP.test(space_reservation.start_datetime) === false ||
+    dayjs(space_reservation.start_datetime).toISOString().slice(0, 10) !== space_reservation.start_datetime.slice(0, 10) // prevent something like 02-31 which can be parsed successfully
+  ) {
     error_message += 'start_datetime format error\n'
   }
-  if (DATETIME_MINUTE_REGEXP.test(space_reservation.end_datetime) === false) {
+  if (
+    DATETIME_MINUTE_REGEXP.test(space_reservation.end_datetime) === false ||
+    dayjs(space_reservation.end_datetime).toISOString().slice(0, 10) !== space_reservation.end_datetime.slice(0, 10)
+  ) {
     error_message += 'end_datetime format error\n'
   }
   if (error_message.length) {

@@ -12,10 +12,16 @@ export default async function validateItemReservation (item_reservation) {
   if (OBJECT_ID_REGEXP.test(item_reservation.item_id) === false) {
     error_message += 'item_id format error\n'
   }
-  if (DATETIME_MINUTE_REGEXP.test(item_reservation.start_datetime) === false) {
+  if (
+    DATETIME_MINUTE_REGEXP.test(item_reservation.start_datetime) === false ||
+    dayjs(item_reservation.start_datetime).toISOString().slice(0, 10) !== item_reservation.start_datetime.slice(0, 10) // prevent something like 02-31 which can be parsed successfully
+  ) {
     error_message += 'start_datetime format error\n'
   }
-  if (DATETIME_MINUTE_REGEXP.test(item_reservation.end_datetime) === false) {
+  if (
+    DATETIME_MINUTE_REGEXP.test(item_reservation.end_datetime) === false ||
+    dayjs(item_reservation.end_datetime).toISOString().slice(0, 10) !== item_reservation.end_datetime.slice(0, 10)
+  ) {
     error_message += 'end_datetime format error\n'
   }
   if (Number.isInteger(item_reservation.quantity) === false) {
