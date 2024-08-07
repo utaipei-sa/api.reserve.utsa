@@ -330,7 +330,7 @@ router.post('/reserve', async function (req, res, next) {
   await reservations.insertOne(doc)
 
   // send verify email
-/*
+
   const verify_link = new URL(`verify/${reservation_id}`, process.env.FRONTEND_BASE_URL)
   try {
     const email_response = await send_reservation_email(doc, verify_link.href)
@@ -341,7 +341,7 @@ router.post('/reserve', async function (req, res, next) {
       .status(400)
       .json(error_response(R_SEND_EMAIL_FAILED, error.response))
     return
-  }*/
+  }
 
   res.json({ code: R_SUCCESS, message: 'Success!' })
 })
