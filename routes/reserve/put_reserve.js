@@ -80,7 +80,7 @@ router.put('/reserve/:reservation_id', async function (req, res, next) {
   const organization = req.body.organization
   const email = req.body.email
   const reason = req.body.reason
-  const note = req.body.note
+  const note = req.body.note || ''
   const updated_space_reservations = req.body.space_reservations
   const updated_item_reservations = req.body.item_reservations
 
@@ -234,7 +234,6 @@ router.put('/reserve/:reservation_id', async function (req, res, next) {
   }
   // go throught and put them into add/remove list
   for (const updated_item_reservation of updated_timeslot_item_reservations) {
-    // TODO: modify this section, ensure the quantity of other reservations will not be deleted
     // categorize update_item_reservation to add and remove list
     const original_item_reservation_index = original_timeslot_item_reservations.findIndex(
       (item_reservation) => {
@@ -252,6 +251,7 @@ router.put('/reserve/:reservation_id', async function (req, res, next) {
     })
 
     if (original_item_reservation_index > -1) { // found original item reservation
+      // TODO: seems not work?
       // check item quantity
       const original_item_found = original_timeslot_item_reservations[original_item_reservation_index]
       const reservations = (item_reservation_found !== null)

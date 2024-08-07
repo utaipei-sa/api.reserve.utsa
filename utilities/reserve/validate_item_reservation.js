@@ -5,7 +5,7 @@ import dayjs from 'dayjs'
 
 export default async function validateItemReservation (item_reservation) {
   const OBJECT_ID_REGEXP = /^[a-fA-F0-9]{24}$/ // ObjectId 格式 (652765ed3d21844635674e71)
-  const DATETIME_MINUTE_REGEXP = /^20\d{2}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:00(?:\.0+)?\+08:?00$/ // 2024-03-03T22:25:00.000+08:00
+  const DATETIME_MINUTE_REGEXP = /^20\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])T[0-5]\d:00:00(?:\.0+)?\+08:?00$/ // 2024-03-03T22:25:00.000+08:00
 
   let error_message = ''
 
