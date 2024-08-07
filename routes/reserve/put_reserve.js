@@ -4,17 +4,18 @@ import { ObjectId } from 'mongodb'
 import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc.js'
 import {
-  error_response,
-  R_ID_NOT_FOUND,
-  R_INVALID_INFO,
-  R_INVALID_RESERVATION,
-  R_SUCCESS
+    error_response,
+    R_ID_NOT_FOUND,
+    R_INVALID_INFO,
+    R_INVALID_RESERVATION, R_SEND_EMAIL_FAILED,
+    R_SUCCESS
 } from '../../utilities/response.js'
 import validateRservationInfo from '../../utilities/reserve/validate_reservation_info.js'
 import validateSpaceReservation from '../../utilities/reserve/validate_space_reservation.js'
 import splitSpaceReservation from '../../utilities/reserve/split_space_reservation.js'
 import validateItemReservation from '../../utilities/reserve/validate_item_reservation.js'
 import splitItemReservation from '../../utilities/reserve/split_item_reservation.js'
+import send_mail_template, { RESERVATION_MODIFIED } from '../../utilities/email/send_mail_template.js'
 
 const router = express.Router()
 dayjs.extend(utc)
@@ -78,13 +79,11 @@ router.put('/reserve/:reservation_id', async function (req, res, next) {
   const name = req.body.name
   const department_grade = req.body.department_grade
   const organization = req.body.organization
-  const email = req.body.email
+  let email = req.body.email // not allow to change
   const reason = req.body.reason
   const note = req.body.note || ''
   const updated_space_reservations = req.body.space_reservations
   const updated_item_reservations = req.body.item_reservations
-
-  // let error_message = ''
 
   // check input datas
   // check reservation_id format
@@ -102,6 +101,7 @@ router.put('/reserve/:reservation_id', async function (req, res, next) {
       .json(error_response(R_ID_NOT_FOUND, 'reservation_id not found error'))
     return
   }
+  email = original_reservation.email
   // check not empty reservation
   if (updated_space_reservations.length + updated_item_reservations.length <= 0) {
     res
@@ -430,7 +430,18 @@ router.put('/reserve/:reservation_id', async function (req, res, next) {
     { $set: updated_reservation }
   )
 
-  // TODO: send email
+  // send email
+  updated_reservation.verify = original_reservation.verify
+  try {
+    const email_response = await send_mail_template(RESERVATION_MODIFIED, updated_reservation)
+    console.log('The email has been sent: ' + email_response)
+  } catch (error) {
+    console.error('Error sending email:', error)
+    res
+      .status(400)
+      .json(error_response(R_SEND_EMAIL_FAILED, error.response))
+    return
+  }
 
   res.json({
     code: R_SUCCESS,

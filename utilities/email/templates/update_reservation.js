@@ -70,8 +70,6 @@ export const html = async (reservation) => {
         </tr>
       </table>
       `
-  // TODO: check the value of reservation.verify, ensure it will be pass from put_reserve.js
-
   return `
     <!DOCTYPE html>
     <html lang="zh-Hant-TW">

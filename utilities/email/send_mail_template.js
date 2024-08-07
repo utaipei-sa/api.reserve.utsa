@@ -32,11 +32,11 @@ export default async function send_mail_template (template_type, data) {
       break
     case RESERVATION_VERIFIED:
       subject = reservation_verified_subject
-      html = reservation_verified_html(data)
+      html = await reservation_verified_html(data)
       break
     case RESERVATION_MODIFIED:
       subject = reservation_modified_subject
-      html = reservation_modified_html(data)
+      html = await reservation_modified_html(data)
       break
     case RESERVATION_DELETED:
       subject = reservation_deleted_subject
