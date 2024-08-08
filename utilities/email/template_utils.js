@@ -1,11 +1,10 @@
-import dayjs from 'dayjs'
 import { items, spaces } from '../../models/mongodb.js'
 import { ObjectId } from 'mongodb'
+import dayjs from 'dayjs'
+import timezone from 'dayjs/plugin/timezone.js'
 
-//dayjs.extend(timezone)
-//dayjs.extend(weekday)
-//dayjs.locale('zh-tw')
-//dayjs.tz.setDefault('Asia/Taipei')
+dayjs.extend(timezone)
+dayjs.tz.setDefault('Asia/Taipei')
 
 export function time_period_string (start_datetime, end_datetime) {
   const weekdaysMin = ['日', '一', '二', '三', '四', '五', '六']
