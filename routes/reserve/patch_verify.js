@@ -2,7 +2,20 @@ import express from 'express'
 import dayjs from 'dayjs'
 import { ObjectId } from 'mongodb'
 import { reservations, spaces_reserved_time, items_reserved_time, items } from '../../models/mongodb.js'
-import { error_response, R_SUCCESS, R_ID_NOT_FOUND, R_INVALID_INFO, R_ALREADY_VERIFIED, R_INVALID_RESERVATION } from '../../utilities/response.js'
+import {
+  error_response,
+  R_SUCCESS,
+  R_ID_NOT_FOUND,
+  R_INVALID_INFO,
+  R_ALREADY_VERIFIED,
+  R_INVALID_RESERVATION,
+  R_SEND_EMAIL_FAILED
+} from '../../utilities/response.js'
+import sendEmail from '../../utilities/email/email.js'
+import {
+  subject as email_subject,
+  html as email_html
+} from '../../utilities/email/templates/verify_reservation.js'
 
 const router = express.Router()
 /**
@@ -266,6 +279,18 @@ router.patch('/verify/:reservation_id', async function (req, res, next) {
     { _id: new ObjectId(req.params.reservation_id) },
     { $set: { verify: 1 } }
   )
+
+  // send email
+  try {
+    const email_response = await sendEmail(reservation.email, email_subject, await email_html(reservation))
+    console.log('The email has been sent: ' + email_response)
+  } catch (error) {
+    console.error('Error sending email:', error)
+    res
+      .status(200)
+      .json(error_response(R_SEND_EMAIL_FAILED, error.response))
+    return
+  }
 
   res.status(200).json({
     code: R_SUCCESS,

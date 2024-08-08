@@ -30,6 +30,32 @@ const router = express.Router()
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/Reservation'
+ *       '400':
+ *         description: reservation_id format error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error_code:
+ *                   type: string
+ *                   example: R_INVALID_INFO
+ *                 message:
+ *                   type: string
+ *                   example: reservation_id format error
+ *       '404':
+ *         description: Not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error_code:
+ *                   type: string
+ *                   example: R_ID_NOT_FOUND
+ *                 message:
+ *                   type: string
+ *                   example: reservation_id not found
  */
 router.get('/reserve/:reservation_id', async function (req, res, next) {
   const OBJECT_ID_REGEXP = /^[a-fA-F0-9]{24}$/ // ObjectId 格式 (652765ed3d21844635674e71)
@@ -45,13 +71,14 @@ router.get('/reserve/:reservation_id', async function (req, res, next) {
   const result = await reservations.findOne({ _id: new ObjectId(req.params.reservation_id) })
   if (result === null) {
     res
-      .status(400)
+      .status(404)
       .json(error_response(R_ID_NOT_FOUND, 'reservation not found'))
     return
   }
 
   const { _id, verify, status, history, ...data } = result
 
+  // TODO: history timestamp list (?
   const submitTimestamp = result.history[0].submit_timestamp
   const serverTimestamp = result.history[0].server_timestamp
   const FinalResult = {
