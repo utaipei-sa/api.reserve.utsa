@@ -81,10 +81,8 @@ router.put('/reserve/:reservation_id', async function (req, res, next) {
   const email = req.body.email
   const reason = req.body.reason
   const note = req.body.note || ''
-  const updated_space_reservations = req.body.space_reservations
-  const updated_item_reservations = req.body.item_reservations
-
-  // let error_message = ''
+  const updated_space_reservations = req.body.space_reservations ?? []
+  const updated_item_reservations = req.body.item_reservations ?? []
 
   // check input datas
   // check reservation_id format
