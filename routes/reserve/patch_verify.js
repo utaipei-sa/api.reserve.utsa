@@ -11,7 +11,11 @@ import {
   R_INVALID_RESERVATION,
   R_SEND_EMAIL_FAILED
 } from '../../utilities/response.js'
-import send_mail_template, { RESERVATION_VERIFIED } from '../../utilities/email/send_mail_template.js'
+import sendEmail from '../../utilities/email/email.js'
+import {
+  subject as email_subject,
+  html as email_html
+} from '../../utilities/email/templates/verify_reservation.js'
 
 const router = express.Router()
 /**
@@ -278,12 +282,12 @@ router.patch('/verify/:reservation_id', async function (req, res, next) {
 
   // send email
   try {
-    const email_response = await send_mail_template(RESERVATION_VERIFIED, reservation)
+    const email_response = await sendEmail(reservation.email, email_subject, await email_html(reservation))
     console.log('The email has been sent: ' + email_response)
   } catch (error) {
     console.error('Error sending email:', error)
     res
-      .status(400)
+      .status(200)
       .json(error_response(R_SEND_EMAIL_FAILED, error.response))
     return
   }

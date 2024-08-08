@@ -2,7 +2,11 @@ import express from 'express'
 import { reservations, spaces_reserved_time, items_reserved_time } from '../../models/mongodb.js'
 import { ObjectId } from 'mongodb'
 import { error_response, R_SUCCESS, R_ID_NOT_FOUND, R_SEND_EMAIL_FAILED } from '../../utilities/response.js'
-import send_mail_template, { RESERVATION_DELETED } from '../../utilities/email/send_mail_template.js'
+import sendEmail from '../../utilities/email/email.js'
+import {
+  subject as email_subject,
+  html as email_html
+} from '../../utilities/email/templates/cancel_reservation.js'
 
 const router = express.Router()
 
@@ -125,12 +129,12 @@ router.delete('/reserve/:reservation_id', async function (req, res, next) {
     if (reservation_result.deletedCount > 0) {
       // send email
       try {
-        const email_response = await send_mail_template(RESERVATION_DELETED, { email })
+        const email_response = await sendEmail(email, email_subject, email_html)
         console.log('The email has been sent: ' + email_response)
       } catch (error) {
         console.error('Error sending email:', error)
         res
-          .status(400)
+          .status(200)
           .json(error_response(R_SEND_EMAIL_FAILED, error.response))
         return
       }

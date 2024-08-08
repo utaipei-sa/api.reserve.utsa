@@ -5,7 +5,11 @@ import { ObjectId } from 'mongodb'
 import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc.js'
 import { error_response, R_SUCCESS, R_ID_NOT_FOUND, R_INVALID_INFO, R_INVALID_RESERVATION, R_SEND_EMAIL_FAILED } from '../../utilities/response.js'
-import send_mail_template, { NEW_RESERVATION } from '../../utilities/email/send_mail_template.js'
+import sendEmail from '../../utilities/email/email.js'
+import {
+  subject as email_subject,
+  html as email_html
+} from '../../utilities/email/templates/new_reservation.js'
 
 const router = express.Router()
 dayjs.extend(utc)
@@ -319,12 +323,12 @@ router.post('/reserve', async function (req, res, next) {
 
   // send verify email
   try {
-    const email_response = await send_mail_template(NEW_RESERVATION, doc)
+    const email_response = await sendEmail(email, email_subject, await email_html(doc))
     console.log('The email has been sent: ' + email_response)
   } catch (error) {
     console.error('Error sending email:', error)
     res
-      .status(400)
+      .status(200)
       .json(error_response(R_SEND_EMAIL_FAILED, error.response))
     return
   }
