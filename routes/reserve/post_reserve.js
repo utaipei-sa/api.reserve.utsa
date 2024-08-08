@@ -57,7 +57,6 @@ dayjs.extend(utc)
 router.post('/reserve', async function (req, res, next) {
   const EMAIL_REGEXP = /^[\w-.+]+@([\w-]+\.)+[\w-]{2,4}$/ // user+name@domain.com
   const SUBMIT_DATETIME_REGEXP = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(\.\d*)?\+08:?00$/ // 2024-03-03T22:25:32.000+08:00
-  // const DATETIME_MINUTE_REGEXP = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})$/ // 2024-03-03T22:25
   const OBJECT_ID_REGEXP = /^[0-9a-fA-F]{24}$/ // 652765ed3d21844635674e71
 
   const submit_datetime = req.body.submit_datetime
@@ -135,6 +134,13 @@ router.post('/reserve', async function (req, res, next) {
     // space時間確認
     let start_datetime = dayjs(space_reservation.start_datetime)
     let end_datetime = dayjs(space_reservation.end_datetime)
+    const limit_space_end_datetime = start_datetime.add(7, 'day')
+    if (end_datetime.isAfter(limit_space_end_datetime)) {
+      res
+        .status(400)
+        .json(error_response(R_INVALID_RESERVATION, 'You can make a reservation for up to seven days.'))
+      return
+    }
     // 起始時間必定早於結束時間
     if (start_datetime.isAfter(end_datetime)) {
       res
@@ -236,7 +242,13 @@ router.post('/reserve', async function (req, res, next) {
     // =============== ↓底下還沒更新↓ ===============
     let start_datetime = dayjs(item_reservation.start_datetime)
     let end_datetime = dayjs(item_reservation.end_datetime)
-
+    const limit_end_datetime = start_datetime.add(7, 'day')
+    if (end_datetime.isAfter(limit_end_datetime)) {
+      res
+        .status(400)
+        .json(error_response(R_INVALID_RESERVATION, 'You can make a reservation for up to seven days.'))
+      return
+    }
     if (start_datetime.isAfter(end_datetime)) {
       res
         .status(400)
