@@ -88,8 +88,6 @@ router.put('/reserve/:reservation_id', async function (req, res, next) {
   const note = req.body.note || ''
   const updated_space_reservations = req.body.space_reservations ?? []
   const updated_item_reservations = req.body.item_reservations ?? []
-<<<<<<< HEAD
-=======
   console.log('\x1B[36m%s\x1B[0m', "console.log--------------------------------------------------------------------------")
   console.log('\x1B[36m%s\x1B[0m',
     "reservation_id:".padEnd(40) +
@@ -113,7 +111,6 @@ router.put('/reserve/:reservation_id', async function (req, res, next) {
     console.log('\x1B[36m%s\x1B[0m',"updated_item_reservations:")
     console.log(updated_item_reservations)
   // let error_message = ''
->>>>>>> cf6b713da030186673c13a70d97aaa185f994f25
 
   // check input datas
   // check reservation_id format
