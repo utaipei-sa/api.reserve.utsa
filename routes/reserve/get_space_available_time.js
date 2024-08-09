@@ -107,7 +107,13 @@ router.get('/space_available_time', async function (req, res, next) {
     const output_array = []
     const end_datetime_dayjs = dayjs(end_datetime)
     let start_datetime_dayjs = dayjs(start_datetime)
-
+    const limit_datetime = start_datetime_dayjs.add(1, 'month')
+    if (end_datetime_dayjs.isAfter(limit_datetime)) {
+      res
+        .status(400)
+        .json(error_response(R_INVALID_INFO, 'You can check for up to one month.'))
+      return
+    }
     while (start_datetime_dayjs.isBefore(end_datetime_dayjs)) {
       await cacuTimeSlot(start_datetime_dayjs, end_datetime_dayjs, digical_time_slots, space_id, output_array)
       start_datetime_dayjs = start_datetime_dayjs.add(1, 'day')
