@@ -1,34 +1,34 @@
-import express from "express";
+import express from 'express'
 import {
   reservations,
   spaces_reserved_time,
   items_reserved_time,
-  items,
-} from "../../models/mongodb.js";
-import { ObjectId } from "mongodb";
-import dayjs from "dayjs";
-import utc from "dayjs/plugin/utc.js";
+  items
+} from '../../models/mongodb.js'
+import { ObjectId } from 'mongodb'
+import dayjs from 'dayjs'
+import utc from 'dayjs/plugin/utc.js'
 import {
   error_response,
   R_ID_NOT_FOUND,
   R_INVALID_INFO,
   R_INVALID_RESERVATION,
   R_SEND_EMAIL_FAILED,
-  R_SUCCESS,
-} from "../../utilities/response.js";
-import validateRservationInfo from "../../utilities/reserve/validate_reservation_info.js";
-import validateSpaceReservation from "../../utilities/reserve/validate_space_reservation.js";
-import splitSpaceReservation from "../../utilities/reserve/split_space_reservation.js";
-import validateItemReservation from "../../utilities/reserve/validate_item_reservation.js";
-import splitItemReservation from "../../utilities/reserve/split_item_reservation.js";
+  R_SUCCESS
+} from '../../utilities/response.js'
+import validateRservationInfo from '../../utilities/reserve/validate_reservation_info.js'
+import validateSpaceReservation from '../../utilities/reserve/validate_space_reservation.js'
+import splitSpaceReservation from '../../utilities/reserve/split_space_reservation.js'
+import validateItemReservation from '../../utilities/reserve/validate_item_reservation.js'
+import splitItemReservation from '../../utilities/reserve/split_item_reservation.js'
 import {
   subject as email_subject,
-  html as email_html,
-} from "../../utilities/email/templates/update_reservation.js";
-import sendEmail from "../../utilities/email/email.js";
+  html as email_html
+} from '../../utilities/email/templates/update_reservation.js'
+import sendEmail from '../../utilities/email/email.js'
 
-const router = express.Router();
-dayjs.extend(utc);
+const router = express.Router()
+dayjs.extend(utc)
 
 /**
  * @openapi
@@ -80,41 +80,41 @@ dayjs.extend(utc);
  *                 message:
  *                   type: string
  */
-router.put("/reserve/:reservation_id", async function (req, res, next) {
+router.put('/reserve/:reservation_id', async function (req, res, next) {
   // define constants and variables
-  const OBJECT_ID_REGEXP = /^[a-fA-F0-9]{24}$/; // ObjectId 格式 (652765ed3d21844635674e71)
+  const OBJECT_ID_REGEXP = /^[a-fA-F0-9]{24}$/ // ObjectId 格式 (652765ed3d21844635674e71)
 
-  const reservation_id = req.params.reservation_id;
-  const submit_datetime = req.body.submit_datetime;
-  const name = req.body.name;
-  const department_grade = req.body.department_grade;
-  const organization = req.body.organization;
-  let email = req.body.email; // not allow to change
-  const reason = req.body.reason;
-  const note = req.body.note || "";
-  const updated_space_reservations = req.body.space_reservations ?? [];
-  const updated_item_reservations = req.body.item_reservations ?? [];
+  const reservation_id = req.params.reservation_id
+  const submit_datetime = req.body.submit_datetime
+  const name = req.body.name
+  const department_grade = req.body.department_grade
+  const organization = req.body.organization
+  let email = req.body.email // not allow to change
+  const reason = req.body.reason
+  const note = req.body.note || ''
+  const updated_space_reservations = req.body.space_reservations ?? []
+  const updated_item_reservations = req.body.item_reservations ?? []
 
   // check input datas
   // check reservation_id format
   if (!OBJECT_ID_REGEXP.test(reservation_id)) {
     res
       .status(400)
-      .json(error_response(R_INVALID_INFO, "reservation_id format error"));
-    return;
+      .json(error_response(R_INVALID_INFO, 'reservation_id format error'))
+    return
   }
   // check whether reservation_id is exist and get reservation data
   const original_reservation = await reservations.findOne({
-    _id: { $eq: new ObjectId(reservation_id) },
-  });
+    _id: { $eq: new ObjectId(reservation_id) }
+  })
 
   if (!original_reservation) {
     res
       .status(404)
-      .json(error_response(R_ID_NOT_FOUND, "reservation_id not found error"));
-    return;
+      .json(error_response(R_ID_NOT_FOUND, 'reservation_id not found error'))
+    return
   }
-  email = original_reservation.email;
+  email = original_reservation.email
   // check not empty reservation
   if (
     updated_space_reservations.length + updated_item_reservations.length <=
@@ -122,8 +122,8 @@ router.put("/reserve/:reservation_id", async function (req, res, next) {
   ) {
     res
       .status(400)
-      .json(error_response(R_INVALID_INFO, "empty reservation error"));
-    return;
+      .json(error_response(R_INVALID_INFO, 'empty reservation error'))
+    return
   }
   // validate reservation basic info
   const validate_result = validateRservationInfo(
@@ -136,45 +136,45 @@ router.put("/reserve/:reservation_id", async function (req, res, next) {
     note,
     updated_space_reservations,
     updated_item_reservations
-  );
+  )
   if (validate_result.status !== 200) {
-    res.status(validate_result.status).json(validate_result.json);
-    return;
+    res.status(validate_result.status).json(validate_result.json)
+    return
   }
 
-  const verify = original_reservation.verify === 1;
+  const verify = original_reservation.verify === 1
 
   // compare space reservations -> difference lists (add and delete)
   const original_space_reservations = await spaces_reserved_time
     .find({
-      reservations: { $in: [reservation_id] },
+      reservations: { $in: [reservation_id] }
     })
-    .toArray();
-  const add_space_reservations = [];
+    .toArray()
+  const add_space_reservations = []
   // const remove_space_reservations = original_reservation.space_reservations
-  let remove_space_reservations = [];
-  let updated_timeslot_space_reservations = [];
+  let remove_space_reservations = []
+  let updated_timeslot_space_reservations = []
   // check add_space_reservations list
   for (const updated_space_reservation of updated_space_reservations) {
     // check format
     const validate_result = await validateSpaceReservation(
       updated_space_reservation
-    );
+    )
     if (validate_result.status !== 200) {
-      res.status(validate_result.status).json(validate_result.json);
-      return;
+      res.status(validate_result.status).json(validate_result.json)
+      return
     }
 
     // tear down time slots
     const split_result = splitSpaceReservation(
       updated_space_reservation,
       updated_timeslot_space_reservations
-    );
+    )
     if (split_result.status !== 200) {
-      res.status(split_result.status).json(split_result.json);
-      return;
+      res.status(split_result.status).json(split_result.json)
+      return
     }
-    updated_timeslot_space_reservations = split_result.output;
+    updated_timeslot_space_reservations = split_result.output
   }
   for (const updated_space_reservation of updated_timeslot_space_reservations) {
     // not reserved => add
@@ -186,36 +186,36 @@ router.put("/reserve/:reservation_id", async function (req, res, next) {
             updated_space_reservation.start_datetime.getTime() &&
           space_reservation.end_datetime.getTime() ===
             updated_space_reservation.end_datetime.getTime()
-        );
-      });
+        )
+      })
     if (original_space_reservation_index === -1) {
       add_space_reservations.push({
         start_datetime: updated_space_reservation.start_datetime,
         end_datetime: updated_space_reservation.end_datetime,
         space_id: updated_space_reservation.space_id,
         reserved: 1,
-        reservations: [reservation_id],
-      });
+        reservations: [reservation_id]
+      })
     }
 
     if (original_space_reservation_index !== -1) {
-      original_space_reservations.splice(original_space_reservation_index, 1);
+      original_space_reservations.splice(original_space_reservation_index, 1)
     }
   }
   // give all remaining space_reservations to remove_spave_reservations
-  remove_space_reservations = original_space_reservations;
-  console.log("add_space_reservations: ", add_space_reservations); // debug
-  console.log("remove_space_reservations: ", remove_space_reservations); // debug
+  remove_space_reservations = original_space_reservations
+  console.log('add_space_reservations: ', add_space_reservations) // debug
+  console.log('remove_space_reservations: ', remove_space_reservations) // debug
   // check the spaces have not been reserved
-  let db_find_result = null; // db find result
+  let db_find_result = null // db find result
   for (const add_space_reservation of add_space_reservations) {
     // find data drom db
     db_find_result = await spaces_reserved_time.findOne({
       start_datetime: { $eq: add_space_reservation.start_datetime },
       space_id: { $eq: add_space_reservation.space_id },
       reserved: { $eq: 1 },
-      reservations: { $nin: [reservation_id] },
-    });
+      reservations: { $nin: [reservation_id] }
+    })
 
     if (db_find_result !== null && db_find_result.reserved !== null) {
       res
@@ -223,48 +223,48 @@ router.put("/reserve/:reservation_id", async function (req, res, next) {
         .json(
           error_response(
             R_INVALID_RESERVATION,
-            "space_datetime has been reserved"
+            'space_datetime has been reserved'
           )
-        );
-      return;
+        )
+      return
     }
   }
 
   // compare item reservations -> difference lists (add and delete)
-  const add_item_reservations = [];
-  const remove_item_reservations = [];
-  let updated_timeslot_item_reservations = [];
+  const add_item_reservations = []
+  const remove_item_reservations = []
+  let updated_timeslot_item_reservations = []
   // check add_item_reservations list
   for (const updated_item_reservation of updated_item_reservations) {
     // check format
     const validate_result = await validateItemReservation(
       updated_item_reservation
-    );
+    )
     if (validate_result.status !== 200) {
-      res.status(validate_result.status).json(validate_result.json);
-      return;
+      res.status(validate_result.status).json(validate_result.json)
+      return
     }
 
     // tear down time slots
     const split_result = splitItemReservation(
       updated_item_reservation,
       updated_timeslot_item_reservations
-    );
+    )
     if (split_result.status !== 200) {
-      res.status(split_result.status).json(split_result.json);
-      return;
+      res.status(split_result.status).json(split_result.json)
+      return
     }
-    updated_timeslot_item_reservations = split_result.output;
+    updated_timeslot_item_reservations = split_result.output
   }
 
   // tear down original_item_reservations into time slots
-  const original_item_reservations = original_reservation.item_reservations;
-  let original_timeslot_item_reservations = [];
+  const original_item_reservations = original_reservation.item_reservations
+  let original_timeslot_item_reservations = []
   for (const original_item_reservation of original_item_reservations) {
     original_timeslot_item_reservations = splitItemReservation(
       original_item_reservation,
       original_timeslot_item_reservations
-    ).output;
+    ).output
   }
   // go throught and put them into add/remove list
   for (const updated_item_reservation of updated_timeslot_item_reservations) {
@@ -277,26 +277,26 @@ router.put("/reserve/:reservation_id", async function (req, res, next) {
             updated_item_reservation.start_datetime.getTime() &&
           new Date(item_reservation.end_datetime).getTime() ===
             updated_item_reservation.end_datetime.getTime()
-        );
-      });
+        )
+      })
     const item_reservation_found = await items_reserved_time.findOne({
       item_id: { $eq: updated_item_reservation.item_id },
       start_datetime: {
-        $eq: new Date(updated_item_reservation.start_datetime),
+        $eq: new Date(updated_item_reservation.start_datetime)
       },
-      end_datetime: { $eq: new Date(updated_item_reservation.end_datetime) },
-    });
+      end_datetime: { $eq: new Date(updated_item_reservation.end_datetime) }
+    })
 
     if (original_item_reservation_index > -1) {
       // found original item reservation
       // TODO: seems not work?
       // check item quantity
       const original_item_found =
-        original_timeslot_item_reservations[original_item_reservation_index];
+        original_timeslot_item_reservations[original_item_reservation_index]
       const reservations =
         item_reservation_found !== null
           ? item_reservation_found.reservations
-          : [reservation_id];
+          : [reservation_id]
       if (
         updated_item_reservation.quantity >
         original_item_found.reserved_quantity
@@ -308,8 +308,8 @@ router.put("/reserve/:reservation_id", async function (req, res, next) {
           reserved_quantity:
             updated_item_reservation.quantity -
             original_item_found.reserved_quantity,
-          reservations,
-        });
+          reservations
+        })
       } else if (
         updated_item_reservation.quantity <
         original_item_found.reserved_quantity
@@ -321,28 +321,28 @@ router.put("/reserve/:reservation_id", async function (req, res, next) {
           reserved_quantity:
             original_item_found.reserved_quantity -
             updated_item_reservation.quantity,
-          reservations,
-        });
+          reservations
+        })
       }
       // remove from original_item_reservations
       original_timeslot_item_reservations.splice(
         original_item_reservation_index,
         1
-      );
+      )
     } else {
       // new time slot (not reserved originally)
-      const new_quantity = updated_item_reservation.quantity;
+      const new_quantity = updated_item_reservation.quantity
       const reservations =
         item_reservation_found !== null
           ? [...item_reservation_found.reservations, reservation_id]
-          : [reservation_id];
+          : [reservation_id]
       add_item_reservations.push({
         item_id: updated_item_reservation.item_id,
         start_datetime: updated_item_reservation.start_datetime,
         end_datetime: updated_item_reservation.end_datetime,
         reserved_quantity: new_quantity,
-        reservations,
-      });
+        reservations
+      })
     }
   }
   // put all remaining original_item_reservation into remove_item_reservations
@@ -351,43 +351,43 @@ router.put("/reserve/:reservation_id", async function (req, res, next) {
     const timeslot_item_reservation = await items_reserved_time.findOne({
       item_id: { $eq: original_item_reservation.item_id },
       start_datetime: {
-        $eq: new Date(original_item_reservation.start_datetime),
+        $eq: new Date(original_item_reservation.start_datetime)
       },
-      end_datetime: { $eq: new Date(original_item_reservation.end_datetime) },
-    });
+      end_datetime: { $eq: new Date(original_item_reservation.end_datetime) }
+    })
 
     const new_item_reservation = {
       reservations: timeslot_item_reservation.reservations,
       reserved_quantity: original_item_reservation.quantity,
-      ...original_item_reservation,
-    };
+      ...original_item_reservation
+    }
     new_item_reservation.reservations.splice(
       new_item_reservation.reservations.findIndex((t) => t === reservation_id),
       1
-    );
-    remove_item_reservations.push(new_item_reservation);
+    )
+    remove_item_reservations.push(new_item_reservation)
   }
-  console.log("add_item_reservations: ", add_item_reservations); // debug
-  console.log("remove_item_reservations: ", remove_item_reservations); // debug
+  console.log('add_item_reservations: ', add_item_reservations) // debug
+  console.log('remove_item_reservations: ', remove_item_reservations) // debug
   // check items not all reserved
-  let max_quantity = 0;
-  db_find_result = null; // db find result
+  let max_quantity = 0
+  db_find_result = null // db find result
   for (const add_item_reservation of add_item_reservations) {
     // find data drom db
     db_find_result = await items_reserved_time.findOne({
       start_datetime: { $eq: add_item_reservation.start_datetime },
-      item_id: { $eq: add_item_reservation.item_id },
-    });
+      item_id: { $eq: add_item_reservation.item_id }
+    })
 
     if (db_find_result === null) {
-      db_find_result = { quantity: 0 };
+      db_find_result = { quantity: 0 }
     }
 
     max_quantity = await items.findOne({
-      _id: { $eq: new ObjectId(add_item_reservation.item_id) },
-    });
+      _id: { $eq: new ObjectId(add_item_reservation.item_id) }
+    })
 
-    max_quantity = max_quantity.quantity;
+    max_quantity = max_quantity.quantity
 
     if (
       db_find_result.reserved_quantity +
@@ -399,10 +399,10 @@ router.put("/reserve/:reservation_id", async function (req, res, next) {
         .json(
           error_response(
             R_INVALID_RESERVATION,
-            "item_datetime has all been reserved"
+            'item_datetime has all been reserved'
           )
-        );
-      return;
+        )
+      return
     }
   }
 
@@ -411,72 +411,72 @@ router.put("/reserve/:reservation_id", async function (req, res, next) {
     for (const remove_space_reservation of remove_space_reservations) {
       spaces_reserved_time.deleteOne({
         start_datetime: remove_space_reservation.start_datetime,
-        space_id: remove_space_reservation.space_id,
-      });
+        space_id: remove_space_reservation.space_id
+      })
     }
     // add spaces reservations
     if (add_space_reservations.length > 0) {
-      spaces_reserved_time.insertMany(add_space_reservations);
+      spaces_reserved_time.insertMany(add_space_reservations)
     }
 
     // remove items reservations (copy from delete_reservation.js)
     for (const remove_item_reservation of remove_item_reservations) {
       const found = await items_reserved_time.findOne({
         item_id: { $eq: remove_item_reservation.item_id },
-        start_datetime: { $eq: remove_item_reservation.start_datetime },
-      });
+        start_datetime: { $eq: remove_item_reservation.start_datetime }
+      })
 
       if (found === null) {
-        continue;
+        continue
       } else if (
         found.reserved_quantity - remove_item_reservation.reserved_quantity <=
         0
       ) {
         items_reserved_time.deleteOne({
           item_id: remove_item_reservation.item_id,
-          start_datetime: remove_item_reservation.start_datetime,
-        });
+          start_datetime: remove_item_reservation.start_datetime
+        })
       } else {
         items_reserved_time.updateOne(
           {
             item_id: remove_item_reservation.item_id,
-            start_datetime: remove_item_reservation.start_datetime,
+            start_datetime: remove_item_reservation.start_datetime
           },
           {
             $inc: {
-              reserved_quantity: -remove_item_reservation.reserved_quantity,
+              reserved_quantity: -remove_item_reservation.reserved_quantity
             },
-            $set: { reservations: remove_item_reservation.reservations },
+            $set: { reservations: remove_item_reservation.reservations }
           }
-        );
+        )
       }
     }
     // add items reservations (copy from post_reservation.js)
     for (const add_item_reservation of add_item_reservations) {
       const found = await items_reserved_time.findOne({
         item_id: { $eq: add_item_reservation.item_id },
-        start_datetime: { $eq: add_item_reservation.start_datetime },
-      });
+        start_datetime: { $eq: add_item_reservation.start_datetime }
+      })
 
       if (found !== null) {
         items_reserved_time.updateOne(
           {
             item_id: add_item_reservation.item_id,
-            start_datetime: add_item_reservation.start_datetime,
+            start_datetime: add_item_reservation.start_datetime
           },
           {
             $inc: { reserved_quantity: add_item_reservation.reserved_quantity },
-            $set: { reservations: add_item_reservation.reservations },
+            $set: { reservations: add_item_reservation.reservations }
           }
-        );
+        )
       } else {
         items_reserved_time.insertOne({
           item_id: add_item_reservation.item_id,
           start_datetime: add_item_reservation.start_datetime,
           end_datetime: add_item_reservation.end_datetime,
           reserved_quantity: add_item_reservation.reserved_quantity,
-          reservations: add_item_reservation.reservations,
-        });
+          reservations: add_item_reservation.reservations
+        })
       }
     }
   }
@@ -485,10 +485,10 @@ router.put("/reserve/:reservation_id", async function (req, res, next) {
   original_reservation.history.push({
     submit_timestamp: new Date(submit_datetime),
     server_timestamp: new Date(), // now
-    type: "modified",
-  });
+    type: 'modified'
+  })
   const updated_reservation = {
-    status: "modified",
+    status: 'modified',
     history: original_reservation.history,
     organization,
     name,
@@ -497,34 +497,34 @@ router.put("/reserve/:reservation_id", async function (req, res, next) {
     reason,
     space_reservations: updated_space_reservations,
     item_reservations: updated_item_reservations,
-    note,
-  };
+    note
+  }
   // const reservation_update_result = await
   reservations.updateOne(
     { _id: new ObjectId(reservation_id) },
     { $set: updated_reservation }
-  );
+  )
 
   // send email
-  updated_reservation.verify = original_reservation.verify;
-  updated_reservation.reservation_id = reservation_id;
+  updated_reservation.verify = original_reservation.verify
+  updated_reservation.reservation_id = reservation_id
   try {
     const email_response = await sendEmail(
       email,
       email_subject,
       await email_html(updated_reservation)
-    );
-    console.log("The email has been sent: " + email_response);
+    )
+    console.log('The email has been sent: ' + email_response)
   } catch (error) {
-    console.error("Error sending email:", error);
-    res.status(200).json(error_response(R_SEND_EMAIL_FAILED, error.response));
-    return;
+    console.error('Error sending email:', error)
+    res.status(200).json(error_response(R_SEND_EMAIL_FAILED, error.response))
+    return
   }
 
   res.json({
     code: R_SUCCESS,
-    message: "Success!",
-  });
-});
+    message: 'Success!'
+  })
+})
 
-export default router;
+export default router

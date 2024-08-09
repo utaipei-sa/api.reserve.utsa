@@ -8,7 +8,7 @@ import cors from 'cors'
 import home_router from './routes/home.js'
 import reserve_router from './routes/reserve/index.js'
 import docs_router from './docs/docs.js'
-import RateLimit from 'express-rate-limit';
+import RateLimit from 'express-rate-limit'
 
 const app = express()
 
@@ -28,9 +28,9 @@ app.use(express.static(path.join(__dirname, 'public')))
 const limiter = RateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 100 // limit each IP to 100 requests per windowMs
-});
+})
 
-app.use(limiter);
+app.use(limiter)
 // cors
 const corsOptions = {
   origin: [
