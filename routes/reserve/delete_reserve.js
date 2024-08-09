@@ -100,7 +100,7 @@ router.delete('/reserve/:reservation_id', async function (req, res, next) {
       const index = storeReserveInfo.findIndex(e => e.item_id === item.item_id)
       quantity = item.reserved_quantity - storeReserveInfo[index].quantity
 
-      console.log('\x1B[36m%s\x1B[0m', 'update item_id:           ' + item_id)
+      console.log('\x1B[36m%s\x1B[0m', 'update item_id:           ' + item.id)
       console.log('\x1B[36m%s\x1B[0m', 'after delete quantity:    ' + quantity)
       await items_reserved_time.updateOne({
         _id: item._id// filter
@@ -117,7 +117,7 @@ router.delete('/reserve/:reservation_id', async function (req, res, next) {
 
     // space
     for (const space of space_reserved_time_find) {
-      console.log('\x1B[36m%s\x1B[0m', 'update space_id:           ' + space_id)
+      console.log('\x1B[36m%s\x1B[0m', 'update space_id:           ' + space.id)
       await spaces_reserved_time.updateOne({
         _id: space._id// filter
       },

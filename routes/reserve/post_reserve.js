@@ -358,16 +358,16 @@ router.post('/reserve', async function (req, res, next) {
 
   console.log('hello world')
 
-  // try {
-  //   const email_response = await sendEmail(email, email_subject, await email_html(doc))
-  //   console.log('The email has been sent: ' + email_response)
-  // } catch (error) {
-  //   console.error('Error sending email:', error)
-  //   res
-  //     .status(200)
-  //     .json(error_response(R_SEND_EMAIL_FAILED, error.response))
-  //   return
-  // }
+  try {
+    const email_response = await sendEmail(email, email_subject, await email_html(doc))
+    console.log('The email has been sent: ' + email_response)
+  } catch (error) {
+    console.error('Error sending email:', error)
+    res
+      .status(200)
+      .json(error_response(R_SEND_EMAIL_FAILED, error.response))
+    return
+  }
 
   res.json({ code: R_SUCCESS, message: 'Success!' })
 })
