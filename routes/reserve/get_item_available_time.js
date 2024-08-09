@@ -103,7 +103,7 @@ router.get('/item_available_time', async function (req, res, next) {
   if (end_datetime_dayjs.isAfter(limit_datetime)) {
     res
       .status(400)
-      .json(error_response(R_INVALID_INFO, 'You can check for a period of up to one month.'))
+      .json(error_response(R_INVALID_INFO, 'You can check for up to one month.'))
     return
   }
   let maxValue = 0
