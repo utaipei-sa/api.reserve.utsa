@@ -1,5 +1,10 @@
 import express from 'express'
-import { reservations, spaces_reserved_time, items_reserved_time, items } from '../../models/mongodb.js'
+import {
+  reservations,
+  spaces_reserved_time,
+  items_reserved_time,
+  items
+} from '../../models/mongodb.js'
 import { ObjectId } from 'mongodb'
 import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc.js'
@@ -7,7 +12,8 @@ import {
   error_response,
   R_ID_NOT_FOUND,
   R_INVALID_INFO,
-  R_INVALID_RESERVATION, R_SEND_EMAIL_FAILED,
+  R_INVALID_RESERVATION,
+  R_SEND_EMAIL_FAILED,
   R_SUCCESS
 } from '../../utilities/response.js'
 import validateRservationInfo from '../../utilities/reserve/validate_reservation_info.js'
@@ -98,7 +104,10 @@ router.put('/reserve/:reservation_id', async function (req, res, next) {
     return
   }
   // check whether reservation_id is exist and get reservation data
-  const original_reservation = await reservations.findOne({ _id: new ObjectId(reservation_id) })
+  const original_reservation = await reservations.findOne({
+    _id: { $eq: new ObjectId(reservation_id) }
+  })
+
   if (!original_reservation) {
     res
       .status(404)
@@ -107,7 +116,10 @@ router.put('/reserve/:reservation_id', async function (req, res, next) {
   }
   email = original_reservation.email
   // check not empty reservation
-  if (updated_space_reservations.length + updated_item_reservations.length <= 0) {
+  if (
+    updated_space_reservations.length + updated_item_reservations.length <=
+    0
+  ) {
     res
       .status(400)
       .json(error_response(R_INVALID_INFO, 'empty reservation error'))
@@ -115,22 +127,29 @@ router.put('/reserve/:reservation_id', async function (req, res, next) {
   }
   // validate reservation basic info
   const validate_result = validateRservationInfo(
-    submit_datetime, name, department_grade, organization, email, reason, note,
-    updated_space_reservations, updated_item_reservations
+    submit_datetime,
+    name,
+    department_grade,
+    organization,
+    email,
+    reason,
+    note,
+    updated_space_reservations,
+    updated_item_reservations
   )
   if (validate_result.status !== 200) {
-    res
-      .status(validate_result.status)
-      .json(validate_result.json)
+    res.status(validate_result.status).json(validate_result.json)
     return
   }
 
   const verify = original_reservation.verify === 1
 
   // compare space reservations -> difference lists (add and delete)
-  const original_space_reservations = await spaces_reserved_time.find({
-    reservations: { $in: [reservation_id] }
-  }).toArray()
+  const original_space_reservations = await spaces_reserved_time
+    .find({
+      reservations: { $in: [reservation_id] }
+    })
+    .toArray()
   const add_space_reservations = []
   // const remove_space_reservations = original_reservation.space_reservations
   let remove_space_reservations = []
@@ -138,35 +157,37 @@ router.put('/reserve/:reservation_id', async function (req, res, next) {
   // check add_space_reservations list
   for (const updated_space_reservation of updated_space_reservations) {
     // check format
-    const validate_result = await validateSpaceReservation(updated_space_reservation)
+    const validate_result = await validateSpaceReservation(
+      updated_space_reservation
+    )
     if (validate_result.status !== 200) {
-      res
-        .status(validate_result.status)
-        .json(validate_result.json)
+      res.status(validate_result.status).json(validate_result.json)
       return
     }
 
     // tear down time slots
-    const split_result = splitSpaceReservation(updated_space_reservation, updated_timeslot_space_reservations)
+    const split_result = splitSpaceReservation(
+      updated_space_reservation,
+      updated_timeslot_space_reservations
+    )
     if (split_result.status !== 200) {
-      res
-        .status(split_result.status)
-        .json(split_result.json)
+      res.status(split_result.status).json(split_result.json)
       return
     }
     updated_timeslot_space_reservations = split_result.output
   }
   for (const updated_space_reservation of updated_timeslot_space_reservations) {
     // not reserved => add
-    const original_space_reservation_index = original_space_reservations.findIndex(
-      (space_reservation) => {
+    const original_space_reservation_index =
+      original_space_reservations.findIndex((space_reservation) => {
         return (
           space_reservation.space_id === updated_space_reservation.space_id &&
-          space_reservation.start_datetime.getTime() === updated_space_reservation.start_datetime.getTime() &&
-          space_reservation.end_datetime.getTime() === updated_space_reservation.end_datetime.getTime()
+          space_reservation.start_datetime.getTime() ===
+            updated_space_reservation.start_datetime.getTime() &&
+          space_reservation.end_datetime.getTime() ===
+            updated_space_reservation.end_datetime.getTime()
         )
-      }
-    )
+      })
     if (original_space_reservation_index === -1) {
       add_space_reservations.push({
         start_datetime: updated_space_reservation.start_datetime,
@@ -190,16 +211,21 @@ router.put('/reserve/:reservation_id', async function (req, res, next) {
   for (const add_space_reservation of add_space_reservations) {
     // find data drom db
     db_find_result = await spaces_reserved_time.findOne({
-      start_datetime: add_space_reservation.start_datetime,
-      space_id: add_space_reservation.space_id,
-      reserved: 1,
+      start_datetime: { $eq: add_space_reservation.start_datetime },
+      space_id: { $eq: add_space_reservation.space_id },
+      reserved: { $eq: 1 },
       reservations: { $nin: [reservation_id] }
     })
 
     if (db_find_result !== null && db_find_result.reserved !== null) {
       res
         .status(400)
-        .json(error_response(R_INVALID_RESERVATION, 'space_datetime has been reserved'))
+        .json(
+          error_response(
+            R_INVALID_RESERVATION,
+            'space_datetime has been reserved'
+          )
+        )
       return
     }
   }
@@ -211,20 +237,21 @@ router.put('/reserve/:reservation_id', async function (req, res, next) {
   // check add_item_reservations list
   for (const updated_item_reservation of updated_item_reservations) {
     // check format
-    const validate_result = await validateItemReservation(updated_item_reservation)
+    const validate_result = await validateItemReservation(
+      updated_item_reservation
+    )
     if (validate_result.status !== 200) {
-      res
-        .status(validate_result.status)
-        .json(validate_result.json)
+      res.status(validate_result.status).json(validate_result.json)
       return
     }
 
     // tear down time slots
-    const split_result = splitItemReservation(updated_item_reservation, updated_timeslot_item_reservations)
+    const split_result = splitItemReservation(
+      updated_item_reservation,
+      updated_timeslot_item_reservations
+    )
     if (split_result.status !== 200) {
-      res
-        .status(split_result.status)
-        .json(split_result.json)
+      res.status(split_result.status).json(split_result.json)
       return
     }
     updated_timeslot_item_reservations = split_result.output
@@ -234,57 +261,81 @@ router.put('/reserve/:reservation_id', async function (req, res, next) {
   const original_item_reservations = original_reservation.item_reservations
   let original_timeslot_item_reservations = []
   for (const original_item_reservation of original_item_reservations) {
-    original_timeslot_item_reservations = splitItemReservation(original_item_reservation, original_timeslot_item_reservations).output
+    original_timeslot_item_reservations = splitItemReservation(
+      original_item_reservation,
+      original_timeslot_item_reservations
+    ).output
   }
   // go throught and put them into add/remove list
   for (const updated_item_reservation of updated_timeslot_item_reservations) {
     // categorize update_item_reservation to add and remove list
-    const original_item_reservation_index = original_timeslot_item_reservations.findIndex(
-      (item_reservation) => {
+    const original_item_reservation_index =
+      original_timeslot_item_reservations.findIndex((item_reservation) => {
         return (
           item_reservation.item_id === updated_item_reservation.item_id &&
-          new Date(item_reservation.start_datetime).getTime() === updated_item_reservation.start_datetime.getTime() &&
-          new Date(item_reservation.end_datetime).getTime() === updated_item_reservation.end_datetime.getTime()
+          new Date(item_reservation.start_datetime).getTime() ===
+            updated_item_reservation.start_datetime.getTime() &&
+          new Date(item_reservation.end_datetime).getTime() ===
+            updated_item_reservation.end_datetime.getTime()
         )
-      }
-    )
+      })
     const item_reservation_found = await items_reserved_time.findOne({
-      item_id: updated_item_reservation.item_id,
-      start_datetime: new Date(updated_item_reservation.start_datetime),
-      end_datetime: new Date(updated_item_reservation.end_datetime)
+      item_id: { $eq: updated_item_reservation.item_id },
+      start_datetime: {
+        $eq: new Date(updated_item_reservation.start_datetime)
+      },
+      end_datetime: { $eq: new Date(updated_item_reservation.end_datetime) }
     })
 
-    if (original_item_reservation_index > -1) { // found original item reservation
+    if (original_item_reservation_index > -1) {
+      // found original item reservation
       // TODO: seems not work?
       // check item quantity
-      const original_item_found = original_timeslot_item_reservations[original_item_reservation_index]
-      const reservations = (item_reservation_found !== null)
-        ? item_reservation_found.reservations
-        : [reservation_id]
-      if (updated_item_reservation.quantity > original_item_found.reserved_quantity) {
+      const original_item_found =
+        original_timeslot_item_reservations[original_item_reservation_index]
+      const reservations =
+        item_reservation_found !== null
+          ? item_reservation_found.reservations
+          : [reservation_id]
+      if (
+        updated_item_reservation.quantity >
+        original_item_found.reserved_quantity
+      ) {
         add_item_reservations.push({
           item_id: updated_item_reservation.item_id,
           start_datetime: updated_item_reservation.start_datetime,
           end_datetime: updated_item_reservation.end_datetime,
-          reserved_quantity: updated_item_reservation.quantity - original_item_found.reserved_quantity,
+          reserved_quantity:
+            updated_item_reservation.quantity -
+            original_item_found.reserved_quantity,
           reservations
         })
-      } else if (updated_item_reservation.quantity < original_item_found.reserved_quantity) {
+      } else if (
+        updated_item_reservation.quantity <
+        original_item_found.reserved_quantity
+      ) {
         remove_item_reservations.push({
           item_id: updated_item_reservation.item_id,
           start_datetime: updated_item_reservation.start_datetime,
           end_datetime: updated_item_reservation.end_datetime,
-          reserved_quantity: original_item_found.reserved_quantity - updated_item_reservation.quantity,
+          reserved_quantity:
+            original_item_found.reserved_quantity -
+            updated_item_reservation.quantity,
           reservations
         })
       }
       // remove from original_item_reservations
-      original_timeslot_item_reservations.splice(original_item_reservation_index, 1)
-    } else { // new time slot (not reserved originally)
+      original_timeslot_item_reservations.splice(
+        original_item_reservation_index,
+        1
+      )
+    } else {
+      // new time slot (not reserved originally)
       const new_quantity = updated_item_reservation.quantity
-      const reservations = (item_reservation_found !== null)
-        ? [...item_reservation_found.reservations, reservation_id]
-        : [reservation_id]
+      const reservations =
+        item_reservation_found !== null
+          ? [...item_reservation_found.reservations, reservation_id]
+          : [reservation_id]
       add_item_reservations.push({
         item_id: updated_item_reservation.item_id,
         start_datetime: updated_item_reservation.start_datetime,
@@ -298,19 +349,21 @@ router.put('/reserve/:reservation_id', async function (req, res, next) {
   for (const original_item_reservation of original_timeslot_item_reservations) {
     // remove self reservation_id from remove_item_reservations reservations list
     const timeslot_item_reservation = await items_reserved_time.findOne({
-      item_id: original_item_reservation.item_id,
-      start_datetime: new Date(original_item_reservation.start_datetime),
-      end_datetime: new Date(original_item_reservation.end_datetime)
+      item_id: { $eq: original_item_reservation.item_id },
+      start_datetime: {
+        $eq: new Date(original_item_reservation.start_datetime)
+      },
+      end_datetime: { $eq: new Date(original_item_reservation.end_datetime) }
     })
+
     const new_item_reservation = {
       reservations: timeslot_item_reservation.reservations,
       reserved_quantity: original_item_reservation.quantity,
       ...original_item_reservation
     }
     new_item_reservation.reservations.splice(
-      new_item_reservation.reservations.findIndex(
-        (t) => t === reservation_id
-      ), 1
+      new_item_reservation.reservations.findIndex((t) => t === reservation_id),
+      1
     )
     remove_item_reservations.push(new_item_reservation)
   }
@@ -322,22 +375,33 @@ router.put('/reserve/:reservation_id', async function (req, res, next) {
   for (const add_item_reservation of add_item_reservations) {
     // find data drom db
     db_find_result = await items_reserved_time.findOne({
-      start_datetime: add_item_reservation.start_datetime,
-      item_id: add_item_reservation.item_id
+      start_datetime: { $eq: add_item_reservation.start_datetime },
+      item_id: { $eq: add_item_reservation.item_id }
     })
+
     if (db_find_result === null) {
       db_find_result = { quantity: 0 }
     }
 
     max_quantity = await items.findOne({
-      _id: new ObjectId(add_item_reservation.item_id)
+      _id: { $eq: new ObjectId(add_item_reservation.item_id) }
     })
+
     max_quantity = max_quantity.quantity
 
-    if (db_find_result.reserved_quantity + add_item_reservation.reserved_quantity > max_quantity) {
+    if (
+      db_find_result.reserved_quantity +
+        add_item_reservation.reserved_quantity >
+      max_quantity
+    ) {
       res
         .status(400)
-        .json(error_response(R_INVALID_RESERVATION, 'item_datetime has all been reserved'))
+        .json(
+          error_response(
+            R_INVALID_RESERVATION,
+            'item_datetime has all been reserved'
+          )
+        )
       return
     }
   }
@@ -358,13 +422,16 @@ router.put('/reserve/:reservation_id', async function (req, res, next) {
     // remove items reservations (copy from delete_reservation.js)
     for (const remove_item_reservation of remove_item_reservations) {
       const found = await items_reserved_time.findOne({
-        item_id: remove_item_reservation.item_id,
-        start_datetime: remove_item_reservation.start_datetime
+        item_id: { $eq: remove_item_reservation.item_id },
+        start_datetime: { $eq: remove_item_reservation.start_datetime }
       })
 
       if (found === null) {
         continue
-      } else if (found.reserved_quantity - remove_item_reservation.reserved_quantity <= 0) {
+      } else if (
+        found.reserved_quantity - remove_item_reservation.reserved_quantity <=
+        0
+      ) {
         items_reserved_time.deleteOne({
           item_id: remove_item_reservation.item_id,
           start_datetime: remove_item_reservation.start_datetime
@@ -374,8 +441,11 @@ router.put('/reserve/:reservation_id', async function (req, res, next) {
           {
             item_id: remove_item_reservation.item_id,
             start_datetime: remove_item_reservation.start_datetime
-          }, {
-            $inc: { reserved_quantity: -remove_item_reservation.reserved_quantity },
+          },
+          {
+            $inc: {
+              reserved_quantity: -remove_item_reservation.reserved_quantity
+            },
             $set: { reservations: remove_item_reservation.reservations }
           }
         )
@@ -384,8 +454,8 @@ router.put('/reserve/:reservation_id', async function (req, res, next) {
     // add items reservations (copy from post_reservation.js)
     for (const add_item_reservation of add_item_reservations) {
       const found = await items_reserved_time.findOne({
-        item_id: add_item_reservation.item_id,
-        start_datetime: add_item_reservation.start_datetime
+        item_id: { $eq: add_item_reservation.item_id },
+        start_datetime: { $eq: add_item_reservation.start_datetime }
       })
 
       if (found !== null) {
@@ -393,7 +463,8 @@ router.put('/reserve/:reservation_id', async function (req, res, next) {
           {
             item_id: add_item_reservation.item_id,
             start_datetime: add_item_reservation.start_datetime
-          }, {
+          },
+          {
             $inc: { reserved_quantity: add_item_reservation.reserved_quantity },
             $set: { reservations: add_item_reservation.reservations }
           }
@@ -438,13 +509,15 @@ router.put('/reserve/:reservation_id', async function (req, res, next) {
   updated_reservation.verify = original_reservation.verify
   updated_reservation.reservation_id = reservation_id
   try {
-    const email_response = await sendEmail(email, email_subject, await email_html(updated_reservation))
+    const email_response = await sendEmail(
+      email,
+      email_subject,
+      await email_html(updated_reservation)
+    )
     console.log('The email has been sent: ' + email_response)
   } catch (error) {
     console.error('Error sending email:', error)
-    res
-      .status(200)
-      .json(error_response(R_SEND_EMAIL_FAILED, error.response))
+    res.status(200).json(error_response(R_SEND_EMAIL_FAILED, error.response))
     return
   }
 

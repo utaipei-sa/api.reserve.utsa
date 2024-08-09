@@ -1,7 +1,12 @@
 import express from 'express'
 import dayjs from 'dayjs'
 import { ObjectId } from 'mongodb'
-import { reservations, spaces_reserved_time, items_reserved_time, items } from '../../models/mongodb.js'
+import {
+  reservations,
+  spaces_reserved_time,
+  items_reserved_time,
+  items
+} from '../../models/mongodb.js'
 import {
   error_response,
   R_SUCCESS,
@@ -97,7 +102,10 @@ router.patch('/verify/:reservation_id', async function (req, res, next) {
     return
   }
 
-  const reservation = await reservations.findOne({ _id: new ObjectId(req.params.reservation_id) })
+  const reservation = await reservations.findOne({
+    _id: { $eq: new ObjectId(req.params.reservation_id) }
+  })
+
   if (!reservation) {
     res
       .status(404)
@@ -107,7 +115,12 @@ router.patch('/verify/:reservation_id', async function (req, res, next) {
   if (reservation.verify) {
     res
       .status(409)
-      .json(error_response(R_ALREADY_VERIFIED, 'This reservation has already been verified'))
+      .json(
+        error_response(
+          R_ALREADY_VERIFIED,
+          'This reservation has already been verified'
+        )
+      )
     return
   }
 
@@ -123,7 +136,11 @@ router.patch('/verify/:reservation_id', async function (req, res, next) {
 
     // 判斷不乾淨的分鐘數 補整
     start_datetime = start_datetime.minute(0)
-    if (end_datetime.minute() !== 0 || end_datetime.second() !== 0 || end_datetime.millisecond() !== 0) {
+    if (
+      end_datetime.minute() !== 0 ||
+      end_datetime.second() !== 0 ||
+      end_datetime.millisecond() !== 0
+    ) {
       end_datetime = end_datetime.minute(0)
       end_datetime = end_datetime.add(1, 'hour')
     }
@@ -134,7 +151,12 @@ router.patch('/verify/:reservation_id', async function (req, res, next) {
         // 判斷收到的reservation時間段是否有重複的，
         // 有的話就直接ret space_datetime repeat error
         // 沒有就push進received_space_reserved_time
-        if (dayjs(received_space_reserved_time[i].start_datetime).isSame(start_datetime) && received_space_reserved_time[i].space_id === space_reservation.id) {
+        if (
+          dayjs(received_space_reserved_time[i].start_datetime).isSame(
+            start_datetime
+          ) &&
+          received_space_reserved_time[i].space_id === space_reservation.id
+        ) {
           stop_flag = 1
           break
         }
@@ -156,9 +178,9 @@ router.patch('/verify/:reservation_id', async function (req, res, next) {
   for (let i = 0; i < received_space_reserved_time.length; i++) {
     // 挖db
     db_space_check = await spaces_reserved_time.findOne({
-      start_datetime: received_space_reserved_time[i].start_datetime,
-      space_id: received_space_reserved_time[i].space_id,
-      reserved: 1
+      start_datetime: { $eq: received_space_reserved_time[i].start_datetime },
+      space_id: { $eq: received_space_reserved_time[i].space_id },
+      reserved: { $eq: 1 }
     })
 
     if (db_space_check == null) {
@@ -166,7 +188,12 @@ router.patch('/verify/:reservation_id', async function (req, res, next) {
     } else if (db_space_check.reserved) {
       res
         .status(400)
-        .json(error_response(R_INVALID_RESERVATION, 'space_datetime has reserved error'))
+        .json(
+          error_response(
+            R_INVALID_RESERVATION,
+            'space_datetime has reserved error'
+          )
+        )
       return
     }
   }
@@ -180,7 +207,11 @@ router.patch('/verify/:reservation_id', async function (req, res, next) {
 
     // 判斷不乾淨的分鐘數
     start_datetime = start_datetime.minute(0)
-    if (end_datetime.minute() !== 0 || end_datetime.second() !== 0 || end_datetime.millisecond() !== 0) {
+    if (
+      end_datetime.minute() !== 0 ||
+      end_datetime.second() !== 0 ||
+      end_datetime.millisecond() !== 0
+    ) {
       end_datetime = end_datetime.minute(0)
       end_datetime = end_datetime.add(1, 'hour')
     }
@@ -188,7 +219,12 @@ router.patch('/verify/:reservation_id', async function (req, res, next) {
     let stop_flag = 0
     for (; start_datetime.isBefore(end_datetime);) {
       for (let i = 0; i < received_item_reserved_time.length; i++) {
-        if (dayjs(received_item_reserved_time[i].start_datetime).isSame(start_datetime) && received_item_reserved_time[i].item_id === item_reservation.id) {
+        if (
+          dayjs(received_item_reserved_time[i].start_datetime).isSame(
+            start_datetime
+          ) &&
+          received_item_reserved_time[i].item_id === item_reservation.id
+        ) {
           stop_flag = 1
           break
         }
@@ -209,20 +245,32 @@ router.patch('/verify/:reservation_id', async function (req, res, next) {
   let db_item_check
   let max_quantity
   for (let i = 0; i < received_item_reserved_time.length; i++) {
-    max_quantity = await items.findOne({ _id: new ObjectId(received_item_reserved_time[i].item_id) })
-    db_item_check = await items_reserved_time.findOne({
-      start_datetime: received_item_reserved_time[i].start_datetime,
-      item_id: received_item_reserved_time[i].item_id
+    max_quantity = await items.findOne({
+      _id: { $eq: new ObjectId(received_item_reserved_time[i].item_id) }
     })
+
+    db_item_check = await items_reserved_time.findOne({
+      start_datetime: { $eq: received_item_reserved_time[i].start_datetime },
+      item_id: { $eq: received_item_reserved_time[i].item_id }
+    })
+
     if (db_item_check == null) {
       continue
     } else {
-      if (db_item_check.reserved_quantity <= max_quantity.quantity - received_item_reserved_time[i].reserved_quantity) {
+      if (
+        db_item_check.reserved_quantity <=
+        max_quantity.quantity - received_item_reserved_time[i].reserved_quantity
+      ) {
         continue
       } else {
         res
           .status(400)
-          .json(error_response(R_INVALID_RESERVATION, 'item_datetime has over reserved error'))
+          .json(
+            error_response(
+              R_INVALID_RESERVATION,
+              'item_datetime has over reserved error'
+            )
+          )
         return
       }
     }
@@ -234,8 +282,8 @@ router.patch('/verify/:reservation_id', async function (req, res, next) {
     console.log(i)
     // const max_quantity = await items.findOne({ _id: new ObjectId(received_item_reserved_time[i].item_id) })
     const db_item_check = await items_reserved_time.findOne({
-      start_datetime: received_item_reserved_time[i].start_datetime,
-      item_id: received_item_reserved_time[i].item_id
+      start_datetime: { $eq: received_item_reserved_time[i].start_datetime },
+      item_id: { $eq: received_item_reserved_time[i].item_id }
     })
 
     if (db_item_check != null) {
@@ -246,7 +294,9 @@ router.patch('/verify/:reservation_id', async function (req, res, next) {
           _id: db_item_check._id
         },
         {
-          $inc: { reserved_quantity: received_item_reserved_time[i].reserved_quantity },
+          $inc: {
+            reserved_quantity: received_item_reserved_time[i].reserved_quantity
+          },
           $push: { reservations: reservation_id }
         }
       )
@@ -282,13 +332,15 @@ router.patch('/verify/:reservation_id', async function (req, res, next) {
 
   // send email
   try {
-    const email_response = await sendEmail(reservation.email, email_subject, await email_html(reservation))
+    const email_response = await sendEmail(
+      reservation.email,
+      email_subject,
+      await email_html(reservation)
+    )
     console.log('The email has been sent: ' + email_response)
   } catch (error) {
     console.error('Error sending email:', error)
-    res
-      .status(200)
-      .json(error_response(R_SEND_EMAIL_FAILED, error.response))
+    res.status(200).json(error_response(R_SEND_EMAIL_FAILED, error.response))
     return
   }
 
