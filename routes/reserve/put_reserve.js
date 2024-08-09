@@ -83,7 +83,28 @@ router.put('/reserve/:reservation_id', async function (req, res, next) {
   const note = req.body.note || ''
   const updated_space_reservations = req.body.space_reservations
   const updated_item_reservations = req.body.item_reservations
-
+  console.log('\x1B[36m%s\x1B[0m', "console.log--------------------------------------------------------------------------")
+  console.log('\x1B[36m%s\x1B[0m',
+    "reservation_id:".padEnd(40) +
+    reservation_id.padEnd(40) + typeof (reservation_id) +
+    "\nsubmit_datetime:".padEnd(40) +
+    submit_datetime.padEnd(40) + typeof (submit_datetime) +
+    "\nname:".padEnd(40) +
+    name.padEnd(40) + typeof (name) +
+    "\ndepartment_grade:".padEnd(40) +
+    department_grade.padEnd(40) + typeof (department_grade) +
+    "\norganization:".padEnd(40) +
+    organization.padEnd(40) + typeof (organization) +
+    "\nemail:".padEnd(40) +
+    email.padEnd(40) + typeof (email) +
+    "\nreason:".padEnd(40) +
+    reason.padEnd(40) + typeof (reason) +
+    "\nnote:".padEnd(40) +
+    note.padEnd(40) + typeof (note))
+    console.log('\x1B[36m%s\x1B[0m',"updated_space_reservations:")
+    console.log(updated_space_reservations)
+    console.log('\x1B[36m%s\x1B[0m',"updated_item_reservations:")
+    console.log(updated_item_reservations)
   // let error_message = ''
 
   // check input datas
@@ -371,9 +392,9 @@ router.put('/reserve/:reservation_id', async function (req, res, next) {
             item_id: remove_item_reservation.item_id,
             start_datetime: remove_item_reservation.start_datetime
           }, {
-            $inc: { reserved_quantity: -remove_item_reservation.reserved_quantity },
-            $set: { reservations: remove_item_reservation.reservations }
-          }
+          $inc: { reserved_quantity: -remove_item_reservation.reserved_quantity },
+          $set: { reservations: remove_item_reservation.reservations }
+        }
         )
       }
     }
@@ -390,9 +411,9 @@ router.put('/reserve/:reservation_id', async function (req, res, next) {
             item_id: add_item_reservation.item_id,
             start_datetime: add_item_reservation.start_datetime
           }, {
-            $inc: { reserved_quantity: add_item_reservation.reserved_quantity },
-            $set: { reservations: add_item_reservation.reservations }
-          }
+          $inc: { reserved_quantity: add_item_reservation.reserved_quantity },
+          $set: { reservations: add_item_reservation.reservations }
+        }
         )
       } else {
         items_reserved_time.insertOne({

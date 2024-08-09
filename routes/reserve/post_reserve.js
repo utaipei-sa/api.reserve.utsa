@@ -66,6 +66,26 @@ router.post('/reserve', async function (req, res, next) {
   const note = req.body.note
   const received_space_reservations = req.body.space_reservations
   const received_item_reservations = req.body.item_reservations
+  console.log('\x1B[36m%s\x1B[0m', "console.log--------------------------------------------------------------------------")
+  console.log('\x1B[36m%s\x1B[0m',
+    "submit_datetime:".padEnd(40) +
+    submit_datetime.padEnd(40) + typeof (submit_datetime) +
+    "\nname:".padEnd(40) +
+    name.padEnd(40) + typeof (name) +
+    "\ndepartment_grade:".padEnd(40) +
+    department_grade.padEnd(40) + typeof (department_grade) +
+    "\norganization:".padEnd(40) +
+    organization.padEnd(40) + typeof (organization) +
+    "\nemail:".padEnd(40) +
+    email.padEnd(40) + typeof (email) +
+    "\nreason:".padEnd(40) +
+    reason.padEnd(40) + typeof (reason) +
+    "\nnote:".padEnd(40) +
+    note.padEnd(40) + typeof (note))
+    console.log('\x1B[36m%s\x1B[0m',"received_space_reservations:")
+    console.log(received_space_reservations)
+    console.log('\x1B[36m%s\x1B[0m',"received_item_reservations:")
+    console.log(received_item_reservations)
   let error_message = ''
 
   // check input datas
@@ -317,7 +337,8 @@ router.post('/reserve', async function (req, res, next) {
     note
   }
   await reservations.insertOne(doc)
-
+  console.log('\x1B[36m%s\x1B[0m',"reservations.insert document:")
+  console.log(doc)
   // send verify email
   const verify_link = new URL(`verify/${reservation_id}`, process.env.FRONTEND_BASE_URL)
   try {
