@@ -68,6 +68,7 @@ router.post('/reserve', async function (req, res, next) {
   const note = req.body.note || ''
   const received_space_reservations = req.body.space_reservations ?? []
   const received_item_reservations = req.body.item_reservations ?? []
+<<<<<<< HEAD
   console.log('\x1B[36m%s\x1B[0m', "console.log--------------------------------------------------------------------------")
   console.log('\x1B[36m%s\x1B[0m',
     "submit_datetime:".padEnd(40) +
@@ -88,6 +89,8 @@ router.post('/reserve', async function (req, res, next) {
     console.log(received_space_reservations)
     console.log('\x1B[36m%s\x1B[0m',"received_item_reservations:")
     console.log(received_item_reservations)
+=======
+>>>>>>> origin/main
   let error_message = ''
 
   // check input datas
