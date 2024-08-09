@@ -1,10 +1,14 @@
-import express from 'express'
-import { ObjectId } from 'mongodb'
-import { reservations } from '../../models/mongodb.js'
-import { error_response, R_ID_NOT_FOUND, R_INVALID_INFO } from '../../utilities/response.js'
+import express from "express";
+import { ObjectId } from "mongodb";
+import { reservations } from "../../models/mongodb.js";
+import {
+  error_response,
+  R_ID_NOT_FOUND,
+  R_INVALID_INFO,
+} from "../../utilities/response.js";
 // import { Timestamp } from 'mongodb'
 
-const router = express.Router()
+const router = express.Router();
 
 /**
  * @openapi
@@ -57,36 +61,39 @@ const router = express.Router()
  *                   type: string
  *                   example: reservation_id not found
  */
-router.get('/reserve/:reservation_id', async function (req, res, next) {
-  const OBJECT_ID_REGEXP = /^[a-fA-F0-9]{24}$/ // ObjectId 格式 (652765ed3d21844635674e71)
-  const reservation_id = req.params.reservation_id
+router.get("/reserve/:reservation_id", async function (req, res, next) {
+  const OBJECT_ID_REGEXP = /^[a-fA-F0-9]{24}$/; // ObjectId 格式 (652765ed3d21844635674e71)
+  const reservation_id = req.params.reservation_id;
 
   if (!OBJECT_ID_REGEXP.test(reservation_id)) {
     res
       .status(400)
-      .json(error_response(R_INVALID_INFO, 'object_id format error'))
-    return
+      .json(error_response(R_INVALID_INFO, "object_id format error"));
+    return;
   }
 
-  const result = await reservations.findOne({ _id: new ObjectId(req.params.reservation_id) })
+  const result = await reservations.findOne({
+    _id: { $eq: new ObjectId(req.params.reservation_id) },
+  });
+
   if (result === null) {
     res
       .status(404)
-      .json(error_response(R_ID_NOT_FOUND, 'reservation not found'))
-    return
+      .json(error_response(R_ID_NOT_FOUND, "reservation not found"));
+    return;
   }
 
-  const { _id, verify, status, history, ...data } = result
+  const { _id, verify, status, history, ...data } = result;
 
   // TODO: history timestamp list (?
-  const submitTimestamp = result.history[0].submit_timestamp
-  const serverTimestamp = result.history[0].server_timestamp
+  const submitTimestamp = result.history[0].submit_timestamp;
+  const serverTimestamp = result.history[0].server_timestamp;
   const FinalResult = {
     ...data,
     submit_timestamp: submitTimestamp,
-    server_timestamp: serverTimestamp
-  }
-  res.json(FinalResult)
-})
+    server_timestamp: serverTimestamp,
+  };
+  res.json(FinalResult);
+});
 
-export default router
+export default router;

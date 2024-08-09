@@ -1,9 +1,13 @@
-import express from 'express'
-import { ObjectId } from 'mongodb'
-import { spaces } from '../../models/mongodb.js'
-import { error_response, R_ID_NOT_FOUND, R_INVALID_INFO } from '../../utilities/response.js'
+import express from "express";
+import { ObjectId } from "mongodb";
+import { spaces } from "../../models/mongodb.js";
+import {
+  error_response,
+  R_ID_NOT_FOUND,
+  R_INVALID_INFO,
+} from "../../utilities/response.js";
 
-const router = express.Router()
+const router = express.Router();
 
 /**
  * @openapi
@@ -56,27 +60,27 @@ const router = express.Router()
  *                   type: string
  *                   example: space_id not found
  */
-router.get('/space/:space_id', async function (req, res, next) {
-  const OBJECT_ID_REGEXP = /^[a-fA-F0-9]{24}$/ // ObjectId 格式 (652765ed3d21844635674e71)
-  const space_id = req.params.space_id
+router.get("/space/:space_id", async function (req, res, next) {
+  const OBJECT_ID_REGEXP = /^[a-fA-F0-9]{24}$/; // ObjectId 格式 (652765ed3d21844635674e71)
+  const space_id = req.params.space_id;
 
   // check space_id format
   if (!OBJECT_ID_REGEXP.test(space_id)) {
     res
       .status(400)
-      .json(error_response(R_INVALID_INFO, 'space_id format error'))
-    return
+      .json(error_response(R_INVALID_INFO, "space_id format error"));
+    return;
   }
 
   // get data
-  const data = await spaces.findOne({ _id: new ObjectId(req.params.space_id) })
+  const data = await spaces.findOne({
+    _id: { $eq: new ObjectId(req.params.space_id) },
+  });
 
   // check if data is found
   if (data === null) {
-    res
-      .status(404)
-      .json(error_response(R_ID_NOT_FOUND, 'space_id not found'))
-    return
+    res.status(404).json(error_response(R_ID_NOT_FOUND, "space_id not found"));
+    return;
   }
 
   // return
@@ -84,8 +88,8 @@ router.get('/space/:space_id', async function (req, res, next) {
     _id: data._id,
     name: data.name,
     open: data.open,
-    exception_time: data.exception_time
-  })
-})
+    exception_time: data.exception_time,
+  });
+});
 
-export default router
+export default router;

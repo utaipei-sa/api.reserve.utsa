@@ -1,9 +1,13 @@
-import express from 'express'
-import { ObjectId } from 'mongodb'
-import { items } from '../../models/mongodb.js'
-import { error_response, R_ID_NOT_FOUND, R_INVALID_INFO } from '../../utilities/response.js'
+import express from "express";
+import { ObjectId } from "mongodb";
+import { items } from "../../models/mongodb.js";
+import {
+  error_response,
+  R_ID_NOT_FOUND,
+  R_INVALID_INFO,
+} from "../../utilities/response.js";
 
-const router = express.Router()
+const router = express.Router();
 
 /**
  * @openapi
@@ -56,27 +60,27 @@ const router = express.Router()
  *                   type: string
  *                   example: item_id not found
  */
-router.get('/item/:item_id', async function (req, res, next) {
-  const OBJECT_ID_REGEXP = /^[a-fA-F0-9]{24}$/ // ObjectId 格式 (652765ed3d21844635674e71)
-  const item_id = req.params.item_id
+router.get("/item/:item_id", async function (req, res, next) {
+  const OBJECT_ID_REGEXP = /^[a-fA-F0-9]{24}$/; // ObjectId 格式 (652765ed3d21844635674e71)
+  const item_id = req.params.item_id;
 
   // check item_id format
   if (!OBJECT_ID_REGEXP.test(item_id)) {
     res
       .status(400)
-      .json(error_response(R_INVALID_INFO, 'item_id format error'))
-    return
+      .json(error_response(R_INVALID_INFO, "item_id format error"));
+    return;
   }
 
   // get data
-  const data = await items.findOne({ _id: new ObjectId(req.params.item_id) })
+  const data = await items.findOne({
+    _id: { $eq: new ObjectId(req.params.item_id) },
+  });
 
   // check if data is found
   if (data === null) {
-    res
-      .status(404)
-      .json(error_response(R_ID_NOT_FOUND, 'item_id not found'))
-    return
+    res.status(404).json(error_response(R_ID_NOT_FOUND, "item_id not found"));
+    return;
   }
 
   // return
@@ -84,8 +88,8 @@ router.get('/item/:item_id', async function (req, res, next) {
     _id: data._id,
     name: data.name,
     quantity: data.quantity,
-    exception_time: data.exception_time
-  })
-})
+    exception_time: data.exception_time,
+  });
+});
 
-export default router
+export default router;
