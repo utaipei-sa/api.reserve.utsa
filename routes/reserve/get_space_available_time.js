@@ -70,16 +70,16 @@ router.get('/space_available_time', async function (req, res, next) {
   const start_datetime = req.query.start_datetime
   const end_datetime = req.query.end_datetime
   const space_intervals = req.query.intervals
-  console.log('\x1B[36m%s\x1B[0m',"console.log--------------------------------------------------------------------------")
+  console.log('\x1B[36m%s\x1B[0m', 'console.log--------------------------------------------------------------------------')
   console.log('\x1B[36m%s\x1B[0m',
-    "space_id:          " +
-    space_id + "          " + typeof (space_id) +
-    "\nstart_datetime:   " +
-    start_datetime + "                  " + typeof (start_datetime) +
-    "\nend_datetime:     " +
-    end_datetime + "                  " + typeof (end_datetime) +
-    "\nintervals:        " +
-    space_intervals + "                              " + typeof (space_intervals))
+    'space_id:          ' +
+    space_id + '          ' + typeof (space_id) +
+    '\nstart_datetime:   ' +
+    start_datetime + '                  ' + typeof (start_datetime) +
+    '\nend_datetime:     ' +
+    end_datetime + '                  ' + typeof (end_datetime) +
+    '\nintervals:        ' +
+    space_intervals + '                              ' + typeof (space_intervals))
   console.log('\x1B[34m%s\x1B[0m', '')
   // 檢查輸入是否正確（正規表達式 Regular Expression）
   const OBJECT_ID_REGEXP = /^[a-fA-F0-9]{24}$/ // ObjectId 格式
@@ -130,7 +130,7 @@ router.get('/space_available_time', async function (req, res, next) {
       start_datetime_dayjs = start_datetime_dayjs.add(1, 'day')
       start_datetime_dayjs = start_datetime_dayjs.set('hour', 0).set('minute', 0).set('second', 0)
     }
-    console.log('\x1B[36m%s\x1B[0m',"output_array:")
+    console.log('\x1B[36m%s\x1B[0m', 'output_array:')
     console.log(output_array)
     res.json(output_array)
   } else { // intergral
@@ -158,8 +158,7 @@ router.get('/space_available_time', async function (req, res, next) {
       availability
     })
   }
-  console.log('\x1B[36m%s\x1B[0m',"console.log end--------------------------------------------------------------------------")
-
+  console.log('\x1B[36m%s\x1B[0m', 'console.log end--------------------------------------------------------------------------')
 })
 
 async function cacuTimeSlot (start_datetime_dayjs, end_datetime_dayjs, digical_time_slots, space_id, output_array) {

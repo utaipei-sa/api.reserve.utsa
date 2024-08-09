@@ -31,9 +31,9 @@ router.get('/items', async function (req, res, next) {
     .find({})
     .project({ _id: 1, name: 1, quantity: 1, exception_time: 1 })
     .toArray()
-    console.log('\x1B[34m%s\x1B[0m', "data:----------------------------")
-    console.log(data)
-    console.log('\x1B[34m%s\x1B[0m', "data:----------------------------end")
+  console.log('\x1B[34m%s\x1B[0m', 'data:----------------------------')
+  console.log(data)
+  console.log('\x1B[34m%s\x1B[0m', 'data:----------------------------end')
 
   const return_data = data.map((element) => ({
     _id: element._id,
@@ -41,10 +41,10 @@ router.get('/items', async function (req, res, next) {
     quantity: element.quantity,
     exception_time: element.exception_time
   }))
-  console.log('\x1B[34m%s\x1B[0m', "return_data:--------------------------------")
+  console.log('\x1B[34m%s\x1B[0m', 'return_data:--------------------------------')
   console.log(return_data)
   res.json({ data: return_data })
-  console.log('\x1B[34m%s\x1B[0m', "return_data:--------------------------------end")
+  console.log('\x1B[34m%s\x1B[0m', 'return_data:--------------------------------end')
 })
 
 export default router
