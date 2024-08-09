@@ -63,9 +63,9 @@ router.post('/reserve', async function (req, res, next) {
   const organization = req.body.organization
   const email = req.body.email
   const reason = req.body.reason
-  const note = req.body.note
-  const received_space_reservations = req.body.space_reservations
-  const received_item_reservations = req.body.item_reservations
+  const note = req.body.note || ''
+  const received_space_reservations = req.body.space_reservations ?? []
+  const received_item_reservations = req.body.item_reservations ?? []
   console.log('\x1B[36m%s\x1B[0m', "console.log--------------------------------------------------------------------------")
   console.log('\x1B[36m%s\x1B[0m',
     "submit_datetime:".padEnd(40) +
