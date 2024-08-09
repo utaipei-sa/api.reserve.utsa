@@ -99,6 +99,13 @@ router.get('/item_available_time', async function (req, res, next) {
   const interval_array = []
   let end_datetime_dayjs = dayjs(end_datetime)
   let start_datetime_dayjs = dayjs(start_datetime)
+  const limit_datetime = start_datetime_dayjs.add(1, 'month')
+  if (end_datetime_dayjs.isAfter(limit_datetime)) {
+    res
+      .status(400)
+      .json(error_response(R_INVALID_INFO, 'You can check for a period of up to one month.'))
+    return
+  }
   let maxValue = 0
   let min_available_quantity = 0
   let first_count = true
