@@ -1,5 +1,5 @@
 import express from 'express'
-import { v4 as uuidv4 } from 'uuid';
+import { v4 as uuidv4 } from 'uuid'
 const router = express.Router()
 
 router.get('/', function (req, res, next) {
@@ -8,7 +8,7 @@ router.get('/', function (req, res, next) {
 
 router.use((req, res, next) => {
   req.id = uuidv4()
-  console.log(req.id+"\n", req.body)
+  console.log(req.id + '\n', req.body)
   next()
 })
 
