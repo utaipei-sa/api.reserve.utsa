@@ -70,7 +70,6 @@ router.post('/reserve', async function (req, res, next) {
   const received_item_reservations = req.body.item_reservations ?? []
   let error_message = ''
 
-
   // check input datas
   if (received_space_reservations.length + received_item_reservations.length <= 0) {
     error_message += 'empty reservation error\n'
@@ -123,7 +122,6 @@ router.post('/reserve', async function (req, res, next) {
         .json(error_response(R_INVALID_RESERVATION, error_message))
       return
     }
-
 
     // check whether space_id is exist
     const space_found = await spaces.findOne({ _id: new ObjectId(space_reservation.space_id) })

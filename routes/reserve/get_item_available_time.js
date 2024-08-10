@@ -156,12 +156,8 @@ router.get('/item_available_time', async function (req, res, next) {
     available_quantity: min_available_quantity
   }
   if (intervals.toLowerCase() === 'true') {
-    
-    
     res.json(interval_array)
   } else if (intervals.toLowerCase() === 'false') {
-    
-    
     res.json(integral)
   }
 })
