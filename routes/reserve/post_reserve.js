@@ -70,6 +70,7 @@ router.post('/reserve', async function (req, res, next) {
   const received_item_reservations = req.body.item_reservations ?? []
   let error_message = ''
 
+
   // check input datas
   if (received_space_reservations.length + received_item_reservations.length <= 0) {
     error_message += 'empty reservation error\n'
@@ -122,26 +123,7 @@ router.post('/reserve', async function (req, res, next) {
         .json(error_response(R_INVALID_RESERVATION, error_message))
       return
     }
-    console.log('\x1B[36m%s\x1B[0m', 'console.log--------------------------------------------------------------------------')
-    console.log('\x1B[36m%s\x1B[0m',
-      'submit_datetime:'.padEnd(40) +
-      submit_datetime.padEnd(40) + typeof (submit_datetime) +
-      '\nname:'.padEnd(40) +
-      name.padEnd(40) + typeof (name) +
-      '\ndepartment_grade:'.padEnd(40) +
-      department_grade.padEnd(40) + typeof (department_grade) +
-      '\norganization:'.padEnd(40) +
-      organization.padEnd(40) + typeof (organization) +
-      '\nemail:'.padEnd(40) +
-      email.padEnd(40) + typeof (email) +
-      '\nreason:'.padEnd(40) +
-      reason.padEnd(40) + typeof (reason) +
-      '\nnote:'.padEnd(40) +
-      note.padEnd(40) + typeof (note))
-    console.log('\x1B[36m%s\x1B[0m', 'received_space_reservations:')
-    console.log(received_space_reservations)
-    console.log('\x1B[36m%s\x1B[0m', 'received_item_reservations:')
-    console.log(received_item_reservations)
+
 
     // check whether space_id is exist
     const space_found = await spaces.findOne({ _id: new ObjectId(space_reservation.space_id) })
@@ -352,12 +334,7 @@ router.post('/reserve', async function (req, res, next) {
     note
   }
   await reservations.insertOne(doc)
-  console.log('\x1B[36m%s\x1B[0m', 'reservations.insert document:')
-  console.log(doc)
   // send verify email
-
-  console.log('hello world')
-
   try {
     const email_response = await sendEmail(email, email_subject, await email_html(doc))
     console.log('The email has been sent: ' + email_response)

@@ -56,18 +56,6 @@ router.get('/item_available_time', async function (req, res, next) {
   const start_datetime = req.query.start_datetime
   const end_datetime = req.query.end_datetime
   let intervals = req.query.intervals
-  console.log('\x1B[36m%s\x1B[0m', 'console.log--------------------------------------------------------------------------')
-  console.log('\x1B[36m%s\x1B[0m',
-    'item_id:          ' +
-    item_id + '          ' + typeof (item_id) +
-    '\nstart_datetime:   ' +
-    start_datetime + '                  ' + typeof (start_datetime) +
-    '\nend_datetime:     ' +
-    end_datetime + '                  ' + typeof (end_datetime) +
-    '\nintervals:        ' +
-    intervals + '                              ' + typeof (intervals))
-  console.log('\x1B[34m%s\x1B[0m', '')
-
   let error_message = ''
   let stop_flag = 0
   // 檢查輸入是否正確（正規表達式 Regular Expression）
@@ -168,15 +156,14 @@ router.get('/item_available_time', async function (req, res, next) {
     available_quantity: min_available_quantity
   }
   if (intervals.toLowerCase() === 'true') {
-    console.log('\x1B[34m%s\x1B[0m', 'interval response body')
-    console.log(interval_array)
+    
+    
     res.json(interval_array)
   } else if (intervals.toLowerCase() === 'false') {
-    console.log('\x1B[34m%s\x1B[0m', 'integral response body')
-    console.log(integral)
+    
+    
     res.json(integral)
   }
-  console.log('\x1B[36m%s\x1B[0m', 'console.log end--------------------------------------------------------------------------')
 })
 
 export default router
