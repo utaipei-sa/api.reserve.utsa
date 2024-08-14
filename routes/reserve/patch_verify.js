@@ -205,7 +205,7 @@ router.patch('/verify/:reservation_id', async function (req, res, next) {
       start_datetime = start_datetime.add(1, 'hour')
     }
   }
-  console.log('item time', received_item_reserved_time)
+  console.log('Line:208 after cutting item_time---------------------------------------------------', received_item_reserved_time)
   let db_item_check
   let max_quantity
   for (let i = 0; i < received_item_reserved_time.length; i++) {
@@ -228,7 +228,6 @@ router.patch('/verify/:reservation_id', async function (req, res, next) {
     }
   }
 
-  console.log(received_item_reserved_time)
   // TODO :: update items reserved_quantity
   for (let i = 0; i < received_item_reserved_time.length; i++) {
     console.log(i)
@@ -239,8 +238,8 @@ router.patch('/verify/:reservation_id', async function (req, res, next) {
     })
 
     if (db_item_check != null) {
-      console.log('suc')
-      console.log(db_item_check)
+      console.log('success')
+      console.log('db_item_check\n', db_item_check)
       await items_reserved_time.updateOne(
         {
           _id: db_item_check._id
@@ -252,10 +251,8 @@ router.patch('/verify/:reservation_id', async function (req, res, next) {
       )
       received_item_reserved_time.splice(i, 1)
       i--
-      console.log(received_item_reserved_time)
     } else {
       console.log('fail')
-      console.log(db_item_check)
     }
   }
 
@@ -269,11 +266,9 @@ router.patch('/verify/:reservation_id', async function (req, res, next) {
   for (const items_reserved_time_each of received_item_reserved_time) {
     items_reserved_time_each.reservations = [reservation_id]
   }
-  console.log(received_item_reserved_time)
   if (received_item_reserved_time.length > 0) {
     items_reserved_time.insertMany(received_item_reserved_time)
   }
-  console.log(received_item_reserved_time)
 
   await reservations.updateOne(
     { _id: new ObjectId(req.params.reservation_id) },
