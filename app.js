@@ -8,9 +8,7 @@ import cors from 'cors'
 import home_router from './routes/home.js'
 import reserve_router from './routes/reserve/index.js'
 import docs_router from './docs/docs.js'
-import router from './routes/home.js'
 import { v4 as uuidv4 } from 'uuid'
-
 
 const app = express()
 
@@ -61,7 +59,7 @@ app.use(function (err, req, res, next) {
   console.error(err.stack)
   res.send('error')
 })
-router.use((req, res, next) => {
+home_router.use((req, res, next) => {
   req.id = uuidv4()
   console.log('uuid:'.padEnd(6) + req.id + '\n', req.body)
   next()
