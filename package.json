@@ -7,7 +7,7 @@
     "start": "node --env-file=.env ./bin/www.js",
     "lint": "npx eslint .",
     "lint:fix": "eslint . --fix",
-    "test": "node --env-file=.env.test --experimental-vm-modules node_modules/jest/bin/jest.js --timeout=60000"
+    "test": "node --env-file=.env.test --experimental-vm-modules node_modules/jest/bin/jest.js"
   },
   "jest": {
     "transform": {}
