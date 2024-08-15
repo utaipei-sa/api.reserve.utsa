@@ -1,7 +1,11 @@
 import express from 'express'
 import { ObjectId } from 'mongodb'
 import { items } from '../../models/mongodb.js'
-import { error_response, R_ID_NOT_FOUND, R_INVALID_INFO } from '../../utilities/response.js'
+import {
+  error_response,
+  R_ID_NOT_FOUND,
+  R_INVALID_INFO
+} from '../../utilities/response.js'
 
 const router = express.Router()
 
@@ -69,13 +73,13 @@ router.get('/item/:item_id', async function (req, res, next) {
   }
 
   // get data
-  const data = await items.findOne({ _id: new ObjectId(req.params.item_id) })
+  const data = await items.findOne({
+    _id: { $eq: new ObjectId(req.params.item_id) }
+  })
 
   // check if data is found
   if (data === null) {
-    res
-      .status(404)
-      .json(error_response(R_ID_NOT_FOUND, 'item_id not found'))
+    res.status(404).json(error_response(R_ID_NOT_FOUND, 'item_id not found'))
     return
   }
 
