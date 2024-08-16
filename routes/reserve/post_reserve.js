@@ -419,7 +419,6 @@ router.post('/reserve', async function (req, res, next) {
     note
   }
   await reservations.insertOne(doc)
-
   // send verify email
   try {
     const email_response = await sendEmail(
