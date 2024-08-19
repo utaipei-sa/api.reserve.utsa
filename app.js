@@ -8,6 +8,7 @@ import cors from 'cors'
 import home_router from './routes/home.js'
 import reserve_router from './routes/reserve/index.js'
 import docs_router from './docs/docs.js'
+import { v4 as uuidv4 } from 'uuid'
 import RateLimit from 'express-rate-limit'
 
 const app = express()
@@ -64,6 +65,11 @@ app.use(function (err, req, res, next) {
   // res.render('error')
   console.error(err.stack)
   res.send('error')
+})
+home_router.use((req, res, next) => {
+  req.id = uuidv4()
+  console.log('uuid:'.padEnd(6) + req.id + '\n', req.body)
+  next()
 })
 
 export default app

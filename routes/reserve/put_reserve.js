@@ -94,6 +94,7 @@ router.put('/reserve/:reservation_id', async function (req, res, next) {
   const note = req.body.note || ''
   const updated_space_reservations = req.body.space_reservations ?? []
   const updated_item_reservations = req.body.item_reservations ?? []
+  // let error_message = ''
 
   // check input datas
   // check reservation_id format
