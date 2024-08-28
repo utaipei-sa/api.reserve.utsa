@@ -169,7 +169,7 @@ router.get('/space_available_time', [
   }
 })
 
-async function cacuTimeSlot(
+async function cacuTimeSlot (
   start_datetime_dayjs,
   end_datetime_dayjs,
   digical_time_slots,
