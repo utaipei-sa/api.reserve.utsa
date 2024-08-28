@@ -1,4 +1,5 @@
 import express from 'express'
+import { param, validationResult } from 'express-validator'
 import { ObjectId } from 'mongodb'
 import { items } from '../../models/mongodb.js'
 import {
@@ -6,6 +7,7 @@ import {
   R_ID_NOT_FOUND,
   R_INVALID_INFO
 } from '../../utilities/response.js'
+import { OBJECT_ID_REGEXP } from '../../utilities/input_format.js'
 
 const router = express.Router()
 
@@ -60,15 +62,14 @@ const router = express.Router()
  *                   type: string
  *                   example: item_id not found
  */
-router.get('/item/:item_id', async function (req, res, next) {
-  const OBJECT_ID_REGEXP = /^[a-fA-F0-9]{24}$/ // ObjectId 格式 (652765ed3d21844635674e71)
-  const item_id = req.params.item_id
-
-  // check item_id format
-  if (!OBJECT_ID_REGEXP.test(item_id)) {
+router.get('/item/:item_id', [
+  param('item_id').matches(OBJECT_ID_REGEXP).withMessage('item_id format error') // ObjectId 格式 (652765ed3d21844635674e71)
+], async function (req, res, next) {
+  const errors = validationResult(req)
+  if (!errors.isEmpty()) {
     res
       .status(400)
-      .json(error_response(R_INVALID_INFO, 'item_id format error'))
+      .json(error_response(R_INVALID_INFO, errors.array().map(error => error.msg).join('\n')))
     return
   }
 

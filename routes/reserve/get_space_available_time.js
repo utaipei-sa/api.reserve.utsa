@@ -1,4 +1,5 @@
 import express from 'express'
+import { check, validationResult } from 'express-validator'
 import { ObjectId } from 'mongodb'
 import { spaces, spaces_reserved_time } from '../../models/mongodb.js'
 import dayjs from 'dayjs'
@@ -7,6 +8,7 @@ import {
   R_ID_NOT_FOUND,
   R_INVALID_INFO
 } from '../../utilities/response.js'
+import { OBJECT_ID_REGEXP, DATETIME_MINUTE_REGEXP } from '../../utilities/input_format.js'
 
 const router = express.Router()
 
@@ -23,7 +25,7 @@ const router = express.Router()
  *       - name: intervals
  *         description: 是否切分成各時段進行回傳
  *         in: query
- *         required: true
+ *         required: false
  *         schema:
  *           type: string
  *       - name: space_id
@@ -67,52 +69,28 @@ const router = express.Router()
  *               items:
  *                 $ref: '#/components/schemas/SpaceAvailability'
  *
- */
-router.get('/space_available_time', async function (req, res, next) {
+*/
+router.get('/space_available_time', [
+  check('space_id').matches(OBJECT_ID_REGEXP).withMessage('Reservation ID format error'),
+  check('start_datetime').matches(DATETIME_MINUTE_REGEXP).withMessage('Reservation start_datetime format error'),
+  check('end_datetime').matches(DATETIME_MINUTE_REGEXP).withMessage('Reservation end_datetime format error'),
+  check('intervals').optional().isBoolean().withMessage('intervals must be boolean type')
+], async function (req, res, next) {
+  // 檢查輸入是否正確（正規表達式 Regular Expression）
+  const errors = validationResult(req)
+  if (!errors.isEmpty()) {
+    res
+      .status(400)
+      .json(error_response(R_INVALID_INFO, errors.array().map(error => error.msg).join('\n')))
+    return
+  }
+
   // 取得參數
   const space_id = req.query.space_id
   const start_datetime = req.query.start_datetime
   const end_datetime = req.query.end_datetime
   const space_intervals = req.query.intervals
-  // 檢查輸入是否正確（正規表達式 Regular Expression）
-  const OBJECT_ID_REGEXP = /^[a-fA-F0-9]{24}$/ // ObjectId 格式
-  const DATETIME_MINUTE_REGEXP = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})$/ // 日期時間格式（年-月-日T時:分）
-  if (
-    space_id === undefined ||
-    start_datetime === undefined ||
-    end_datetime === undefined
-  ) {
-    // 沒給齊參數
-    res
-      .status(400)
-      .json(
-        error_response(
-          R_INVALID_INFO,
-          'item_id, start_datetime, and end_datetime are required'
-        )
-      )
-    return
-  } else if (!OBJECT_ID_REGEXP.test(space_id)) {
-    // check space_id format
-    res
-      .status(400)
-      .json(error_response(R_INVALID_INFO, 'Reservation ID format error'))
-    return
-  } else if (
-    !DATETIME_MINUTE_REGEXP.test(start_datetime) ||
-    !DATETIME_MINUTE_REGEXP.test(end_datetime)
-  ) {
-    // check datetime fromat
-    res
-      .status(400)
-      .json(
-        error_response(
-          R_INVALID_INFO,
-          'Reservation start_datetime format error'
-        )
-      )
-    return
-  }
+
   // 查詢場地資訊
   const space_found = await spaces.findOne({
     _id: { $eq: new ObjectId(space_id) }
@@ -191,7 +169,7 @@ router.get('/space_available_time', async function (req, res, next) {
   }
 })
 
-async function cacuTimeSlot (
+async function cacuTimeSlot(
   start_datetime_dayjs,
   end_datetime_dayjs,
   digical_time_slots,
@@ -229,7 +207,7 @@ async function cacuTimeSlot (
 
     if (
       start_datetime_dayjs.hour() >=
-        digical_time_slots[current_timeslot].start &&
+      digical_time_slots[current_timeslot].start &&
       start_datetime_dayjs.hour() < digical_time_slots[current_timeslot].end
     ) {
       output_array.push({
