@@ -1,6 +1,5 @@
 import express from 'express'
-import { items, items_reserved_time } from '../../models/mongodb.js'
-import { ObjectId } from 'mongodb'
+import ItemRepository from '../../repositories/item_repository.js'
 import dayjs from 'dayjs'
 import {
   error_response,
@@ -103,9 +102,7 @@ router.get('/item_available_time', async function (req, res, next) {
   }
 
   // 確認 item_id 是否有對應的場地，沒有就報錯
-  const item_found = await items.findOne({
-    _id: { $eq: new ObjectId(item_id) }
-  })
+  const item_found = await ItemRepository.findItemById(item_id)
   if (!item_found) {
     res.status(400).json(error_response(R_ID_NOT_FOUND, 'Item ID not found'))
     return
@@ -142,12 +139,11 @@ router.get('/item_available_time', async function (req, res, next) {
   let available_quantity = 0
   while (start_datetime_dayjs.isBefore(end_datetime_dayjs)) {
     for (let count = 0; count <= 23; count++) {
-      const item_database_info = await items_reserved_time.findOne({
-        start_datetime: {
-          $eq: new Date(start_datetime_dayjs.add(count, 'hour').format())
-        },
-        item_id: { $eq: item_id }
-      })
+      const item_database_info =
+        await ItemRepository.findReservedSlotByTimeAndId(
+          item_id,
+          start_datetime_dayjs.add(count, 'hour').format()
+        )
 
       if (item_database_info == null) {
         continue
@@ -157,9 +153,9 @@ router.get('/item_available_time', async function (req, res, next) {
         // console.log(maxValue)
       }
     }
-    const items_quantity_info = await items.findOne({
-      _id: { $eq: new ObjectId(item_id) }
-    })
+    const items_quantity_info = (await ItemRepository.findItemById(
+      item_id
+    )) || { quantity: 0 }
 
     available_quantity = items_quantity_info.quantity - maxValue
     if (first_count) {
