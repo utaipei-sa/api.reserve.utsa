@@ -7,9 +7,13 @@ import logger from 'morgan'
 import cors from 'cors'
 import home_router from './routes/home.js'
 import reserve_router from './routes/reserve/index.js'
+import auth_router from './routes/auth.js'
 import docs_router from './docs/docs.js'
 import { v4 as uuidv4 } from 'uuid'
 import RateLimit from 'express-rate-limit'
+import passport from 'passport'
+import { Strategy as GoogleStrategy } from 'passport-google-oauth20'
+import { Strategy as JwtStrategy, ExtractJwt } from 'passport-jwt'
 
 const app = express()
 
@@ -46,6 +50,7 @@ app.use(cors(corsOptions))
 
 // routes
 app.use(home_router)
+app.use(auth_router)
 app.use('/api/v1', reserve_router)
 app.use(docs_router)
 
@@ -71,5 +76,27 @@ home_router.use((req, res, next) => {
   console.log('uuid:'.padEnd(6) + req.id + '\n', req.body)
   next()
 })
+
+// Google驗證策略
+passport.use(new GoogleStrategy(
+  {
+    clientID: process.env.GOOGLE_ID,
+    clientSecret: process.env.GOOGLE_SECRET,
+    callbackURL: process.env.GOOGLE_CALLBACK
+  },
+  (token, tokenSecret, profile, done) => {
+    // Here, we'll just return the profile information provided by Google
+    return done(null, profile)
+  }
+))
+
+passport.use(new JwtStrategy({
+  jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(), // Extract token from Bearer header
+  secretOrKey: process.env.JWT_SECRET
+}, (jwt_payload, done) => {
+  // Here you can perform additional checks or load the user from the database
+  // For simplicity, we are just passing the decoded JWT payload as the user object
+  return done(null, jwt_payload)
+}))
 
 export default app
