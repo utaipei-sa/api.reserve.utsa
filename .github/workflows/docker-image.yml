@@ -7,21 +7,9 @@ on:
         description: "build version tag"
         required: true
         type: string
-      build-env:
-        description: "build environment"
-        required: true
-        type: choice
-        options:
-          - test
-          - stage
-          - production
   workflow_call:
     inputs:
       tag:
-        required: true
-        type: string
-      build-env:
-        description: "build environment"
         required: true
         type: string
 
@@ -31,7 +19,6 @@ env:
   # github.repository as <account>/<repo>
   # IMAGE_NAME: ${{ github.repository }}
   IMAGE_NAME: utaipei-sa/api.reserve.utsa
-  GENERATE_SOURCEMAP: ${{ contains(inputs.build-env, 'test') }}
 
 jobs:
   build:
