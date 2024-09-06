@@ -1,5 +1,5 @@
 import express from 'express'
-import { items } from '../../models/mongodb.js'
+import ItemRepository from '../../repositories/item_repository.js'
 
 const router = express.Router()
 
@@ -27,10 +27,7 @@ const router = express.Router()
  *                     $ref: '#/components/schemas/Item'
  */
 router.get('/items', async function (req, res, next) {
-  const data = await items
-    .find({})
-    .project({ _id: 1, name: 1, quantity: 1, exception_time: 1 })
-    .toArray()
+  const data = await ItemRepository.getAllItems()
 
   const return_data = data.map((element) => ({
     _id: element._id,

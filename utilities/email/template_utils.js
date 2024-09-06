@@ -8,8 +8,8 @@ dayjs.tz.setDefault('Asia/Taipei')
 
 export function time_period_string (start_datetime, end_datetime) {
   const weekdaysMin = ['日', '一', '二', '三', '四', '五', '六']
-  const start_time = dayjs(start_datetime)
-  const end_time = dayjs(end_datetime)
+  const start_time = dayjs(start_datetime).tz()
+  const end_time = dayjs(end_datetime).tz()
   const start_string = `${start_time.format('YYYY/MM/DD')}(${weekdaysMin[start_time.day()]}) ${start_time.format('HH:mm')}`
   const end_string =
     start_time.format('YYYYMMDD') === end_time.format('YYYYMMDD')

@@ -1,0 +1,24 @@
+name: Auto Build and Depoly
+
+on:
+  pull_request:
+    types: [closed]
+    branches: [main]
+
+jobs:
+  release:
+    name: Release
+    permissions:
+      contents: write
+    uses: utaipei-sa/api.reserve.utsa/.github/workflows/tag-and-release.yml@main
+
+  build:
+    name: Build
+    permissions:
+      packages: write 
+      id-token: write
+      contents: read
+    needs: release
+    uses: utaipei-sa/api.reserve.utsa/.github/workflows/docker-image.yml@main
+    with:
+      tag: ${{ needs.release.outputs.tag }}

@@ -1,0 +1,33 @@
+name: Tag and Release
+
+on:
+  workflow_call:
+    outputs:
+      tag:
+        description: "Version tag"
+        value: ${{ jobs.tag-and-release.outputs.tag }}
+
+jobs:
+  tag-and-release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    outputs:
+      tag: ${{ steps.tag.outputs.tag }}
+    steps:
+      - name: Tag
+        id: tag
+        if: github.event.pull_request.merged
+        uses: K-Phoen/semver-release-action@master
+        with:
+          release_branch: main
+          release_strategy: tag
+          tag_format: "%major%.%minor%.%patch%"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ steps.tag.outputs.tag }}
+          generate_release_notes: true
