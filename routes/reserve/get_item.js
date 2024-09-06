@@ -1,6 +1,5 @@
 import express from 'express'
-import { ObjectId } from 'mongodb'
-import { items } from '../../models/mongodb.js'
+import ItemRepository from '../../repositories/item_repository.js'
 import {
   error_response,
   R_ID_NOT_FOUND,
@@ -73,9 +72,7 @@ router.get('/item/:item_id', async function (req, res, next) {
   }
 
   // get data
-  const data = await items.findOne({
-    _id: { $eq: new ObjectId(req.params.item_id) }
-  })
+  const data = await ItemRepository.findItemById(req.params.item_id)
 
   // check if data is found
   if (data === null) {
