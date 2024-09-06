@@ -1,4 +1,5 @@
 import express from 'express'
+import { check, validationResult } from 'express-validator'
 import ItemRepository from '../../repositories/item_repository.js'
 import dayjs from 'dayjs'
 import {
@@ -6,6 +7,8 @@ import {
   R_ID_NOT_FOUND,
   R_INVALID_INFO
 } from '../../utilities/response.js'
+import { OBJECT_ID_REGEXP, DATETIME_MINUTE_REGEXP } from '../../utilities/input_format.js'
+
 const router = express.Router()
 
 /**
@@ -53,52 +56,28 @@ const router = express.Router()
  *               type: array
  *               items:
  *                 $ref: '#/components/schemas/ItemAvailability'
- */
-router.get('/item_available_time', async function (req, res, next) {
+*/
+router.get('/item_available_time', [
+  check('item_id').matches(OBJECT_ID_REGEXP).withMessage('Reservation ID format error'),
+  check('start_datetime').matches(DATETIME_MINUTE_REGEXP).withMessage('Reservation start_datetime format error'),
+  check('end_datetime').matches(DATETIME_MINUTE_REGEXP).withMessage('Reservation end_datetime format error'),
+  check('intervals').optional().isBoolean().withMessage('intervals must be boolean type')
+], async function (req, res, next) {
+  // 檢查輸入是否正確（正規表達式 Regular Expression）
+  const errors = validationResult(req)
+  if (!errors.isEmpty()) {
+    res
+      .status(400)
+      .json(error_response(R_INVALID_INFO, errors.array().map(error => error.msg).join('\n')))
+    return
+  }
+
   const item_id = req.query.item_id
   const start_datetime = req.query.start_datetime
   const end_datetime = req.query.end_datetime
   let intervals = req.query.intervals
-  let error_message = ''
-  let stop_flag = 0
-  // 檢查輸入是否正確（正規表達式 Regular Expression）
-  const objectId_format = /^[a-fA-F0-9]{24}$/ // ObjectId 格式
-  const datetime_format = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/ // 日期時間格式（年-月-日T時:分）
-  if (
-    item_id === undefined ||
-    start_datetime === undefined ||
-    end_datetime === undefined
-  ) {
-    error_message += 'item_id, start_datetime, and end_datetime are required\n'
-    stop_flag = 1
-  } else if (!objectId_format.test(item_id)) {
-    // check item_id format
-    error_message += 'item_id format error\n'
-    stop_flag = 1
-  } else if (
-    !datetime_format.test(start_datetime) ||
-    !datetime_format.test(end_datetime)
-  ) {
-    error_message += 'datetime format error\n'
-    stop_flag = 1
-  }
-
   if (intervals === undefined) {
     intervals = 'false'
-  }
-  if (
-    intervals.toLowerCase() !== 'true' &&
-    intervals.toLowerCase() !== 'false'
-  ) {
-    error_message += 'intervals format error\n'
-    stop_flag = 1
-  }
-
-  if (stop_flag === 1) {
-    res
-      .status(400)
-      .json(error_response(R_INVALID_INFO, error_message.trim().split('\n')))
-    return
   }
 
   // 確認 item_id 是否有對應的場地，沒有就報錯
