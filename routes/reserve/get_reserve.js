@@ -1,11 +1,10 @@
 import express from 'express'
-import { ObjectId } from 'mongodb'
-import { reservations } from '../../models/mongodb.js'
 import {
   error_response,
   R_ID_NOT_FOUND,
   R_INVALID_INFO
 } from '../../utilities/response.js'
+import ReserveRepository from '../../repositories/reserve_repository.js'
 // import { Timestamp } from 'mongodb'
 
 const router = express.Router()
@@ -72,9 +71,7 @@ router.get('/reserve/:reservation_id', async function (req, res, next) {
     return
   }
 
-  const result = await reservations.findOne({
-    _id: { $eq: new ObjectId(req.params.reservation_id) }
-  })
+  const result = await ReserveRepository.getReserveById(req.params.reservation_id)
 
   if (result === null) {
     res

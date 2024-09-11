@@ -1,7 +1,6 @@
 import express from 'express'
 import { param, validationResult } from 'express-validator'
-import { ObjectId } from 'mongodb'
-import { spaces } from '../../models/mongodb.js'
+import SpaceRepository from '../../repositories/space_repository.js'
 import {
   error_response,
   R_ID_NOT_FOUND,
@@ -75,10 +74,8 @@ router.get('/space/:space_id', [
   }
 
   // get data
-  const data = await spaces.findOne({
-    _id: { $eq: new ObjectId(req.params.space_id) }
-  })
-
+  const data = await SpaceRepository.findSpaceById(req.params.space_id)
+  
   // check if data is found
   if (data === null) {
     res.status(404).json(error_response(R_ID_NOT_FOUND, 'space_id not found'))

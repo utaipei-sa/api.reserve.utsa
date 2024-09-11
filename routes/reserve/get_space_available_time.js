@@ -1,7 +1,6 @@
 import express from 'express'
 import { check, validationResult } from 'express-validator'
-import { ObjectId } from 'mongodb'
-import { spaces, spaces_reserved_time } from '../../models/mongodb.js'
+import SpaceRepository from '../../repositories/space_repository.js'
 import dayjs from 'dayjs'
 import {
   error_response,
@@ -92,9 +91,7 @@ router.get('/space_available_time', [
   const space_intervals = req.query.intervals
 
   // 查詢場地資訊
-  const space_found = await spaces.findOne({
-    _id: { $eq: new ObjectId(space_id) }
-  })
+  const space_found = await SpaceRepository.findSpaceById(space_id)
 
   if (!space_found) {
     res
@@ -151,16 +148,11 @@ router.get('/space_available_time', [
         )
       return
     }
-    const spaces_reservations = await spaces_reserved_time
-      .find({
-        space_id: { $eq: space_id },
-        start_datetime: {
-          $gte: new Date(start_datetime + ':00+0800'), // query start_datetime
-          $lt: new Date(end_datetime + ':00+0800') // query end_datetime
-        },
-        reserved: { $eq: 1 }
-      })
-      .toArray() // 搜尋時間範圍內已被預約的時段
+    const spaces_reservations = await SpaceRepository.getReservedSpacesBySpaceAndId(
+      space_id,
+      start_datetime + ':00+0800',
+      end_datetime + ':00+0800',
+    )
 
     const availability = spaces_reservations.length > 0 ? 0 : 1
     res.json({
@@ -169,6 +161,13 @@ router.get('/space_available_time', [
   }
 })
 
+/**
+ * @param {dayjs.Dayjs} start_datetime_dayjs
+ * @param {dayjs.Dayjs} end_datetime_dayjs
+ * @param {{ end: any;start:any; }[]} digical_time_slots
+ * @param {any} space_id
+ * @param {any[]} output_array
+ */
 async function cacuTimeSlot (
   start_datetime_dayjs,
   end_datetime_dayjs,
@@ -193,16 +192,15 @@ async function cacuTimeSlot (
     // 在資料庫中是否有找到此時段的資料,如果否reserved_value=0
 
     for (let i = 0; i <= 3 && reserved_value === 0; i++) {
-      const space_database_info = await spaces_reserved_time.findOne({
-        start_datetime: {
-          $eq: new Date(start_datetime_dayjs.add(i, 'hour').format())
-        },
-        space_id: { $eq: space_id }
-      })
+      const space_database_info =
+        await SpaceRepository.findReservedSlotBySpaceAndId(
+          space_id,
+          start_datetime_dayjs.add(i, "hour").format()
+        );
       if (space_database_info == null) {
-        continue
+        continue;
       }
-      reserved_value = space_database_info.reserved
+      reserved_value = space_database_info.reserved;
     }
 
     if (

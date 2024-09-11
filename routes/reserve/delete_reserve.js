@@ -70,7 +70,7 @@ router.delete('/reserve/:reservation_id', async function (req, res, next) {
   }
   // 查詢欲刪除的預約紀錄資訊
   // 刪除預約紀錄
-  const reservation_find = await reservations.findOne({ _id: { $in: [new ObjectId(reservation_id)] } })
+  const reservation_find = await reservations.findOne({ _id: new ObjectId(reservation_id) })
   if (reservation_find == null) {
     res
       .status(400)
