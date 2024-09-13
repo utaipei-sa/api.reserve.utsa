@@ -1,11 +1,7 @@
 import express from 'express'
-import {
-  reservations,
-  spaces_reserved_time,
-  items_reserved_time,
-  items
-} from '../../models/mongodb.js'
-import { ObjectId } from 'mongodb'
+import ReserveRepository from '../../repositories/reserve_repository.js'
+import SpaceRepository from '../../repositories/space_repository.js'
+import ItemRepository from '../../repositories/item_repository.js'
 import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc.js'
 import {
@@ -105,9 +101,7 @@ router.put('/reserve/:reservation_id', async function (req, res, next) {
     return
   }
   // check whether reservation_id is exist and get reservation data
-  const original_reservation = await reservations.findOne({
-    _id: { $eq: new ObjectId(reservation_id) }
-  })
+  const original_reservation = await ReserveRepository.getReserveById(reservation_id)
 
   if (!original_reservation) {
     res
@@ -146,11 +140,7 @@ router.put('/reserve/:reservation_id', async function (req, res, next) {
   const verify = original_reservation.verify === 1
 
   // compare space reservations -> difference lists (add and delete)
-  const original_space_reservations = await spaces_reserved_time
-    .find({
-      reservations: { $in: [reservation_id] }
-    })
-    .toArray()
+  const original_space_reservations = await SpaceRepository.getSlotsByReservationId(reservation_id)
   const add_space_reservations = []
   // const remove_space_reservations = original_reservation.space_reservations
   let remove_space_reservations = []
@@ -211,12 +201,12 @@ router.put('/reserve/:reservation_id', async function (req, res, next) {
   let db_find_result = null // db find result
   for (const add_space_reservation of add_space_reservations) {
     // find data drom db
-    db_find_result = await spaces_reserved_time.findOne({
-      start_datetime: { $eq: add_space_reservation.start_datetime },
-      space_id: { $eq: add_space_reservation.space_id },
-      reserved: { $eq: 1 },
-      reservations: { $nin: [reservation_id] }
-    })
+    db_find_result = await SpaceRepository.getRemainingSlotsByStartTime(
+      add_space_reservation.start_datetime,
+      add_space_reservation.space_id,
+      reservation_id
+    ); 
+
 
     if (db_find_result !== null && db_find_result.reserved !== null) {
       res
@@ -280,13 +270,11 @@ router.put('/reserve/:reservation_id', async function (req, res, next) {
             updated_item_reservation.end_datetime.getTime()
         )
       })
-    const item_reservation_found = await items_reserved_time.findOne({
-      item_id: { $eq: updated_item_reservation.item_id },
-      start_datetime: {
-        $eq: new Date(updated_item_reservation.start_datetime)
-      },
-      end_datetime: { $eq: new Date(updated_item_reservation.end_datetime) }
-    })
+    const item_reservation_found = await ItemRepository.findSlotByTimeRange(
+      updated_item_reservation.item_id,
+      updated_item_reservation.start_datetime,
+      updated_item_reservation.end_datetime
+    )
 
     if (original_item_reservation_index > -1) {
       // found original item reservation
@@ -349,16 +337,14 @@ router.put('/reserve/:reservation_id', async function (req, res, next) {
   // put all remaining original_item_reservation into remove_item_reservations
   for (const original_item_reservation of original_timeslot_item_reservations) {
     // remove self reservation_id from remove_item_reservations reservations list
-    const timeslot_item_reservation = await items_reserved_time.findOne({
-      item_id: { $eq: original_item_reservation.item_id },
-      start_datetime: {
-        $eq: new Date(original_item_reservation.start_datetime)
-      },
-      end_datetime: { $eq: new Date(original_item_reservation.end_datetime) }
-    })
+    const timeslot_item_reservation = await ItemRepository.findSlotByTimeRange(
+      original_item_reservation.item_id,
+      original_item_reservation.start_datetime,
+      original_item_reservation.end_datetime
+    )
 
     const new_item_reservation = {
-      reservations: timeslot_item_reservation.reservations,
+      reservations: timeslot_item_reservation?.reservations,
       reserved_quantity: original_item_reservation.quantity,
       ...original_item_reservation
     }
@@ -375,18 +361,16 @@ router.put('/reserve/:reservation_id', async function (req, res, next) {
   db_find_result = null // db find result
   for (const add_item_reservation of add_item_reservations) {
     // find data drom db
-    db_find_result = await items_reserved_time.findOne({
-      start_datetime: { $eq: add_item_reservation.start_datetime },
-      item_id: { $eq: add_item_reservation.item_id }
-    })
+    db_find_result = await ItemRepository.findSlotByStartTime(
+      add_item_reservation.item_id,
+      add_item_reservation.start_datetime
+    )
 
     if (db_find_result === null) {
       db_find_result = { quantity: 0 }
     }
 
-    max_quantity = await items.findOne({
-      _id: { $eq: new ObjectId(add_item_reservation.item_id) }
-    })
+    max_quantity = await ItemRepository.findItemById(add_item_reservation.item_id)
 
     max_quantity = max_quantity.quantity
 
