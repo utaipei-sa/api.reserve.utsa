@@ -13,7 +13,7 @@ import {
   R_SEND_EMAIL_FAILED
 } from '../../utilities/response.js'
 import sendEmail from '../../utilities/email/email.js'
-import {ObjectId} from 'mongodb'
+import { ObjectId } from 'mongodb'
 import {
   subject as email_subject,
   html as email_html

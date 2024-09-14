@@ -381,7 +381,7 @@ router.post('/reserve', async function (req, res, next) {
       )
     return
   }
-  
+
   // insert reservation into database
   const doc = {
     _id: reservation_id,
