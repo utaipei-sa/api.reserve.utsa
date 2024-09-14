@@ -205,8 +205,7 @@ router.put('/reserve/:reservation_id', async function (req, res, next) {
       add_space_reservation.start_datetime,
       add_space_reservation.space_id,
       reservation_id
-    ); 
-
+    )
 
     if (db_find_result !== null && db_find_result.reserved !== null) {
       res
@@ -357,7 +356,6 @@ router.put('/reserve/:reservation_id', async function (req, res, next) {
   console.log('add_item_reservations: ', add_item_reservations) // debug
   console.log('remove_item_reservations: ', remove_item_reservations) // debug
   // check items not all reserved
-  let max_quantity = 0
   db_find_result = null // db find result
   let db_find_max_quantity = null
   for (const add_item_reservation of add_item_reservations) {

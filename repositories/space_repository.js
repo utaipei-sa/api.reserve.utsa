@@ -1,18 +1,18 @@
-import { ObjectId } from "mongodb";
-import { spaces, spaces_reserved_time } from "../models/mongodb.js";
+import { ObjectId } from 'mongodb'
+import { spaces, spaces_reserved_time } from '../models/mongodb.js'
 class SpaceRepository {
   findSpaceById = async (/** @type {String} */ id) => {
     return await spaces.findOne({
-      _id: { $eq: new ObjectId(id) },
-    });
-  };
+      _id: { $eq: new ObjectId(id) }
+    })
+  }
 
   getAllSpaces = async () => {
     return await spaces
       .find({})
       .project({ _id: 1, name: 1, open: 1, exception_time: 1 })
-      .toArray();
-  };
+      .toArray()
+  }
 
   findSlotByStartTime = async (
     /** @type {String} */ id,
@@ -20,12 +20,12 @@ class SpaceRepository {
   ) => {
     return await spaces_reserved_time.findOne({
       start_datetime: {
-        $eq: new Date(start_time),
+        $eq: new Date(start_time)
       },
       space_id: { $eq: new ObjectId(id) },
-      reserved: { $eq: 1 },
-    });
-  };
+      reserved: { $eq: 1 }
+    })
+  }
 
   getSlotsByTimeRange = async (
     /** @type {string} */ id,
@@ -37,18 +37,18 @@ class SpaceRepository {
         space_id: { $eq: new ObjectId(id) },
         start_datetime: {
           $gte: new Date(start_datetime), // query start_datetime
-          $lt: new Date(end_datetime), // query end_datetime
+          $lt: new Date(end_datetime) // query end_datetime
         },
-        reserved: { $eq: 1 },
+        reserved: { $eq: 1 }
       })
-      .toArray();
-  };
+      .toArray()
+  }
 
   getSlotsByReservationId = async (/** @type {string} */ id) => {
     return await spaces_reserved_time
       .find({ reservations: { $in: [new ObjectId(id)] } })
-      .toArray();
-  };
+      .toArray()
+  }
 
   updateSlotDataById = async (
     /** @type {string | ObjectId} */ id,
@@ -56,22 +56,22 @@ class SpaceRepository {
   ) => {
     await spaces_reserved_time.updateOne(
       {
-        _id: new ObjectId(id), // filter
+        _id: new ObjectId(id) // filter
       },
       {
         $set: {
-          reserved: 0, // change data
+          reserved: 0 // change data
         },
         $pull: {
-          reservations: new ObjectId(reservation_id),
-        },
+          reservations: new ObjectId(reservation_id)
+        }
       }
-    );
-  };
+    )
+  }
 
   deleteNonReservedSlots = async () => {
-    await spaces_reserved_time.deleteMany({ reserved: 0 });
-  };
+    await spaces_reserved_time.deleteMany({ reserved: 0 })
+  }
 
   getRemainingSlotsByStartTime = async (
     /** @type {string} */ id,
@@ -82,9 +82,9 @@ class SpaceRepository {
       start_datetime: { $eq: start_datetime },
       space_id: { $eq: id },
       reserved: { $eq: 1 },
-      reservations: { $nin: [remaining_reservation_id] },
-    });
-  };
+      reservations: { $nin: [remaining_reservation_id] }
+    })
+  }
 
   deleteSlotByStartTimeAndId = async (
     /** @type {string} */ id,
@@ -92,15 +92,15 @@ class SpaceRepository {
   ) => {
     return await spaces_reserved_time.deleteOne({
       start_datetime: new Date(start_datetime),
-      space_id: new ObjectId(id),
-    });
-  };
+      space_id: new ObjectId(id)
+    })
+  }
 
   insertSlots = async (
     /** @type {{ start_datetime: any; end_datetime: any; space_id: any; reserved: number; reservations: string[]; }[]} */ slots
   ) => {
-    await spaces_reserved_time.insertMany(slots);
-  };
+    await spaces_reserved_time.insertMany(slots)
+  }
 }
 
-export default new SpaceRepository();
+export default new SpaceRepository()

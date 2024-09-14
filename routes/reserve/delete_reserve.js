@@ -95,17 +95,17 @@ router.delete('/reserve/:reservation_id', async function (req, res, next) {
       let quantity = 0
       const index = storeReserveInfo.findIndex(e => e.item_id === item.item_id)
       quantity = item.reserved_quantity - storeReserveInfo[index].quantity
-      await ItemRepository.removeResevertionSlotDataById(item._id,quantity,reservation_id)//should retrun something and error exception
+      await ItemRepository.removeResevertionSlotDataById(item._id, quantity, reservation_id)// should retrun something and error exception
     }
 
     // space
     for (const space of space_reserved_time_find) {
-      await SpaceRepository.updateSlotDataById(space._id,reservation_id) //should retrun something and error exception
+      await SpaceRepository.updateSlotDataById(space._id, reservation_id) // should retrun something and error exception
     }
 
     const reservation_result = await ReserveRepository.deleteReserveById(reservation_id)
-    await ItemRepository.deleteZeroQuantitySlots();
-    await SpaceRepository.deleteNonReservedSlots();
+    await ItemRepository.deleteZeroQuantitySlots()
+    await SpaceRepository.deleteNonReservedSlots()
     if (reservation_result.deletedCount > 0) {
       // send email
       try {

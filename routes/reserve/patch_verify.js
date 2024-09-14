@@ -100,7 +100,7 @@ router.patch('/verify/:reservation_id', async function (req, res, next) {
 
   const reservation = await ReserveRepository.getReserveById(
     req.params.reservation_id
-  );
+  )
 
   if (!reservation) {
     res
@@ -165,7 +165,7 @@ router.patch('/verify/:reservation_id', async function (req, res, next) {
         end_datetime: new Date(start_datetime.add(1, 'hour').format()),
         space_id: space_reservation.space_id,
         reserved: 1,
-        reservations:[]
+        reservations: []
       })
       start_datetime = start_datetime.add(1, 'hour')
     }
@@ -176,7 +176,7 @@ router.patch('/verify/:reservation_id', async function (req, res, next) {
     // 挖db
     db_space_check = await SpaceRepository.findSlotByStartTime(
       received_space_reserved_time[i].space_id,
-      received_space_reserved_time[i].start_datetime,
+      received_space_reserved_time[i].start_datetime
     )
 
     if (db_space_check == null) continue
@@ -231,7 +231,7 @@ router.patch('/verify/:reservation_id', async function (req, res, next) {
         end_datetime: new Date(start_datetime.add(1, 'hour').format()),
         item_id: item_reservation.item_id,
         reserved_quantity: item_reservation.quantity,
-        reservations:[]
+        reservations: []
       })
       start_datetime = start_datetime.add(1, 'hour')
     }

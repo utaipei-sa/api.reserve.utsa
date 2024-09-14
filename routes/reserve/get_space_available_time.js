@@ -151,7 +151,7 @@ router.get('/space_available_time', [
     const spaces_reservations = await SpaceRepository.getSlotsByTimeRange(
       space_id,
       start_datetime + ':00+0800',
-      end_datetime + ':00+0800',
+      end_datetime + ':00+0800'
     )
 
     const availability = spaces_reservations.length > 0 ? 0 : 1
@@ -195,12 +195,12 @@ async function cacuTimeSlot (
       const space_database_info =
         await SpaceRepository.findSlotByStartTime(
           space_id,
-          start_datetime_dayjs.add(i, "hour").format()
-        );
+          start_datetime_dayjs.add(i, 'hour').format()
+        )
       if (space_database_info == null) {
-        continue;
+        continue
       }
-      reserved_value = space_database_info.reserved;
+      reserved_value = space_database_info.reserved
     }
 
     if (

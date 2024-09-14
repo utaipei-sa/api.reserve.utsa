@@ -27,7 +27,7 @@ const router = express.Router()
  *                     $ref: '#/components/schemas/Space'
  */
 router.get('/spaces', async function (req, res, next) {
-  const data = await SpaceRepository.getAllSpaces();
+  const data = await SpaceRepository.getAllSpaces()
   const return_data = data.map((element) => ({
     _id: element._id,
     name: element.name,
