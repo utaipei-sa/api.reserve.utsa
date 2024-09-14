@@ -210,7 +210,7 @@ router.post('/reserve', async function (req, res, next) {
       received_space_reserved_time.push({
         start_datetime: new Date(start_datetime.format()),
         end_datetime: new Date(start_datetime.add(1, 'hour').format()),
-        space_id: space_reservation.space_id,
+        space_id: new ObjectId(space_reservation.space_id),
         reserved: 1
       })
       start_datetime = start_datetime.add(1, 'hour')
@@ -341,7 +341,7 @@ router.post('/reserve', async function (req, res, next) {
       received_item_reserved_time.push({
         start_datetime: new Date(start_datetime.format()),
         end_datetime: new Date(start_datetime.add(1, 'hour').format()),
-        item_id: item_reservation.item_id,
+        item_id: new ObjectId(item_reservation.item_id),
         reserved_quantity: item_reservation.quantity
       })
       start_datetime = start_datetime.add(1, 'hour')
@@ -381,7 +381,7 @@ router.post('/reserve', async function (req, res, next) {
       )
     return
   }
-
+  
   // insert reservation into database
   const doc = {
     _id: reservation_id,

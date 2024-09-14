@@ -8,6 +8,7 @@ import {
   subject as email_subject,
   html as email_html
 } from '../../utilities/email/templates/cancel_reservation.js'
+import { ObjectId } from 'mongodb'
 
 const router = express.Router()
 
@@ -82,7 +83,7 @@ router.delete('/reserve/:reservation_id', async function (req, res, next) {
     if (reservation_find.item_reservations != null) {
       for (const element of reservation_find.item_reservations) {
         storeReserveInfo.push({
-          item_id: element.item_id,
+          item_id: new ObjectId(element.item_id),
           quantity: element.quantity
         })
       }
@@ -90,10 +91,9 @@ router.delete('/reserve/:reservation_id', async function (req, res, next) {
     const item_reserved_time_find = await ItemRepository.getSlotByReservationId(reservation_id)
     const space_reserved_time_find = await SpaceRepository.getSlotsByReservationId(reservation_id)
     // delete items_reserved_time
-
     for (const item of item_reserved_time_find) {
       let quantity = 0
-      const index = storeReserveInfo.findIndex(e => e.item_id === item.item_id)
+      const index = storeReserveInfo.findIndex(e => new ObjectId(e.item_id).equals(new ObjectId(item.item_id)))
       quantity = item.reserved_quantity - storeReserveInfo[index].quantity
       await ItemRepository.removeResevertionSlotDataById(item._id, quantity, reservation_id)// should retrun something and error exception
     }

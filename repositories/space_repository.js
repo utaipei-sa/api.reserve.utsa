@@ -15,7 +15,7 @@ class SpaceRepository {
   }
 
   findSlotByStartTime = async (
-    /** @type {String} */ id,
+    /** @type {String | ObjectId} */ id,
     /** @type {string | number | Date} */ start_time
   ) => {
     return await spaces_reserved_time.findOne({
@@ -28,7 +28,7 @@ class SpaceRepository {
   }
 
   getSlotsByTimeRange = async (
-    /** @type {string} */ id,
+    /** @type {string | ObjectId} */ id,
     /** @type {string | number | Date} */ start_datetime,
     /** @type {string | number | Date} */ end_datetime
   ) => {
@@ -52,7 +52,7 @@ class SpaceRepository {
 
   updateSlotDataById = async (
     /** @type {string | ObjectId} */ id,
-    /** @type {string} */ reservation_id
+    /** @type {string | ObjectId} */ reservation_id
   ) => {
     await spaces_reserved_time.updateOne(
       {
@@ -74,20 +74,20 @@ class SpaceRepository {
   }
 
   getRemainingSlotsByStartTime = async (
-    /** @type {string} */ id,
+    /** @type {string | ObjectId} */ id,
     /** @type {string | number | Date} */ start_datetime,
-    /** @type {string} */ remaining_reservation_id
+    /** @type {string | ObjectId} */ remaining_reservation_id
   ) => {
     return await spaces_reserved_time.findOne({
       start_datetime: { $eq: start_datetime },
-      space_id: { $eq: id },
+      space_id: { $eq: new ObjectId(id) },
       reserved: { $eq: 1 },
-      reservations: { $nin: [remaining_reservation_id] }
+      reservations: { $nin: [new ObjectId(remaining_reservation_id)] }
     })
   }
 
   deleteSlotByStartTimeAndId = async (
-    /** @type {string} */ id,
+    /** @type {string | ObjectId} */ id,
     /** @type {string | number | Date} */ start_datetime
   ) => {
     return await spaces_reserved_time.deleteOne({
@@ -97,7 +97,7 @@ class SpaceRepository {
   }
 
   insertSlots = async (
-    /** @type {{ start_datetime: any; end_datetime: any; space_id: any; reserved: number; reservations: string[]; }[]} */ slots
+    /** @type {{ start_datetime: any; end_datetime: any; space_id: any; reserved: number; reservations: ObjectId[]; }[]} */ slots
   ) => {
     await spaces_reserved_time.insertMany(slots)
   }

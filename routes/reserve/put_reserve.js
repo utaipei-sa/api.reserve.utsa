@@ -2,6 +2,7 @@ import express from 'express'
 import ReserveRepository from '../../repositories/reserve_repository.js'
 import SpaceRepository from '../../repositories/space_repository.js'
 import ItemRepository from '../../repositories/item_repository.js'
+import { ObjectId } from 'mongodb'
 import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc.js'
 import {
@@ -183,9 +184,9 @@ router.put('/reserve/:reservation_id', async function (req, res, next) {
       add_space_reservations.push({
         start_datetime: updated_space_reservation.start_datetime,
         end_datetime: updated_space_reservation.end_datetime,
-        space_id: updated_space_reservation.space_id,
+        space_id: new ObjectId(updated_space_reservation.space_id),
         reserved: 1,
-        reservations: [reservation_id]
+        reservations: [new ObjectId(reservation_id)]
       })
     }
 
@@ -202,8 +203,8 @@ router.put('/reserve/:reservation_id', async function (req, res, next) {
   for (const add_space_reservation of add_space_reservations) {
     // find data drom db
     db_find_result = await SpaceRepository.getRemainingSlotsByStartTime(
-      add_space_reservation.start_datetime,
       add_space_reservation.space_id,
+      add_space_reservation.start_datetime,
       reservation_id
     )
 
@@ -284,13 +285,13 @@ router.put('/reserve/:reservation_id', async function (req, res, next) {
       const reservations =
         item_reservation_found !== null
           ? item_reservation_found.reservations
-          : [reservation_id]
+          : [new ObjectId(reservation_id)]
       if (
         updated_item_reservation.quantity >
         original_item_found.reserved_quantity
       ) {
         add_item_reservations.push({
-          item_id: updated_item_reservation.item_id,
+          item_id: new ObjectId(updated_item_reservation.item_id),
           start_datetime: updated_item_reservation.start_datetime,
           end_datetime: updated_item_reservation.end_datetime,
           reserved_quantity:
@@ -322,10 +323,10 @@ router.put('/reserve/:reservation_id', async function (req, res, next) {
       const new_quantity = updated_item_reservation.quantity
       const reservations =
         item_reservation_found !== null
-          ? [...item_reservation_found.reservations, reservation_id]
-          : [reservation_id]
+          ? [...item_reservation_found.reservations, new ObjectId(reservation_id)]
+          : [new ObjectId(reservation_id)]
       add_item_reservations.push({
-        item_id: updated_item_reservation.item_id,
+        item_id: new ObjectId(updated_item_reservation.item_id),
         start_datetime: updated_item_reservation.start_datetime,
         end_datetime: updated_item_reservation.end_datetime,
         reserved_quantity: new_quantity,
@@ -341,14 +342,13 @@ router.put('/reserve/:reservation_id', async function (req, res, next) {
       original_item_reservation.start_datetime,
       original_item_reservation.end_datetime
     )
-
     const new_item_reservation = {
-      reservations: timeslot_item_reservation?.reservations,
+      reservations: timeslot_item_reservation !== null ? timeslot_item_reservation?.reservations : [],
       reserved_quantity: original_item_reservation.quantity,
       ...original_item_reservation
     }
     new_item_reservation.reservations.splice(
-      new_item_reservation.reservations.findIndex((t) => t === reservation_id),
+      new_item_reservation.reservations.findIndex((t) => t.equals(new ObjectId(reservation_id))),
       1
     )
     remove_item_reservations.push(new_item_reservation)

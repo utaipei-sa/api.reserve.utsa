@@ -13,6 +13,7 @@ import {
   R_SEND_EMAIL_FAILED
 } from '../../utilities/response.js'
 import sendEmail from '../../utilities/email/email.js'
+import {ObjectId} from 'mongodb'
 import {
   subject as email_subject,
   html as email_html
@@ -163,7 +164,7 @@ router.patch('/verify/:reservation_id', async function (req, res, next) {
       received_space_reserved_time.push({
         start_datetime: new Date(start_datetime.format()),
         end_datetime: new Date(start_datetime.add(1, 'hour').format()),
-        space_id: space_reservation.space_id,
+        space_id: new ObjectId(space_reservation.space_id),
         reserved: 1,
         reservations: []
       })
@@ -229,7 +230,7 @@ router.patch('/verify/:reservation_id', async function (req, res, next) {
       received_item_reserved_time.push({
         start_datetime: new Date(start_datetime.format()),
         end_datetime: new Date(start_datetime.add(1, 'hour').format()),
-        item_id: item_reservation.item_id,
+        item_id: new ObjectId(item_reservation.item_id),
         reserved_quantity: item_reservation.quantity,
         reservations: []
       })
@@ -291,7 +292,7 @@ router.patch('/verify/:reservation_id', async function (req, res, next) {
 
   for (const spaces_reserved_time_each of received_space_reserved_time) {
     // @ts-ignore
-    spaces_reserved_time_each.reservations.push(reservation_id)
+    spaces_reserved_time_each.reservations.push(new ObjectId(reservation_id))
   }
   if (received_space_reserved_time.length > 0) {
     await SpaceRepository.insertSlots(received_space_reserved_time)
@@ -299,7 +300,7 @@ router.patch('/verify/:reservation_id', async function (req, res, next) {
 
   for (const items_reserved_time_each of received_item_reserved_time) {
     // @ts-ignore
-    items_reserved_time_each.reservations.push(reservation_id)
+    items_reserved_time_each.reservations.push(new ObjectId(reservation_id))
   }
   if (received_item_reserved_time.length > 0) {
     await ItemRepository.insertSlots(received_item_reserved_time)
