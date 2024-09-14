@@ -69,9 +69,9 @@ class SpaceRepository {
     );
   };
 
-  deleteNonReservedSlots = async() =>{
-    await spaces_reserved_time.deleteMany({ reserved: 0 })
-  }
+  deleteNonReservedSlots = async () => {
+    await spaces_reserved_time.deleteMany({ reserved: 0 });
+  };
 
   getRemainingSlotsByStartTime = async (
     /** @type {string} */ id,
@@ -82,8 +82,24 @@ class SpaceRepository {
       start_datetime: { $eq: start_datetime },
       space_id: { $eq: id },
       reserved: { $eq: 1 },
-      reservations: { $nin: [remaining_reservation_id] }
-    })
+      reservations: { $nin: [remaining_reservation_id] },
+    });
+  };
+
+  deleteSlotByStartTimeAndId = async (
+    /** @type {string} */ id,
+    /** @type {string | number | Date} */ start_datetime
+  ) => {
+    return await spaces_reserved_time.deleteOne({
+      start_datetime: new Date(start_datetime),
+      space_id: new ObjectId(id),
+    });
+  };
+
+  insertSlots = async (
+    /** @type {{ start_datetime: any; end_datetime: any; space_id: any; reserved: number; reservations: string[]; }[]} */ slots
+  ) => {
+    await spaces_reserved_time.insertMany(slots);
   };
 }
 

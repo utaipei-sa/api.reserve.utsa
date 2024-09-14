@@ -32,7 +32,7 @@ class ItemRepository {
       .toArray();
   };
 
-  updateSlotDataById = async (
+  removeResevertionSlotDataById = async (
     /** @type {string | ObjectId} */ id,
     /** @type {number} */ quantity,
     /** @type {string} */ reservation_id
@@ -48,6 +48,24 @@ class ItemRepository {
         $pull: {
           reservations: reservation_id,
         },
+      }
+    );
+  };
+
+  addResevertionSlotDataById = async (
+    /** @type {string | ObjectId} */ id,
+    /** @type {number} */ quantity,
+    /** @type {string} */ reservation_id
+  ) => {
+    await items_reserved_time.updateOne(
+      {
+        _id: new ObjectId(id)
+      },
+      {
+        $inc: {
+          reserved_quantity: quantity
+        },
+        $push: { reservations: reservation_id }
       }
     );
   };
@@ -69,6 +87,44 @@ class ItemRepository {
       end_datetime: { $eq: new Date(end_datetime) },
     });
   };
+
+  deleteSlotByStartTimeAndId = async (
+    /** @type {string} */ id,
+    /** @type {string | number | Date} */ start_datetime
+  ) => {
+    await items_reserved_time.deleteOne({
+      start_datetime: new Date(start_datetime),
+      space_id: new ObjectId(id),
+    });
+  };
+
+  updateSlotDataByStartTimeAndId = async (
+    /** @type {string} */ id,
+    /** @type {string | number | Date} */ start_datetime,
+    /** @type {number} */ quantity,
+    /** @type {object} */ reservations
+  ) => {
+    items_reserved_time.updateOne(
+      {
+        item_id: new ObjectId(id),
+        start_datetime: new Date(start_datetime),
+      },
+      {
+        $inc: {
+          reserved_quantity: quantity,
+        },
+        $set: { reservations: reservations },
+      }
+    );
+  };
+
+  insertSlot = async (/** @type {object} */ slot) => {
+    await items_reserved_time.insertOne(slot);
+  };
+
+  insertSlots = async(/** @type {object} */ slots) =>{
+    await items_reserved_time.insertMany(slots)
+  }
 }
 
 export default new ItemRepository();

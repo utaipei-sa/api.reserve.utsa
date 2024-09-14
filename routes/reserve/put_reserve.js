@@ -359,6 +359,7 @@ router.put('/reserve/:reservation_id', async function (req, res, next) {
   // check items not all reserved
   let max_quantity = 0
   db_find_result = null // db find result
+  let db_find_max_quantity = null
   for (const add_item_reservation of add_item_reservations) {
     // find data drom db
     db_find_result = await ItemRepository.findSlotByStartTime(
@@ -367,17 +368,19 @@ router.put('/reserve/:reservation_id', async function (req, res, next) {
     )
 
     if (db_find_result === null) {
-      db_find_result = { quantity: 0 }
+      db_find_result = { reserved_quantity: 0 }
     }
 
-    max_quantity = await ItemRepository.findItemById(add_item_reservation.item_id)
+    db_find_max_quantity = await ItemRepository.findItemById(add_item_reservation.item_id)
 
-    max_quantity = max_quantity.quantity
+    if (db_find_max_quantity === null) {
+      db_find_max_quantity = { quantity: 0 }
+    }
 
     if (
       db_find_result.reserved_quantity +
         add_item_reservation.reserved_quantity >
-      max_quantity
+      db_find_max_quantity.quantity
     ) {
       res
         .status(400)
@@ -394,68 +397,54 @@ router.put('/reserve/:reservation_id', async function (req, res, next) {
   if (verify) {
     // remove spaces reservations
     for (const remove_space_reservation of remove_space_reservations) {
-      spaces_reserved_time.deleteOne({
-        start_datetime: remove_space_reservation.start_datetime,
-        space_id: remove_space_reservation.space_id
-      })
+      await SpaceRepository.deleteSlotByStartTimeAndId(
+        remove_space_reservation.start_datetime,
+        remove_space_reservation.space_id
+      )
     }
     // add spaces reservations
     if (add_space_reservations.length > 0) {
-      spaces_reserved_time.insertMany(add_space_reservations)
+      await SpaceRepository.insertSlots(add_space_reservations)
     }
 
     // remove items reservations (copy from delete_reservation.js)
     for (const remove_item_reservation of remove_item_reservations) {
-      const found = await items_reserved_time.findOne({
-        item_id: { $eq: remove_item_reservation.item_id },
-        start_datetime: { $eq: remove_item_reservation.start_datetime }
-      })
+      const found = await ItemRepository.findSlotByStartTime(
+        remove_item_reservation.item_id,
+        remove_item_reservation.start_datetime
+      )
 
-      if (found === null) {
-        continue
-      } else if (
-        found.reserved_quantity - remove_item_reservation.reserved_quantity <=
-        0
-      ) {
-        items_reserved_time.deleteOne({
-          item_id: remove_item_reservation.item_id,
-          start_datetime: remove_item_reservation.start_datetime
-        })
+      if (found === null) continue
+      if (found.reserved_quantity - remove_item_reservation.reserved_quantity <= 0) {
+        await ItemRepository.deleteSlotByStartTimeAndId(
+          remove_item_reservation.item_id,
+          remove_item_reservation.start_datetime
+        )
       } else {
-        items_reserved_time.updateOne(
-          {
-            item_id: remove_item_reservation.item_id,
-            start_datetime: remove_item_reservation.start_datetime
-          },
-          {
-            $inc: {
-              reserved_quantity: -remove_item_reservation.reserved_quantity
-            },
-            $set: { reservations: remove_item_reservation.reservations }
-          }
+        await ItemRepository.updateSlotDataByStartTimeAndId(
+          remove_item_reservation.item_id,
+          remove_item_reservation.start_datetime,
+          -remove_item_reservation.reserved_quantity,
+          remove_item_reservation.reservations
         )
       }
     }
     // add items reservations (copy from post_reservation.js)
     for (const add_item_reservation of add_item_reservations) {
-      const found = await items_reserved_time.findOne({
-        item_id: { $eq: add_item_reservation.item_id },
-        start_datetime: { $eq: add_item_reservation.start_datetime }
-      })
+      const found = await ItemRepository.findSlotByStartTime(
+        add_item_reservation.item_id,
+        add_item_reservation.start_datetime
+      )
 
       if (found !== null) {
-        items_reserved_time.updateOne(
-          {
-            item_id: add_item_reservation.item_id,
-            start_datetime: add_item_reservation.start_datetime
-          },
-          {
-            $inc: { reserved_quantity: add_item_reservation.reserved_quantity },
-            $set: { reservations: add_item_reservation.reservations }
-          }
+        await ItemRepository.updateSlotDataByStartTimeAndId(
+          add_item_reservation.item_id,
+          add_item_reservation.start_datetime,
+          add_item_reservation.reserved_quantity,
+          add_item_reservation.reservations
         )
       } else {
-        items_reserved_time.insertOne({
+        await ItemRepository.insertSlot({
           item_id: add_item_reservation.item_id,
           start_datetime: add_item_reservation.start_datetime,
           end_datetime: add_item_reservation.end_datetime,
@@ -485,11 +474,10 @@ router.put('/reserve/:reservation_id', async function (req, res, next) {
     note
   }
   // const reservation_update_result = await
-  reservations.updateOne(
-    { _id: new ObjectId(reservation_id) },
-    { $set: updated_reservation }
+  ReserveRepository.updateReserveById(
+    reservation_id,
+    updated_reservation
   )
-
   // send email
   updated_reservation.verify = original_reservation.verify
   updated_reservation.reservation_id = reservation_id

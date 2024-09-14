@@ -95,7 +95,7 @@ router.delete('/reserve/:reservation_id', async function (req, res, next) {
       let quantity = 0
       const index = storeReserveInfo.findIndex(e => e.item_id === item.item_id)
       quantity = item.reserved_quantity - storeReserveInfo[index].quantity
-      await ItemRepository.updateSlotDataById(item._id,quantity,reservation_id)//should retrun something and error exception
+      await ItemRepository.removeResevertionSlotDataById(item._id,quantity,reservation_id)//should retrun something and error exception
     }
 
     // space
