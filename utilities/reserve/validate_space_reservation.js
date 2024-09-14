@@ -4,8 +4,7 @@ import {
   R_INVALID_INFO,
   R_INVALID_RESERVATION
 } from '../response.js'
-import { spaces } from '../../models/mongodb.js'
-import { ObjectId } from 'mongodb'
+import SpaceRepository from '../../repositories/space_repository.js'
 import dayjs from 'dayjs'
 
 export default async function validateSpaceReservation (space_reservation) {
@@ -40,10 +39,10 @@ export default async function validateSpaceReservation (space_reservation) {
     }
   }
   // check if the space_id exist
-  const space_found = await spaces.findOne({
-    _id: { $eq: new ObjectId(space_reservation.space_id) }
-  })
-
+  const space_found = await SpaceRepository.findSpaceById(
+    space_reservation.space_id
+  )
+  
   if (space_found === null) {
     return {
       status: 404,
