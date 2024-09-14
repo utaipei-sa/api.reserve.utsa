@@ -42,7 +42,7 @@ export default async function validateSpaceReservation (space_reservation) {
   const space_found = await SpaceRepository.findSpaceById(
     space_reservation.space_id
   )
-  
+
   if (space_found === null) {
     return {
       status: 404,
