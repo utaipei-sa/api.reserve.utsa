@@ -1,13 +1,9 @@
 import { randomBytes } from 'crypto'
 import express from 'express'
-import {
-  reservations,
-  spaces_reserved_time,
-  items_reserved_time,
-  spaces,
-  items
-} from '../../models/mongodb.js'
 import { ObjectId } from 'mongodb'
+import ReserveRepository from '../../repositories/reserve_repository.js'
+import SpaceRepository from '../../repositories/space_repository.js'
+import ItemRepository from '../../repositories/item_repository.js'
 import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc.js'
 import {
@@ -143,9 +139,9 @@ router.post('/reserve', async function (req, res, next) {
     }
 
     // check whether space_id is exist
-    const space_found = await spaces.findOne({
-      _id: { $eq: new ObjectId(space_reservation.space_id) }
-    })
+    const space_found = await SpaceRepository.findSpaceById(
+      space_reservation.space_id
+    )
     if (!space_found) {
       res
         .status(404)
@@ -214,7 +210,7 @@ router.post('/reserve', async function (req, res, next) {
       received_space_reserved_time.push({
         start_datetime: new Date(start_datetime.format()),
         end_datetime: new Date(start_datetime.add(1, 'hour').format()),
-        space_id: space_reservation.space_id,
+        space_id: new ObjectId(space_reservation.space_id),
         reserved: 1
       })
       start_datetime = start_datetime.add(1, 'hour')
@@ -232,25 +228,20 @@ router.post('/reserve', async function (req, res, next) {
   let db_space_check // db資料暫存器
   for (let i = 0; i < received_space_reserved_time.length; i++) {
     // 挖db
-    db_space_check = await spaces_reserved_time.findOne({
-      start_datetime: { $eq: received_space_reserved_time[i].start_datetime },
-      space_id: { $eq: received_space_reserved_time[i].space_id },
-      reserved: 1
-    })
-
-    if (db_space_check == null) {
-      continue
-    } else if (db_space_check.reserved) {
-      res
-        .status(400)
-        .json(
-          error_response(
-            R_INVALID_RESERVATION,
-            'space_datetime has reserved error'
-          )
+    db_space_check = await SpaceRepository.findSlotByStartTime(
+      received_space_reserved_time[i].space_id,
+      received_space_reserved_time[i].start_datetime
+    )
+    if (db_space_check == null) continue
+    res
+      .status(400)
+      .json(
+        error_response(
+          R_INVALID_RESERVATION,
+          'space_datetime has reserved error'
         )
-      return
-    }
+      )
+    return
   }
   // 重複的註解就不打了，參考樓上space(絕對不是我懶
   // item reservation process
@@ -279,9 +270,7 @@ router.post('/reserve', async function (req, res, next) {
     }
 
     // check whether item_id is exist
-    const item_found = await items.findOne({
-      _id: { $eq: new ObjectId(item_reservation.item_id) }
-    })
+    const item_found = await ItemRepository.findItemById(item_reservation.item_id)
     if (!item_found) {
       // <-- notice what's this when not found (should be same as space)
       res
@@ -352,7 +341,7 @@ router.post('/reserve', async function (req, res, next) {
       received_item_reserved_time.push({
         start_datetime: new Date(start_datetime.format()),
         end_datetime: new Date(start_datetime.add(1, 'hour').format()),
-        item_id: item_reservation.item_id,
+        item_id: new ObjectId(item_reservation.item_id),
         reserved_quantity: item_reservation.quantity
       })
       start_datetime = start_datetime.add(1, 'hour')
@@ -371,30 +360,26 @@ router.post('/reserve', async function (req, res, next) {
   let db_item_check
   let max_quantity
   for (let i = 0; i < received_item_reserved_time.length; i++) {
-    max_quantity = await items.findOne({
-      _id: { $eq: new ObjectId(received_item_reserved_time[i].item_id) }
-    })
-    db_item_check = await items_reserved_time.findOne({
-      start_datetime: { $eq: received_item_reserved_time[i].start_datetime },
-      item_id: { $eq: received_item_reserved_time[i].item_id }
-    })
+    max_quantity = await ItemRepository.findItemById(received_item_reserved_time[i].item_id)
+    db_item_check = await ItemRepository.findSlotByStartTime(
+      received_item_reserved_time[i].item_id,
+      received_item_reserved_time[i].start_datetime
+    )
     const item_reserved_quantity = db_item_check?.reserved_quantity || 0
     if (
       item_reserved_quantity <=
-      max_quantity.quantity - received_item_reserved_time[i].reserved_quantity
-    ) {
-      continue
-    } else {
-      res
-        .status(400)
-        .json(
-          error_response(
-            R_INVALID_RESERVATION,
-            'item_datetime has over reserved error'
-          )
+      max_quantity?.quantity - received_item_reserved_time[i].reserved_quantity
+    ) continue
+
+    res
+      .status(400)
+      .json(
+        error_response(
+          R_INVALID_RESERVATION,
+          'item_datetime has over reserved error'
         )
-      return
-    }
+      )
+    return
   }
 
   // insert reservation into database
@@ -418,7 +403,7 @@ router.post('/reserve', async function (req, res, next) {
     item_reservations: received_item_reservations,
     note
   }
-  await reservations.insertOne(doc)
+  await ReserveRepository.insertReserve(doc)
   // send verify email
   try {
     const email_response = await sendEmail(
