@@ -1,12 +1,8 @@
 import express from 'express'
 import dayjs from 'dayjs'
-import { ObjectId } from 'mongodb'
-import {
-  reservations,
-  spaces_reserved_time,
-  items_reserved_time,
-  items
-} from '../../models/mongodb.js'
+import ReserveRepository from '../../repositories/reserve_repository.js'
+import SpaceRepository from '../../repositories/space_repository.js'
+import ItemRepository from '../../repositories/item_repository.js'
 import {
   error_response,
   R_SUCCESS,
@@ -17,6 +13,7 @@ import {
   R_SEND_EMAIL_FAILED
 } from '../../utilities/response.js'
 import sendEmail from '../../utilities/email/email.js'
+import { ObjectId } from 'mongodb'
 import {
   subject as email_subject,
   html as email_html
@@ -102,9 +99,9 @@ router.patch('/verify/:reservation_id', async function (req, res, next) {
     return
   }
 
-  const reservation = await reservations.findOne({
-    _id: { $eq: new ObjectId(req.params.reservation_id) }
-  })
+  const reservation = await ReserveRepository.getReserveById(
+    req.params.reservation_id
+  )
 
   if (!reservation) {
     res
@@ -167,8 +164,9 @@ router.patch('/verify/:reservation_id', async function (req, res, next) {
       received_space_reserved_time.push({
         start_datetime: new Date(start_datetime.format()),
         end_datetime: new Date(start_datetime.add(1, 'hour').format()),
-        space_id: space_reservation.space_id,
-        reserved: 1
+        space_id: new ObjectId(space_reservation.space_id),
+        reserved: 1,
+        reservations: []
       })
       start_datetime = start_datetime.add(1, 'hour')
     }
@@ -177,25 +175,22 @@ router.patch('/verify/:reservation_id', async function (req, res, next) {
   let db_space_check // db資料暫存器
   for (let i = 0; i < received_space_reserved_time.length; i++) {
     // 挖db
-    db_space_check = await spaces_reserved_time.findOne({
-      start_datetime: { $eq: received_space_reserved_time[i].start_datetime },
-      space_id: { $eq: received_space_reserved_time[i].space_id },
-      reserved: { $eq: 1 }
-    })
+    db_space_check = await SpaceRepository.findSlotByStartTime(
+      received_space_reserved_time[i].space_id,
+      received_space_reserved_time[i].start_datetime
+    )
 
-    if (db_space_check == null) {
-      continue
-    } else if (db_space_check.reserved) {
-      res
-        .status(400)
-        .json(
-          error_response(
-            R_INVALID_RESERVATION,
-            'space_datetime has reserved error'
-          )
+    if (db_space_check == null) continue
+
+    res
+      .status(400)
+      .json(
+        error_response(
+          R_INVALID_RESERVATION,
+          'space_datetime has reserved error'
         )
-      return
-    }
+      )
+    return
   }
 
   // 重複的註解就不打了，參考樓上space(絕對不是我懶
@@ -235,8 +230,9 @@ router.patch('/verify/:reservation_id', async function (req, res, next) {
       received_item_reserved_time.push({
         start_datetime: new Date(start_datetime.format()),
         end_datetime: new Date(start_datetime.add(1, 'hour').format()),
-        item_id: item_reservation.item_id,
-        reserved_quantity: item_reservation.quantity
+        item_id: new ObjectId(item_reservation.item_id),
+        reserved_quantity: item_reservation.quantity,
+        reservations: []
       })
       start_datetime = start_datetime.add(1, 'hour')
     }
@@ -245,59 +241,47 @@ router.patch('/verify/:reservation_id', async function (req, res, next) {
   let db_item_check
   let max_quantity
   for (let i = 0; i < received_item_reserved_time.length; i++) {
-    max_quantity = await items.findOne({
-      _id: { $eq: new ObjectId(received_item_reserved_time[i].item_id) }
-    })
+    max_quantity = await ItemRepository.findItemById(
+      received_item_reserved_time[i].item_id
+    )
 
-    db_item_check = await items_reserved_time.findOne({
-      start_datetime: { $eq: received_item_reserved_time[i].start_datetime },
-      item_id: { $eq: received_item_reserved_time[i].item_id }
-    })
+    db_item_check = await ItemRepository.findSlotByStartTime(
+      received_item_reserved_time[i].item_id,
+      received_item_reserved_time[i].start_datetime
+    )
 
-    if (db_item_check == null) {
-      continue
-    } else {
-      if (
-        db_item_check.reserved_quantity <=
-        max_quantity.quantity - received_item_reserved_time[i].reserved_quantity
-      ) {
-        continue
-      } else {
-        res
-          .status(400)
-          .json(
-            error_response(
-              R_INVALID_RESERVATION,
-              'item_datetime has over reserved error'
-            )
-          )
-        return
-      }
-    }
+    if (db_item_check == null) continue
+    if (
+      db_item_check.reserved_quantity <=
+      max_quantity?.quantity - received_item_reserved_time[i].reserved_quantity
+    ) continue
+    res
+      .status(400)
+      .json(
+        error_response(
+          R_INVALID_RESERVATION,
+          'item_datetime has over reserved error'
+        )
+      )
+    return
   }
 
   // TODO :: update items reserved_quantity
   for (let i = 0; i < received_item_reserved_time.length; i++) {
     console.log(i)
     // const max_quantity = await items.findOne({ _id: new ObjectId(received_item_reserved_time[i].item_id) })
-    const db_item_check = await items_reserved_time.findOne({
-      start_datetime: { $eq: received_item_reserved_time[i].start_datetime },
-      item_id: { $eq: received_item_reserved_time[i].item_id }
-    })
+    const db_item_check = await ItemRepository.findSlotByStartTime(
+      received_item_reserved_time[i].item_id,
+      received_item_reserved_time[i].start_datetime
+    )
 
     if (db_item_check != null) {
       console.log('success')
       console.log('db_item_check\n', db_item_check)
-      await items_reserved_time.updateOne(
-        {
-          _id: db_item_check._id
-        },
-        {
-          $inc: {
-            reserved_quantity: received_item_reserved_time[i].reserved_quantity
-          },
-          $push: { reservations: reservation_id }
-        }
+      await ItemRepository.addResevertionSlotDataById(
+        db_item_check._id,
+        received_item_reserved_time[i].reserved_quantity,
+        reservation_id
       )
       received_item_reserved_time.splice(i, 1)
       i--
@@ -307,22 +291,22 @@ router.patch('/verify/:reservation_id', async function (req, res, next) {
   }
 
   for (const spaces_reserved_time_each of received_space_reserved_time) {
-    spaces_reserved_time_each.reservations = [reservation_id]
+    // @ts-ignore
+    spaces_reserved_time_each.reservations.push(new ObjectId(reservation_id))
   }
   if (received_space_reserved_time.length > 0) {
-    spaces_reserved_time.insertMany(received_space_reserved_time)
+    await SpaceRepository.insertSlots(received_space_reserved_time)
   }
 
   for (const items_reserved_time_each of received_item_reserved_time) {
-    items_reserved_time_each.reservations = [reservation_id]
+    // @ts-ignore
+    items_reserved_time_each.reservations.push(new ObjectId(reservation_id))
   }
   if (received_item_reserved_time.length > 0) {
-    items_reserved_time.insertMany(received_item_reserved_time)
+    await ItemRepository.insertSlots(received_item_reserved_time)
   }
-
-  await reservations.updateOne(
-    { _id: new ObjectId(req.params.reservation_id) },
-    { $set: { verify: 1 } }
+  await ReserveRepository.updateVerifyById(
+    req.params.reservation_id
   )
 
   // send email
