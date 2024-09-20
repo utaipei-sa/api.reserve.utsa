@@ -1,7 +1,7 @@
 import { items, items_reserved_time } from '../models/mongodb.js'
 import { ObjectId } from 'mongodb'
 class ItemRepository {
-  findItemById = async (id) => {
+  findItemById = async (/** @type {string | ObjectId} */ id) => {
     return await items.findOne({
       _id: { $eq: new ObjectId(id) }
     })
@@ -14,13 +14,116 @@ class ItemRepository {
       .toArray()
   }
 
-  findReservedSlotByTimeAndId = async (id, start_time) => {
+  findSlotByStartTime = async (
+    /** @type {string | ObjectId} */ id,
+    /** @type {string | number | Date} */ start_time
+  ) => {
     return await items_reserved_time.findOne({
       start_datetime: {
         $eq: new Date(start_time)
       },
-      item_id: { $eq: id }
+      item_id: { $eq: new ObjectId(id) }
     })
+  }
+
+  getSlotByReservationId = async (/** @type {string} */ id) => {
+    return await items_reserved_time
+      .find({ reservations: { $in: [new ObjectId(id)] } })
+      .toArray()
+  }
+
+  removeResevertionSlotDataById = async (
+    /** @type {string | ObjectId} */ id,
+    /** @type {number} */ quantity,
+    /** @type {string | ObjectId} */ reservation_id
+  ) => {
+    await items_reserved_time.updateOne(
+      {
+        _id: new ObjectId(id) // filter
+      },
+      {
+        $set: {
+          reserved_quantity: quantity // change data
+        },
+        $pull: {
+          reservations: new ObjectId(reservation_id)
+        }
+      }
+    )
+  }
+
+  addResevertionSlotDataById = async (
+    /** @type {string | ObjectId} */ id,
+    /** @type {number} */ quantity,
+    /** @type {string | ObjectId} */ reservation_id
+  ) => {
+    await items_reserved_time.updateOne(
+      {
+        _id: new ObjectId(id)
+      },
+      {
+        $inc: {
+          reserved_quantity: quantity
+        },
+        $push: { reservations: new ObjectId(reservation_id) }
+      }
+    )
+  }
+
+  deleteZeroQuantitySlots = async () => {
+    await items_reserved_time.deleteMany({ reserved_quantity: 0 })
+  }
+
+  findSlotByTimeRange = async (
+    /** @type {string | ObjectId} */ id,
+    /** @type {string | number | Date} */ start_datetime,
+    /** @type {string | number | Date} */ end_datetime
+  ) => {
+    return await items_reserved_time.findOne({
+      item_id: { $eq: new ObjectId(id) },
+      start_datetime: {
+        $eq: new Date(start_datetime)
+      },
+      end_datetime: { $eq: new Date(end_datetime) }
+    })
+  }
+
+  deleteSlotByStartTimeAndId = async (
+    /** @type {string | ObjectId} */ id,
+    /** @type {string | number | Date} */ start_datetime
+  ) => {
+    await items_reserved_time.deleteOne({
+      start_datetime: new Date(start_datetime),
+      space_id: new ObjectId(id)
+    })
+  }
+
+  updateSlotDataByStartTimeAndId = async (
+    /** @type {string | ObjectId} */ id,
+    /** @type {string | number | Date} */ start_datetime,
+    /** @type {number} */ quantity,
+    /** @type {object} */ reservations
+  ) => {
+    items_reserved_time.updateOne(
+      {
+        item_id: new ObjectId(id),
+        start_datetime: new Date(start_datetime)
+      },
+      {
+        $inc: {
+          reserved_quantity: quantity
+        },
+        $set: { reservations }
+      }
+    )
+  }
+
+  insertSlot = async (/** @type {object} */ slot) => {
+    await items_reserved_time.insertOne(slot)
+  }
+
+  insertSlots = async (/** @type {object} */ slots) => {
+    await items_reserved_time.insertMany(slots)
   }
 }
 
