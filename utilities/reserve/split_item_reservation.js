@@ -21,6 +21,7 @@ export default function splitItemReservation (item_reservation, timeslot_item_re
       ) {
         return {
           status: 400,
+          output: [],
           json: error_response(R_INVALID_RESERVATION, 'item_reservations repeat error')
         }
       }
