@@ -114,8 +114,6 @@ router.get('/space_available_time', [
     const output_array = []
     const end_datetime_dayjs = dayjs(end_datetime).tz('Asia/Taipei')
     let start_datetime_dayjs = dayjs(start_datetime).tz('Asia/Taipei')
-    console.log(end_datetime_dayjs)
-    console.log(start_datetime_dayjs)
     const limit_datetime = start_datetime_dayjs.add(1, 'month')
     if (end_datetime_dayjs.isAfter(limit_datetime)) {
       res
@@ -206,7 +204,6 @@ async function cacuTimeSlot (
       if (space_database_info == null) {
         continue
       }
-      console.log(start_datetime_dayjs.add(i, 'hour').format(), space_database_info)
       reserved_value = space_database_info.reserved
     }
 
@@ -216,16 +213,6 @@ async function cacuTimeSlot (
       start_datetime_dayjs.hour() < digical_time_slots[current_timeslot].end
     ) {
       output_array.push({
-        space_id,
-        start_datetime: start_datetime_dayjs
-          .set('hour', digical_time_slots[current_timeslot].start)
-          .format('YYYY-MM-DDTHH:mm'),
-        end_datetime: start_datetime_dayjs
-          .set('hour', digical_time_slots[current_timeslot].end)
-          .format('YYYY-MM-DDTHH:mm'),
-        availability: 1 - reserved_value
-      })
-      console.log({
         space_id,
         start_datetime: start_datetime_dayjs
           .set('hour', digical_time_slots[current_timeslot].start)
