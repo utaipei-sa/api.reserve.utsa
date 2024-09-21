@@ -8,7 +8,8 @@ import {
   R_INVALID_INFO
 } from '../../utilities/response.js'
 import { OBJECT_ID_REGEXP, DATETIME_MINUTE_REGEXP } from '../../utilities/input_format.js'
-
+import timezone from 'dayjs/plugin/timezone.js'
+dayjs.extend(timezone)
 const router = express.Router()
 
 /**
@@ -88,8 +89,8 @@ router.get('/item_available_time', [
   }
 
   const interval_array = []
-  let end_datetime_dayjs = dayjs(end_datetime)
-  let start_datetime_dayjs = dayjs(start_datetime)
+  let end_datetime_dayjs = dayjs(end_datetime).tz('Asia/Taipei')
+  let start_datetime_dayjs = dayjs(start_datetime).tz('Asia/Taipei')
   const limit_datetime = start_datetime_dayjs.add(1, 'month')
   if (end_datetime_dayjs.isAfter(limit_datetime)) {
     res

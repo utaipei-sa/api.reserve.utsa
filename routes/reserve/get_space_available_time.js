@@ -9,7 +9,8 @@ import {
   R_INVALID_INFO
 } from '../../utilities/response.js'
 import { OBJECT_ID_REGEXP, DATETIME_MINUTE_REGEXP } from '../../utilities/input_format.js'
-
+import timezone from 'dayjs/plugin/timezone.js'
+dayjs.extend(timezone)
 const router = express.Router()
 
 /**
@@ -111,8 +112,10 @@ router.get('/space_available_time', [
       { start: 18, end: 22 }
     ]
     const output_array = []
-    const end_datetime_dayjs = dayjs(end_datetime)
-    let start_datetime_dayjs = dayjs(start_datetime)
+    const end_datetime_dayjs = dayjs(end_datetime).tz('Asia/Taipei')
+    let start_datetime_dayjs = dayjs(start_datetime).tz('Asia/Taipei')
+    console.log(end_datetime_dayjs)
+    console.log(start_datetime_dayjs)
     const limit_datetime = start_datetime_dayjs.add(1, 'month')
     if (end_datetime_dayjs.isAfter(limit_datetime)) {
       res
@@ -199,9 +202,11 @@ async function cacuTimeSlot (
         },
         space_id: { $eq: space_id }
       })
+
       if (space_database_info == null) {
         continue
       }
+      console.log(start_datetime_dayjs.add(i, 'hour').format(), space_database_info)
       reserved_value = space_database_info.reserved
     }
 
@@ -211,6 +216,16 @@ async function cacuTimeSlot (
       start_datetime_dayjs.hour() < digical_time_slots[current_timeslot].end
     ) {
       output_array.push({
+        space_id,
+        start_datetime: start_datetime_dayjs
+          .set('hour', digical_time_slots[current_timeslot].start)
+          .format('YYYY-MM-DDTHH:mm'),
+        end_datetime: start_datetime_dayjs
+          .set('hour', digical_time_slots[current_timeslot].end)
+          .format('YYYY-MM-DDTHH:mm'),
+        availability: 1 - reserved_value
+      })
+      console.log({
         space_id,
         start_datetime: start_datetime_dayjs
           .set('hour', digical_time_slots[current_timeslot].start)
