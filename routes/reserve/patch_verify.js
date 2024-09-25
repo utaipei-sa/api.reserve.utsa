@@ -161,10 +161,12 @@ router.patch('/verify/:reservation_id', async function (req, res, next) {
       if (stop_flag === 1) {
         break
       }
+      /** @type string */
+      const space_id = space_reservation.space_id
       received_space_reserved_time.push({
         start_datetime: new Date(start_datetime.format()),
         end_datetime: new Date(start_datetime.add(1, 'hour').format()),
-        space_id: new ObjectId(space_reservation.space_id),
+        space_id: new ObjectId(space_id),
         reserved: 1,
         reservations: []
       })
@@ -227,10 +229,12 @@ router.patch('/verify/:reservation_id', async function (req, res, next) {
       if (stop_flag === 1) {
         break
       }
+      /** @type string */
+      const item_id = item_reservation.item_id
       received_item_reserved_time.push({
         start_datetime: new Date(start_datetime.format()),
         end_datetime: new Date(start_datetime.add(1, 'hour').format()),
-        item_id: new ObjectId(item_reservation.item_id),
+        item_id: new ObjectId(item_id),
         reserved_quantity: item_reservation.quantity,
         reservations: []
       })
