@@ -5,7 +5,6 @@ import {
   R_INVALID_INFO
 } from '../../utilities/response.js'
 import ReserveRepository from '../../repositories/reserve_repository.js'
-// import { Timestamp } from 'mongodb'
 
 const router = express.Router()
 
