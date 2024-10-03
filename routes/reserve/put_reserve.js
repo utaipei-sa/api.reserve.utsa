@@ -141,7 +141,7 @@ router.put('/reserve/:reservation_id', async function (req, res, next) {
   const verify = original_reservation.verify === 1
 
   // compare space reservations -> difference lists (add and delete)
-  const original_space_reservations = await SpaceRepository.getSlotsByReservationId(reservation_id)
+  const original_space_reservations = await SpaceRepository.findSlotsByReservationId(reservation_id)
   const add_space_reservations = []
   // const remove_space_reservations = original_reservation.space_reservations
   let remove_space_reservations = []
@@ -396,8 +396,8 @@ router.put('/reserve/:reservation_id', async function (req, res, next) {
     // remove spaces reservations
     for (const remove_space_reservation of remove_space_reservations) {
       await SpaceRepository.deleteSlotByStartTimeAndId(
-        remove_space_reservation.start_datetime,
-        remove_space_reservation.space_id
+        remove_space_reservation.space_id,
+        remove_space_reservation.start_datetime
       )
     }
     // add spaces reservations

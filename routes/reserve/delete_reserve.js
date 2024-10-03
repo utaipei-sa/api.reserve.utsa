@@ -88,8 +88,8 @@ router.delete('/reserve/:reservation_id', async function (req, res, next) {
         })
       }
     }
-    const item_reserved_time_find = await ItemRepository.getSlotByReservationId(reservation_id)
-    const space_reserved_time_find = await SpaceRepository.getSlotsByReservationId(reservation_id)
+    const item_reserved_time_find = await ItemRepository.findSlotByReservationId(reservation_id)
+    const space_reserved_time_find = await SpaceRepository.findSlotsByReservationId(reservation_id)
     // delete items_reserved_time
     for (const item of item_reserved_time_find) {
       let quantity = 0

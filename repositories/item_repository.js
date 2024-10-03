@@ -26,7 +26,7 @@ class ItemRepository {
     })
   }
 
-  getSlotByReservationId = async (/** @type {string} */ id) => {
+  findSlotByReservationId = async (/** @type {string} */ id) => {
     return await items_reserved_time
       .find({ reservations: { $in: [new ObjectId(id)] } })
       .toArray()

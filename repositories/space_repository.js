@@ -44,7 +44,7 @@ class SpaceRepository {
       .toArray()
   }
 
-  getSlotsByReservationId = async (/** @type {string} */ id) => {
+  findSlotsByReservationId = async (/** @type {string} */ id) => {
     return await spaces_reserved_time
       .find({ reservations: { $in: [new ObjectId(id)] } })
       .toArray()
