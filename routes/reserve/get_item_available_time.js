@@ -119,7 +119,7 @@ router.get('/item_available_time', [
   while (start_datetime_dayjs.isBefore(end_datetime_dayjs)) {
     for (let count = 0; count <= 23; count++) {
       const item_database_info =
-        await ItemRepository.findReservedSlotByTimeAndId(
+        await ItemRepository.findSlotByStartTime(
           item_id,
           start_datetime_dayjs.add(count, 'hour').format()
         )

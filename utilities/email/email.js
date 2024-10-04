@@ -2,7 +2,7 @@ import nodemailer from 'nodemailer' // email relative
 
 /**
  * 寄送 email
- * @param toEmail
+ * @param {any} toEmail
  * @param {string} subject 主旨
  * @param {string} content 信件內容
  */
