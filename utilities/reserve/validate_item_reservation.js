@@ -4,8 +4,7 @@ import {
   R_INVALID_INFO,
   R_INVALID_RESERVATION
 } from '../response.js'
-import { items } from '../../models/mongodb.js'
-import { ObjectId } from 'mongodb'
+import ItemRepository from '../../repositories/item_repository.js'
 import dayjs from 'dayjs'
 
 export default async function validateItemReservation (item_reservation) {
@@ -42,9 +41,9 @@ export default async function validateItemReservation (item_reservation) {
     }
   }
   // check if the item_id exist
-  const item_found = await items.findOne({
-    _id: { $eq: ObjectId.createFromHexString(item_reservation.item_id) }
-  })
+  const item_found = await ItemRepository.findItemById(
+    item_reservation.item_id
+  )
 
   if (item_found === null) {
     return {
