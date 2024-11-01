@@ -10,7 +10,7 @@ const router = express.Router()
 
 /**
  * @openapi
- * /reserve/reservation/{reservation_id}:
+ * /reserve/reserve/{reservation_id}:
  *   get:
  *     tags:
  *       - reserve
