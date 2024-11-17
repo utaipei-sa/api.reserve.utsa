@@ -114,7 +114,7 @@ router.delete('/reserve/:reservation_id', async function (req, res, next) {
       } catch (error) {
         console.error('Error sending email:', error)
         res
-          .status(200)
+          .status(500)
           .json(error_response(R_SEND_EMAIL_FAILED, error.response))
         return
       }

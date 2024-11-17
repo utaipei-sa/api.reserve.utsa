@@ -323,7 +323,7 @@ router.patch('/verify/:reservation_id', async function (req, res, next) {
     console.log('The email has been sent: ' + email_response)
   } catch (error) {
     console.error('Error sending email:', error)
-    res.status(200).json(error_response(R_SEND_EMAIL_FAILED, error.response))
+    res.status(500).json(error_response(R_SEND_EMAIL_FAILED, error.response))
     return
   }
 
