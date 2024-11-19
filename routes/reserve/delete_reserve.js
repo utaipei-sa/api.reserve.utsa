@@ -56,7 +56,7 @@ const router = express.Router()
 router.delete('/reserve/:reservation_id', async function (req, res, next) {
   // 取得參數
   const reservation_id = req.params.reservation_id
-  const a = "aaa"
+
   const OBJECT_ID_REGEXP = /^[a-fA-F0-9]{24}$/ // ObjectId 格式 (652765ed3d21844635674e71)
   // 檢查輸入是否正確
   if (reservation_id === undefined) { // 沒給參數
