@@ -7,7 +7,7 @@ import {
   R_ID_NOT_FOUND,
   R_INVALID_INFO
 } from '../../utilities/response.js'
-import { OBJECT_ID_REGEXP, DATETIME_MINUTE_REGEXP } from '../../utilities/input_format.js'
+import { OBJECT_ID_REGEXP, isValidDateTime } from '../../utilities/input_format.js'
 import timezone from 'dayjs/plugin/timezone.js'
 dayjs.extend(timezone)
 const router = express.Router()
@@ -60,11 +60,11 @@ const router = express.Router()
 */
 router.get('/item_available_time', [
   check('item_id').matches(OBJECT_ID_REGEXP).withMessage('Reservation ID format error'),
-  check('start_datetime').matches(DATETIME_MINUTE_REGEXP).withMessage('Reservation start_datetime format error'),
-  check('end_datetime').matches(DATETIME_MINUTE_REGEXP).withMessage('Reservation end_datetime format error'),
+  check('start_datetime').custom(isValidDateTime).withMessage('Reservation start_datetime format error'),
+  check('end_datetime').custom(isValidDateTime).withMessage('Reservation end_datetime format error'),
   check('intervals').optional().isBoolean().withMessage('intervals must be boolean type')
 ], async function (req, res, next) {
-  // 檢查輸入是否正確（正規表達式 Regular Expression）
+  // 檢查輸入是否正確
   const errors = validationResult(req)
   if (!errors.isEmpty()) {
     res
