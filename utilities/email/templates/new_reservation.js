@@ -3,7 +3,7 @@ import {
   convert_space_reservations_string
 } from '../template_utils.js'
 
-export const subject = '【學生會】預約成功通知'
+export const subject = '【學生會】預約驗證通知'
 export const html = async (reservation) => {
   const space_reservations_string = await convert_space_reservations_string(reservation.space_reservations)
   const item_reservations_string = await convert_item_reservations_string(reservation.item_reservations)
