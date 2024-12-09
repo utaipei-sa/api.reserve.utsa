@@ -54,12 +54,12 @@ export default async function validateItemReservation (item_reservation) {
   // check if the start_datetime is earlier than end_datetime
   const start_datetime = dayjs(item_reservation.start_datetime)
   const end_datetime = dayjs(item_reservation.end_datetime)
-  if (start_datetime.isAfter(end_datetime)) {
+  if (!end_datetime.isAfter(start_datetime)) {
     return {
       status: 400,
       json: error_response(
         R_INVALID_RESERVATION,
-        'item_reservations end_datetime earlier than start_datetime is not allowed'
+        'item_reservations start_datetime need to be earlier than end_datetime'
       )
     }
   }

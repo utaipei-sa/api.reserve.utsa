@@ -164,13 +164,13 @@ router.post('/reserve', async function (req, res, next) {
       return
     }
     // 起始時間必定早於結束時間
-    if (start_datetime.isAfter(end_datetime)) {
+    if (!end_datetime.isAfter(start_datetime)) {
       res
         .status(400)
         .json(
           error_response(
             R_INVALID_RESERVATION,
-            'space_reservations end_datetime earlier than start_datetime error'
+            'space_reservations start_datetime need to be earlier than end_datetime'
           )
         )
       return
@@ -299,13 +299,13 @@ router.post('/reserve', async function (req, res, next) {
         )
       return
     }
-    if (start_datetime.isAfter(end_datetime)) {
+    if (!end_datetime.isAfter(start_datetime)) {
       res
         .status(400)
         .json(
           error_response(
             R_INVALID_RESERVATION,
-            'item_reservation end_datetime earlier than start_datetime error'
+            'item_reservation start_datetime need to be earlier than end_datetime'
           )
         )
       return
