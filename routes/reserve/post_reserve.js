@@ -118,6 +118,19 @@ router.post('/reserve', async function (req, res, next) {
   const reservation_id = new ObjectId(randomBytes(12))
   const received_space_reserved_time = []
   const received_item_reserved_time = []
+<<<<<<< Updated upstream
+=======
+  const isValidDate = (dateString) => {
+    const parsed = dayjs(dateString)
+    return parsed.isValid() && parsed.format('YYYY-MM-DDTHH:mm:ss.SSSZ') === dateString
+  }
+  const isExceedMaxReservationPeriod = (start_datetime, end_datetime, maxDays = 7) => {
+    const start = dayjs(start_datetime)
+    const end = dayjs(end_datetime)
+    const limit = start.add(maxDays, 'day')
+    return end.isAfter(limit)
+  }
+>>>>>>> Stashed changes
 
   // space reservation process
   for (const space_reservation of received_space_reservations) {
@@ -131,6 +144,18 @@ router.post('/reserve', async function (req, res, next) {
     if (!SUBMIT_DATETIME_REGEXP.test(space_reservation.end_datetime)) {
       error_message += 'space_reservations end_datetime format error\n'
     }
+<<<<<<< Updated upstream
+=======
+    if (!isValidDate(space_reservation.start_datetime)) {
+      error_message += 'space_reservations start_datetime invalid date\n'
+    }
+    if (!isValidDate(space_reservation.end_datetime)) {
+      error_message += 'space_reservations end_datetime invalid date\n'
+    }
+    if (isExceedMaxReservationPeriod(space_reservation.start_datetime, space_reservation.end_datetime)) {
+      error_message += 'space reservation period cannot exceed 7 days\n'
+    }
+>>>>>>> Stashed changes
     if (error_message.length) {
       res
         .status(400)
@@ -198,7 +223,7 @@ router.post('/reserve', async function (req, res, next) {
             start_datetime
           ) &&
           received_space_reserved_time[i].space_id ===
-            space_reservation.space_id
+          space_reservation.space_id
         ) {
           stop_flag = 1
           break
@@ -262,6 +287,18 @@ router.post('/reserve', async function (req, res, next) {
     if (!SUBMIT_DATETIME_REGEXP.test(item_reservation.end_datetime)) {
       error_message += 'item_reservations end_datetime format error\n'
     }
+<<<<<<< Updated upstream
+=======
+    if (!isValidDate(item_reservation.start_datetime)) {
+      error_message += 'item_reservations start_datetime invalid date\n'
+    }
+    if (!isValidDate(item_reservation.end_datetime)) {
+      error_message += 'item_reservations end_datetime invalid date\n'
+    }
+    if (isExceedMaxReservationPeriod(item_reservation.start_datetime, item_reservation.end_datetime)) {
+      error_message += 'item reservation period cannot exceed 7 days\n'
+    }
+>>>>>>> Stashed changes
     if (error_message.length) {
       res
         .status(400)
