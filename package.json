@@ -30,7 +30,7 @@
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.0",
     "uuid": "^10.0.0",
-    "yaml": "^2.3.4"
+    "yaml": "^2.7.0"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.0.2",
