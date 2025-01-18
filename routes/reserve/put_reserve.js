@@ -1,4 +1,5 @@
 import express from 'express'
+import { check, validationResult } from 'express-validator'
 import ReserveRepository from '../../repositories/reserve_repository.js'
 import SpaceRepository from '../../repositories/space_repository.js'
 import ItemRepository from '../../repositories/item_repository.js'
@@ -77,7 +78,9 @@ dayjs.extend(utc)
  *                 message:
  *                   type: string
  */
-router.put('/reserve/:reservation_id', async function (req, res, next) {
+router.put('/reserve/:reservation_id', [
+  check('note').optional().escape()
+], async function (req, res, next) {
   // define constants and variables
   const OBJECT_ID_REGEXP = /^[a-fA-F0-9]{24}$/ // ObjectId 格式 (652765ed3d21844635674e71)
 
@@ -135,6 +138,14 @@ router.put('/reserve/:reservation_id', async function (req, res, next) {
   )
   if (validate_result.status !== 200) {
     res.status(validate_result.status).json(validate_result.json)
+    return
+  }
+  // 檢查輸入是否正確
+  const errors = validationResult(req)
+  if (!errors.isEmpty()) {
+    res
+      .status(400)
+      .json(error_response(R_INVALID_INFO, errors.array().map(error => error.msg).join('\n')))
     return
   }
 

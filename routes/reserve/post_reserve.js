@@ -1,5 +1,6 @@
 import { randomBytes } from 'crypto'
 import express from 'express'
+import { check, validationResult } from 'express-validator'
 import { ObjectId } from 'mongodb'
 import ReserveRepository from '../../repositories/reserve_repository.js'
 import SpaceRepository from '../../repositories/space_repository.js'
@@ -63,7 +64,9 @@ dayjs.extend(utc)
  *                 message:
  *                   type: string
  */
-router.post('/reserve', async function (req, res, next) {
+router.post('/reserve', [
+  check('note').optional().escape()
+], async function (req, res, next) {
   const EMAIL_REGEXP = /^[\w-.+]+@([\w-]+\.)+[\w-]{2,4}$/ // user+name@domain.com
   const SUBMIT_DATETIME_REGEXP =
     /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(\.\d*)?\+08:?00$/ // 2024-03-03T22:25:32.000+08:00
@@ -111,6 +114,14 @@ router.post('/reserve', async function (req, res, next) {
   }
   if (error_message.length) {
     res.status(400).json(error_response(R_INVALID_INFO, error_message))
+    return
+  }
+  // 檢查輸入是否正確
+  const errors = validationResult(req)
+  if (!errors.isEmpty()) {
+    res
+      .status(400)
+      .json(error_response(R_INVALID_INFO, errors.array().map(error => error.msg).join('\n')))
     return
   }
 
@@ -198,7 +209,7 @@ router.post('/reserve', async function (req, res, next) {
             start_datetime
           ) &&
           received_space_reserved_time[i].space_id ===
-            space_reservation.space_id
+          space_reservation.space_id
         ) {
           stop_flag = 1
           break
@@ -360,26 +371,47 @@ router.post('/reserve', async function (req, res, next) {
   let db_item_check
   let max_quantity
   for (let i = 0; i < received_item_reserved_time.length; i++) {
-    max_quantity = await ItemRepository.findItemById(received_item_reserved_time[i].item_id)
-    db_item_check = await ItemRepository.findSlotByStartTime(
-      received_item_reserved_time[i].item_id,
-      received_item_reserved_time[i].start_datetime
-    )
-    const item_reserved_quantity = db_item_check?.reserved_quantity || 0
-    if (
-      item_reserved_quantity <=
-      max_quantity?.quantity - received_item_reserved_time[i].reserved_quantity
-    ) continue
+    const current_reservation = received_item_reserved_time[i]
+    max_quantity = await ItemRepository.findItemById(current_reservation.item_id)
 
-    res
-      .status(400)
-      .json(
+    let total_reserved_quantity = current_reservation.reserved_quantity
+
+    db_item_check = await ItemRepository.findSlotByStartTime(
+      current_reservation.item_id,
+      current_reservation.start_datetime
+    )
+
+    if (db_item_check?.reserved_quantity) {
+      total_reserved_quantity += db_item_check.reserved_quantity
+    }
+
+    for (let j = 0; j < received_item_reserved_time.length; j++) {
+      if (i === j) continue // 跳過自己
+
+      const other_reservation = received_item_reserved_time[j]
+      if (current_reservation.item_id.toString() !== other_reservation.item_id.toString()) continue
+
+      // 檢查時間是否重疊
+      const current_start = dayjs(current_reservation.start_datetime)
+      const current_end = dayjs(current_reservation.end_datetime)
+      const other_start = dayjs(other_reservation.start_datetime)
+      const other_end = dayjs(other_reservation.end_datetime)
+
+      if (current_start.isBefore(other_end) && other_start.isBefore(current_end)) {
+        total_reserved_quantity += other_reservation.reserved_quantity
+      }
+    }
+
+    // 檢查總預約數量是否超過限制
+    if (total_reserved_quantity > max_quantity.quantity) {
+      res.status(400).json(
         error_response(
           R_INVALID_RESERVATION,
           'item_datetime has over reserved error'
         )
       )
-    return
+      return
+    }
   }
 
   // insert reservation into database
