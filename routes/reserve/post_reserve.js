@@ -19,6 +19,8 @@ import {
   subject as email_subject,
   html as email_html
 } from '../../utilities/email/templates/new_reservation.js'
+import validateSpaceReservation from '../../utilities/reserve/validate_space_reservation.js'
+import validateItemReservation from '../../utilities/reserve/validate_item_reservation.js'
 
 const router = express.Router()
 dayjs.extend(utc)
@@ -118,10 +120,6 @@ router.post('/reserve', async function (req, res, next) {
   const reservation_id = new ObjectId(randomBytes(12))
   const received_space_reserved_time = []
   const received_item_reserved_time = []
-  const isValidDate = (dateString) => {
-    const parsed = dayjs(dateString)
-    return parsed.isValid() && parsed.format('YYYY-MM-DDTHH:mm:ss.SSSZ') === dateString
-  }
 
   // space reservation process
   for (const space_reservation of received_space_reservations) {
@@ -135,16 +133,18 @@ router.post('/reserve', async function (req, res, next) {
     if (!SUBMIT_DATETIME_REGEXP.test(space_reservation.end_datetime)) {
       error_message += 'space_reservations end_datetime format error\n'
     }
-    if (!isValidDate(space_reservation.start_datetime)) {
-      error_message += 'space_reservations start_datetime invalid date\n'
-    }
-    if (!isValidDate(space_reservation.end_datetime)) {
-      error_message += 'space_reservations end_datetime invalid date\n'
-    }
     if (error_message.length) {
       res
         .status(400)
         .json(error_response(R_INVALID_RESERVATION, error_message))
+      return
+    }
+
+    const validate_result = await validateSpaceReservation(
+      space_reservation
+    )
+    if (validate_result.status !== 200) {
+      res.status(validate_result.status).json(validate_result.json)
       return
     }
 
@@ -208,7 +208,7 @@ router.post('/reserve', async function (req, res, next) {
             start_datetime
           ) &&
           received_space_reserved_time[i].space_id ===
-            space_reservation.space_id
+          space_reservation.space_id
         ) {
           stop_flag = 1
           break
@@ -272,16 +272,18 @@ router.post('/reserve', async function (req, res, next) {
     if (!SUBMIT_DATETIME_REGEXP.test(item_reservation.end_datetime)) {
       error_message += 'item_reservations end_datetime format error\n'
     }
-    if (!isValidDate(item_reservation.start_datetime)) {
-      error_message += 'item_reservations start_datetime invalid date\n'
-    }
-    if (!isValidDate(item_reservation.end_datetime)) {
-      error_message += 'item_reservations end_datetime invalid date\n'
-    }
     if (error_message.length) {
       res
         .status(400)
         .json(error_response(R_INVALID_RESERVATION, error_message))
+      return
+    }
+
+    const validate_result = await validateItemReservation(
+      item_reservation
+    )
+    if (validate_result.status !== 200) {
+      res.status(validate_result.status).json(validate_result.json)
       return
     }
 
