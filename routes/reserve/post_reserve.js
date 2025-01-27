@@ -20,6 +20,8 @@ import {
   subject as email_subject,
   html as email_html
 } from '../../utilities/email/templates/new_reservation.js'
+import validateSpaceReservation from '../../utilities/reserve/validate_space_reservation.js'
+import validateItemReservation from '../../utilities/reserve/validate_item_reservation.js'
 
 const router = express.Router()
 dayjs.extend(utc)
@@ -145,6 +147,14 @@ router.post('/reserve', [
       res
         .status(400)
         .json(error_response(R_INVALID_RESERVATION, error_message))
+      return
+    }
+
+    const validate_result = await validateSpaceReservation(
+      space_reservation
+    )
+    if (validate_result.status !== 200) {
+      res.status(validate_result.status).json(validate_result.json)
       return
     }
 
@@ -276,6 +286,14 @@ router.post('/reserve', [
       res
         .status(400)
         .json(error_response(R_INVALID_RESERVATION, error_message))
+      return
+    }
+
+    const validate_result = await validateItemReservation(
+      item_reservation
+    )
+    if (validate_result.status !== 200) {
+      res.status(validate_result.status).json(validate_result.json)
       return
     }
 
