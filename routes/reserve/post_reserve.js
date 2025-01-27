@@ -129,7 +129,6 @@ router.post('/reserve', [
   const reservation_id = new ObjectId(randomBytes(12))
   const received_space_reserved_time = []
   const received_item_reserved_time = []
-
   // space reservation process
   for (const space_reservation of received_space_reservations) {
     // check data format

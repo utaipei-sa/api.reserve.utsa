@@ -21,14 +21,14 @@ export default async function validateSpaceReservation (space_reservation) {
   if (
     DATETIME_MINUTE_REGEXP.test(space_reservation.start_datetime) === false ||
     dayjs(space_reservation.start_datetime).toISOString().slice(0, 10) !==
-      space_reservation.start_datetime.slice(0, 10) // prevent something like 02-31 which can be parsed successfully
+    space_reservation.start_datetime.slice(0, 10) // prevent something like 02-31 which can be parsed successfully
   ) {
     error_message += 'start_datetime format error\n'
   }
   if (
     DATETIME_MINUTE_REGEXP.test(space_reservation.end_datetime) === false ||
     dayjs(space_reservation.end_datetime).toISOString().slice(0, 10) !==
-      space_reservation.end_datetime.slice(0, 10)
+    space_reservation.end_datetime.slice(0, 10)
   ) {
     error_message += 'end_datetime format error\n'
   }
@@ -58,6 +58,17 @@ export default async function validateSpaceReservation (space_reservation) {
       json: error_response(
         R_INVALID_RESERVATION,
         'space_reservations start_datetime need to be earlier than end_datetime'
+      )
+    }
+  }
+
+  // prevent reservation from over a week
+  if (end_datetime.diff(start_datetime, 'day') > 7) {
+    return {
+      status: 400,
+      json: error_response(
+        R_INVALID_RESERVATION,
+        'space_reservations over 7 days is not allowed'
       )
     }
   }

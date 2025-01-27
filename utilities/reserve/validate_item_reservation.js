@@ -20,14 +20,14 @@ export default async function validateItemReservation (item_reservation) {
   if (
     DATETIME_MINUTE_REGEXP.test(item_reservation.start_datetime) === false ||
     dayjs(item_reservation.start_datetime).toISOString().slice(0, 10) !==
-      item_reservation.start_datetime.slice(0, 10) // prevent something like 02-31 which can be parsed successfully
+    item_reservation.start_datetime.slice(0, 10) // prevent something like 02-31 which can be parsed successfully
   ) {
     error_message += 'start_datetime format error\n'
   }
   if (
     DATETIME_MINUTE_REGEXP.test(item_reservation.end_datetime) === false ||
     dayjs(item_reservation.end_datetime).toISOString().slice(0, 10) !==
-      item_reservation.end_datetime.slice(0, 10)
+    item_reservation.end_datetime.slice(0, 10)
   ) {
     error_message += 'end_datetime format error\n'
   }
@@ -79,6 +79,17 @@ export default async function validateItemReservation (item_reservation) {
       json: error_response(
         R_INVALID_RESERVATION,
         'item_reservations quantity should not exceed the item max quantity'
+      )
+    }
+  }
+
+  // prevent reservation from over a week
+  if (end_datetime.diff(start_datetime, 'day') > 7) {
+    return {
+      status: 400,
+      json: error_response(
+        R_INVALID_RESERVATION,
+        'item_reservations over 7 days is not allowed'
       )
     }
   }
