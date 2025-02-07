@@ -137,8 +137,8 @@ export async function isRemainItemEnough (received_item_reserved_time) {
 
     // 檢查總預約數量是否超過限制
     if (total_reserved_quantity > max_quantity.quantity) {
-      return true
+      return false
     }
   }
-  return false
+  return true
 }

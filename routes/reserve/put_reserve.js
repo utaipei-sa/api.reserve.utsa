@@ -368,7 +368,7 @@ router.put('/reserve/:reservation_id', [
   console.log('remove_item_reservations: ', remove_item_reservations) // debug
 
   // check items not all reserved
-  if (await isRemainItemEnough(add_item_reservations)) {
+  if (!(await isRemainItemEnough(add_item_reservations))) {
     res
       .status(400)
       .json(
