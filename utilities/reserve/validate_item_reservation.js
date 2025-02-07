@@ -98,3 +98,47 @@ export default async function validateItemReservation (item_reservation) {
     status: 200
   }
 }
+
+export async function isRemainItemEnough (received_item_reserved_time) {
+  // Check if DB has enough items to be reserved
+  let db_item_check
+  let max_quantity
+  for (let i = 0; i < received_item_reserved_time.length; i++) {
+    const current_reservation = received_item_reserved_time[i]
+    max_quantity = await ItemRepository.findItemById(current_reservation.item_id)
+
+    let total_reserved_quantity = current_reservation.reserved_quantity
+
+    db_item_check = await ItemRepository.findSlotByStartTime(
+      current_reservation.item_id,
+      current_reservation.start_datetime
+    )
+
+    if (db_item_check?.reserved_quantity) {
+      total_reserved_quantity += db_item_check.reserved_quantity
+    }
+
+    for (let j = 0; j < received_item_reserved_time.length; j++) {
+      if (i === j) continue // 跳過自己
+
+      const other_reservation = received_item_reserved_time[j]
+      if (current_reservation.item_id.toString() !== other_reservation.item_id.toString()) continue
+
+      // 檢查時間是否重疊
+      const current_start = dayjs(current_reservation.start_datetime)
+      const current_end = dayjs(current_reservation.end_datetime)
+      const other_start = dayjs(other_reservation.start_datetime)
+      const other_end = dayjs(other_reservation.end_datetime)
+
+      if (current_start.isBefore(other_end) && other_start.isBefore(current_end)) {
+        total_reserved_quantity += other_reservation.reserved_quantity
+      }
+    }
+
+    // 檢查總預約數量是否超過限制
+    if (total_reserved_quantity > max_quantity.quantity) {
+      return true
+    }
+  }
+  return false
+}

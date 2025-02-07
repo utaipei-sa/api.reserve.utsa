@@ -17,7 +17,7 @@ import {
 import validateRservationInfo from '../../utilities/reserve/validate_reservation_info.js'
 import validateSpaceReservation from '../../utilities/reserve/validate_space_reservation.js'
 import splitSpaceReservation from '../../utilities/reserve/split_space_reservation.js'
-import validateItemReservation from '../../utilities/reserve/validate_item_reservation.js'
+import validateItemReservation, { isRemainItemEnough } from '../../utilities/reserve/validate_item_reservation.js'
 import splitItemReservation from '../../utilities/reserve/split_item_reservation.js'
 import {
   subject as email_subject,
@@ -186,9 +186,9 @@ router.put('/reserve/:reservation_id', [
         return (
           space_reservation.space_id === updated_space_reservation.space_id &&
           space_reservation.start_datetime.getTime() ===
-            updated_space_reservation.start_datetime.getTime() &&
+          updated_space_reservation.start_datetime.getTime() &&
           space_reservation.end_datetime.getTime() ===
-            updated_space_reservation.end_datetime.getTime()
+          updated_space_reservation.end_datetime.getTime()
         )
       })
     if (original_space_reservation_index === -1) {
@@ -276,9 +276,9 @@ router.put('/reserve/:reservation_id', [
         return (
           item_reservation.item_id === updated_item_reservation.item_id &&
           new Date(item_reservation.start_datetime).getTime() ===
-            updated_item_reservation.start_datetime.getTime() &&
+          updated_item_reservation.start_datetime.getTime() &&
           new Date(item_reservation.end_datetime).getTime() ===
-            updated_item_reservation.end_datetime.getTime()
+          updated_item_reservation.end_datetime.getTime()
         )
       })
     const item_reservation_found = await ItemRepository.findSlotByTimeRange(
@@ -366,41 +366,18 @@ router.put('/reserve/:reservation_id', [
   }
   console.log('add_item_reservations: ', add_item_reservations) // debug
   console.log('remove_item_reservations: ', remove_item_reservations) // debug
+
   // check items not all reserved
-  db_find_result = null // db find result
-  let db_find_max_quantity = null
-  for (const add_item_reservation of add_item_reservations) {
-    // find data drom db
-    db_find_result = await ItemRepository.findSlotByStartTime(
-      add_item_reservation.item_id,
-      add_item_reservation.start_datetime
-    )
-
-    if (db_find_result === null) {
-      db_find_result = { reserved_quantity: 0 }
-    }
-
-    db_find_max_quantity = await ItemRepository.findItemById(add_item_reservation.item_id)
-
-    if (db_find_max_quantity === null) {
-      db_find_max_quantity = { quantity: 0 }
-    }
-
-    if (
-      db_find_result.reserved_quantity +
-        add_item_reservation.reserved_quantity >
-      db_find_max_quantity.quantity
-    ) {
-      res
-        .status(400)
-        .json(
-          error_response(
-            R_INVALID_RESERVATION,
-            'item_datetime has all been reserved'
-          )
+  if (await isRemainItemEnough(add_item_reservations)) {
+    res
+      .status(400)
+      .json(
+        error_response(
+          R_INVALID_RESERVATION,
+          'item_datetime has all been reserved'
         )
-      return
-    }
+      )
+    return
   }
 
   if (verify) {
