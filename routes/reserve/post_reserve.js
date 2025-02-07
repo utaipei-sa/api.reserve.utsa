@@ -384,6 +384,7 @@ router.post('/reserve', [
     }
   }
 
+  // TODO: Need refactor, use function in validate_item_reservation.js
   // Check if DB has enough items to be reserved
   let db_item_check
   let max_quantity
