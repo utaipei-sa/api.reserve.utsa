@@ -17,11 +17,10 @@ export default function splitItemReservation (item_reservation, timeslot_item_re
     for (const temp_reservation of timeslot_item_reservations) {
       if (
         temp_reservation.item_id === item_reservation.item_id &&
-          new Date(temp_reservation.start_datetime) === new Date(start_datetime.format())
+        dayjs(temp_reservation.start_datetime).isSame(start_datetime)
       ) {
         return {
           status: 400,
-          output: [],
           json: error_response(R_INVALID_RESERVATION, 'item_reservations repeat error')
         }
       }
