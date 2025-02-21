@@ -1,9 +1,9 @@
 import express from 'express'
 import request from 'supertest'
 import { jest, describe, it, expect, beforeEach } from '@jest/globals'
-import router from '../../../routes/reserve/get_space.js'
-import SpaceRepository from '../../../repositories/space_repository.js'
-import { R_ID_NOT_FOUND, R_INVALID_INFO } from '../../../utilities/response.js'
+import router from './get_space.js'
+import SpaceRepository from '../../repositories/space_repository.js'
+import { R_ID_NOT_FOUND, R_INVALID_INFO } from '../../utilities/response.js'
 
 const app = express()
 app.use(express.json())
