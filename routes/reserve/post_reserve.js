@@ -18,6 +18,7 @@ import {
   subject as email_subject,
   html as email_html
 } from '../../utilities/email/templates/new_reservation.js'
+import { DATETIME_REGEXP, EMAIL_REGEXP } from '../input_format.js'
 import validateRservationInfo from '../../utilities/reserve/validate_reservation_info.js'
 import validateSpaceReservation from '../../utilities/reserve/validate_space_reservation.js'
 import validateItemReservation, { isRemainItemEnough } from '../../utilities/reserve/validate_item_reservation.js'
@@ -68,7 +69,28 @@ dayjs.extend(utc)
  *                   type: string
  */
 router.post('/reserve', [
-  check('note').optional().escape()
+  check('email').matches(EMAIL_REGEXP).withMessage('Email format error'),
+  check('submit_datetime').matches(DATETIME_REGEXP).withMessage('submit_datetime format error'),
+  check('name').notEmpty().withMessage('Name empty error'),
+  check('department_grade').notEmpty().withMessage('Department grade empty error'),
+  check('organization').notEmpty().withMessage('Organization empty error'),
+  check('reason').notEmpty().withMessage('Reason empty error'),
+  check('note').optional().escape(),
+
+  check(['space_reservations', 'item_reservations']).custom((value, { req }) => {
+    // check if both reservations are empty
+    const space_reservations = req.body.space_reservations
+    const item_reservations = req.body.item_reservations
+
+    if (
+      space_reservations === undefined ||
+      item_reservations === undefined ||
+      space_reservations.length + item_reservations.length <= 0
+    ) {
+      throw new Error('empty reservation error')
+    }
+    return true
+  })
 ], async function (req, res, next) {
   // Destructure common fields and reservations.
   const submitDatetime = req.body.submit_datetime
@@ -80,23 +102,6 @@ router.post('/reserve', [
   const note = req.body.note || ''
   const spaceReservations = req.body.space_reservations ?? []
   const itemReservations = req.body.item_reservations ?? []
-
-  // check input data basic info
-  const validateResult = validateRservationInfo(
-    submitDatetime,
-    name,
-    departmentGrade,
-    organization,
-    email,
-    reason,
-    note,
-    spaceReservations,
-    itemReservations
-  )
-  if (validateResult.status !== 200) { // error
-    res.status(validateResult.status).json(validateResult.json)
-    return
-  }
 
   // check express-validator errors
   const errors = validationResult(req)
