@@ -91,6 +91,15 @@ router.post('/reserve', [
     return true
   })
 ], async function (req, res, next) {
+  // check express-validator errors
+  const errors = validationResult(req)
+  if (!errors.isEmpty()) {
+    res
+      .status(400)
+      .json(error_response(R_INVALID_INFO, errors.array().map(error => error.msg).join('\n')))
+    return
+  }
+
   // Destructure common fields and reservations.
   const submitDatetime = req.body.submit_datetime
   const name = req.body.name
@@ -101,15 +110,6 @@ router.post('/reserve', [
   const note = req.body.note || ''
   const spaceReservations = req.body.space_reservations ?? []
   const itemReservations = req.body.item_reservations ?? []
-
-  // check express-validator errors
-  const errors = validationResult(req)
-  if (!errors.isEmpty()) {
-    res
-      .status(400)
-      .json(error_response(R_INVALID_INFO, errors.array().map(error => error.msg).join('\n')))
-    return
-  }
 
   // generate reservation_id
   const reservationId = new ObjectId(randomBytes(12))
