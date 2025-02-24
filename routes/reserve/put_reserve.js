@@ -1,5 +1,5 @@
 import express from 'express'
-import { check, validationResult } from 'express-validator'
+import { param, check, validationResult } from 'express-validator'
 import ReserveRepository from '../../repositories/reserve_repository.js'
 import SpaceRepository from '../../repositories/space_repository.js'
 import ItemRepository from '../../repositories/item_repository.js'
@@ -14,7 +14,6 @@ import {
   R_SEND_EMAIL_FAILED,
   R_SUCCESS
 } from '../../utilities/response.js'
-import validateRservationInfo from '../../utilities/reserve/validate_reservation_info.js'
 import validateSpaceReservation from '../../utilities/reserve/validate_space_reservation.js'
 import splitSpaceReservation from '../../utilities/reserve/split_space_reservation.js'
 import validateItemReservation, { isRemainItemEnough } from '../../utilities/reserve/validate_item_reservation.js'
@@ -24,6 +23,7 @@ import {
   html as email_html
 } from '../../utilities/email/templates/update_reservation.js'
 import sendEmail from '../../utilities/email/email.js'
+import { OBJECT_ID_REGEXP, DATETIME_REGEXP, EMAIL_REGEXP } from '../input_format.js'
 
 const router = express.Router()
 dayjs.extend(utc)
@@ -79,31 +79,51 @@ dayjs.extend(utc)
  *                   type: string
  */
 router.put('/reserve/:reservation_id', [
-  check('note').optional().escape()
-], async function (req, res, next) {
-  // define constants and variables
-  const OBJECT_ID_REGEXP = /^[a-fA-F0-9]{24}$/ // ObjectId 格式 (652765ed3d21844635674e71)
+  param('reservation_id').matches(OBJECT_ID_REGEXP).withMessage('reservation_id format error'),
+  check('email').matches(EMAIL_REGEXP).withMessage('Email format error'),
+  check('submit_datetime').matches(DATETIME_REGEXP).withMessage('submit_datetime format error'),
+  check('name').notEmpty().withMessage('Name empty error'),
+  check('department_grade').notEmpty().withMessage('Department grade empty error'),
+  check('organization').notEmpty().withMessage('Organization empty error'),
+  check('reason').notEmpty().withMessage('Reason empty error'),
+  check('note').optional().escape(),
 
+  check(['space_reservations', 'item_reservations']).custom((value, { req }) => {
+    // check if both reservations are empty
+    const space_reservations = req.body.space_reservations
+    const item_reservations = req.body.item_reservations
+
+    if (
+      space_reservations === undefined ||
+      item_reservations === undefined ||
+      space_reservations.length + item_reservations.length <= 0
+    ) {
+      throw new Error('empty reservation error')
+    }
+    return true
+  })
+], async function (req, res, next) {
+  // check express-validator errors
+  const errors = validationResult(req)
+  if (!errors.isEmpty()) {
+    res
+      .status(400)
+      .json(error_response(R_INVALID_INFO, errors.array().map(error => error.msg).join('\n')))
+    return
+  }
+
+  // get input data
   const reservation_id = req.params.reservation_id
   const submit_datetime = req.body.submit_datetime
   const name = req.body.name
   const department_grade = req.body.department_grade
   const organization = req.body.organization
-  let email = req.body.email // not allow to change
+  const newEmail = req.body.email // not allow to change
   const reason = req.body.reason
   const note = req.body.note || ''
   const updated_space_reservations = req.body.space_reservations ?? []
   const updated_item_reservations = req.body.item_reservations ?? []
-  // let error_message = ''
 
-  // check input datas
-  // check reservation_id format
-  if (!OBJECT_ID_REGEXP.test(reservation_id)) {
-    res
-      .status(400)
-      .json(error_response(R_INVALID_INFO, 'reservation_id format error'))
-    return
-  }
   // check whether reservation_id is exist and get reservation data
   const original_reservation = await ReserveRepository.getReserveById(reservation_id)
 
@@ -113,43 +133,19 @@ router.put('/reserve/:reservation_id', [
       .json(error_response(R_ID_NOT_FOUND, 'reservation_id not found error'))
     return
   }
-  email = original_reservation.email
-  // check not empty reservation
-  if (
-    updated_space_reservations.length + updated_item_reservations.length <=
-    0
-  ) {
+
+  const originalEmail = original_reservation.email
+
+  // check email is the same as original reservation
+  if (newEmail !== originalEmail) {
     res
       .status(400)
-      .json(error_response(R_INVALID_INFO, 'empty reservation error'))
-    return
-  }
-  // validate reservation basic info
-  const validate_result = validateRservationInfo(
-    submit_datetime,
-    name,
-    department_grade,
-    organization,
-    email,
-    reason,
-    note,
-    updated_space_reservations,
-    updated_item_reservations
-  )
-  if (validate_result.status !== 200) {
-    res.status(validate_result.status).json(validate_result.json)
-    return
-  }
-  // 檢查輸入是否正確
-  const errors = validationResult(req)
-  if (!errors.isEmpty()) {
-    res
-      .status(400)
-      .json(error_response(R_INVALID_INFO, errors.array().map(error => error.msg).join('\n')))
+      .json(error_response(R_INVALID_RESERVATION, 'email cannot be changed'))
     return
   }
 
-  const verify = original_reservation.verify === 1
+  // get verify status (boolean)
+  const verified = original_reservation.verify === 1
 
   // compare space reservations -> difference lists (add and delete)
   const original_space_reservations = await SpaceRepository.findSlotsByReservationId(reservation_id)
@@ -380,7 +376,7 @@ router.put('/reserve/:reservation_id', [
     return
   }
 
-  if (verify) {
+  if (verified) {
     // remove spaces reservations
     for (const remove_space_reservation of remove_space_reservations) {
       await SpaceRepository.deleteSlotByStartTimeAndId(
@@ -453,7 +449,7 @@ router.put('/reserve/:reservation_id', [
     organization,
     name,
     department_grade,
-    email,
+    email: originalEmail,
     reason,
     space_reservations: updated_space_reservations,
     item_reservations: updated_item_reservations,
@@ -469,7 +465,7 @@ router.put('/reserve/:reservation_id', [
   updated_reservation.reservation_id = reservation_id
   try {
     const email_response = await sendEmail(
-      email,
+      originalEmail,
       email_subject,
       await email_html(updated_reservation)
     )
