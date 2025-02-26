@@ -18,7 +18,7 @@ import {
   subject as email_subject,
   html as email_html
 } from '../../utilities/email/templates/new_reservation.js'
-import { DATETIME_REGEXP, EMAIL_REGEXP } from '../input_format.js'
+import { DATETIME_REGEXP, EMAIL_REGEXP } from '../../utilities/input_format.js'
 import validateSpaceReservation from '../../utilities/reserve/validate_space_reservation.js'
 import validateItemReservation, { isRemainItemEnough } from '../../utilities/reserve/validate_item_reservation.js'
 import splitSpaceReservation from '../../utilities/reserve/split_space_reservation.js'
