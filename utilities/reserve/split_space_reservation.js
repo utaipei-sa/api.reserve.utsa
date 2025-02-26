@@ -17,7 +17,7 @@ export default function splitSpaceReservation (space_reservation, timeslot_space
     for (const temp_reservation of timeslot_space_reservations) {
       if (
         temp_reservation.space_id === space_reservation.space_id &&
-          start_datetime.diff(temp_reservation.start_datetime) === 0
+          start_datetime.isSame(temp_reservation.start_datetime)
       ) {
         return {
           status: 400,

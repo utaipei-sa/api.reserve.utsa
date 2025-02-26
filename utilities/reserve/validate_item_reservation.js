@@ -6,33 +6,30 @@ import {
 } from '../response.js'
 import ItemRepository from '../../repositories/item_repository.js'
 import dayjs from 'dayjs'
+import { OBJECT_ID_REGEXP, DATETIME_MINUTE_REGEXP } from '../input_format.js'
 
 export default async function validateItemReservation (item_reservation) {
-  const OBJECT_ID_REGEXP = /^[a-fA-F0-9]{24}$/ // ObjectId 格式 (652765ed3d21844635674e71)
-  const DATETIME_MINUTE_REGEXP =
-    /^20\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])T[0-5]\d:00:00(?:\.0+)?\+08:?00$/ // 2024-03-03T22:25:00.000+08:00
-
   let error_message = ''
 
   if (OBJECT_ID_REGEXP.test(item_reservation.item_id) === false) {
-    error_message += 'item_id format error\n'
+    error_message += 'item_reservations item_id format error\n'
   }
   if (
     DATETIME_MINUTE_REGEXP.test(item_reservation.start_datetime) === false ||
     dayjs(item_reservation.start_datetime).toISOString().slice(0, 10) !==
     item_reservation.start_datetime.slice(0, 10) // prevent something like 02-31 which can be parsed successfully
   ) {
-    error_message += 'start_datetime format error\n'
+    error_message += 'item_reservations start_datetime format error\n'
   }
   if (
     DATETIME_MINUTE_REGEXP.test(item_reservation.end_datetime) === false ||
     dayjs(item_reservation.end_datetime).toISOString().slice(0, 10) !==
     item_reservation.end_datetime.slice(0, 10)
   ) {
-    error_message += 'end_datetime format error\n'
+    error_message += 'item_reservations end_datetime format error\n'
   }
   if (Number.isInteger(item_reservation.quantity) === false) {
-    error_message += 'quantity is not integer error\n'
+    error_message += 'item_reservations quantity is not integer error\n'
   }
   if (error_message.length) {
     return {
@@ -54,6 +51,18 @@ export default async function validateItemReservation (item_reservation) {
   // check if the start_datetime is earlier than end_datetime
   const start_datetime = dayjs(item_reservation.start_datetime)
   const end_datetime = dayjs(item_reservation.end_datetime)
+  const limit_end_datetime = start_datetime.add(7, 'day')
+  // prevent reservation from over a week
+  if (end_datetime.isAfter(limit_end_datetime)) {
+    return {
+      status: 400,
+      json: error_response(
+        R_INVALID_RESERVATION,
+        'You can make a reservation for up to seven days.'
+      )
+    }
+  }
+  // prevent end_datetime from being earlier than start_datetime
   if (!end_datetime.isAfter(start_datetime)) {
     return {
       status: 400,

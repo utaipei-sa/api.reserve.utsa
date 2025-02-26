@@ -1,12 +1,17 @@
 import { error_response, R_INVALID_INFO } from '../response.js'
+import { DATETIME_REGEXP, EMAIL_REGEXP } from '../input_format.js'
 
 export default function validateRservationInfo (
-  submit_datetime, name, department_grade, organization, email, reason, note,
-  space_reservations, item_reservations
+  submit_datetime,
+  name,
+  department_grade,
+  organization,
+  email,
+  reason,
+  note,
+  space_reservations,
+  item_reservations
 ) {
-  const EMAIL_REGEXP = /^[\w-.+]+@([\w-]+\.)+[\w-]{2,4}$/ // user+name@domain.com
-  const DATETIME_REGEXP = /^20\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])T[0-5]\d:[0-5]\d:[0-5]\d(?:\.\d+)?((\+\d{2}:?\d{2})|Z)$/ // 2024-03-03T22:25:32.000+08:00
-
   let error_message = ''
 
   if (
